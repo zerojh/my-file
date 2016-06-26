@@ -1,0 +1,224 @@
+#!/bin/sh -e
+
+# 针对U-boot顶层Makefile执行make smdk6400_config后
+# mkconfig smdk6400 arm arm1176 smdk6400 samsung s3c64xx的分析
+
+APPEND=no	# Default: Create new config file
+BOARD_NAME=""	# Name to print in make output
+TARGETS=""
+
+arch=""
+cpu=""
+board=""
+vendor=""
+soc=""
+options=""
+
+# "$#"表示传递给脚本的参数个数，$# = 6
+# -a 为逻辑与，-o为逻辑或
+if [ \( $# -eq 2 \) -a \( "$1" = "-A" \) ] ; then
+	# Automatic mode
+	# 自动模式，例如mkconfig -A smdk2410，通过set ${line} 使得输入参数变为6个
+	line=`egrep -i "^[[:space:]]*${2}[[:space:]]" boards.cfg` || {
+		echo "make: *** No rule to make target \`$2_config'.  Stop." >&2
+		exit 1
+	}
+
+	set ${line}
+	# add default board name if needed
+	[ $# = 3 ] && set ${line} ${1}
+elif [ "${MAKEFLAGS+set}${MAKELEVEL+set}" = "setset" ] ; then
+	# only warn when using a config target in the Makefile
+	cat <<-EOF
+
+	warning: Please migrate to boards.cfg.  Failure to do so will
+	         mean removal of your board in the next release.
+
+	EOF
+	sleep 2
+fi
+
+# $#=6进入但无下面的参数，直接退出；shift使$1=$2,$2=$3....
+while [ $# -gt 0 ] ; do
+	case "$1" in
+	--) shift ; break ;;
+	-a) shift ; APPEND=yes ;;
+	-n) shift ; BOARD_NAME="${1%_config}" ; shift ;;
+	-t) shift ; TARGETS="`echo $1 | sed 's:_: :g'` ${TARGETS}" ; shift ;;
+	*)  break ;;
+	esac
+done
+
+[ $# -lt 4 ] && exit 1
+[ $# -gt 7 ] && exit 1
+
+# Strip all options and/or _config suffixes
+# ${1%config} 表示 $1变量中清除_config后缀
+# CONFIG_NAME=smdk6400
+CONFIG_NAME="${1%_config}"
+
+# BOARD_NAME=smdk6400
+[ "${BOARD_NAME}" ] || BOARD_NAME="${1%_config}"
+
+# arch = arm
+# cpu = arm1176
+# spl_cpu = arm1176
+# board = smdk6400
+# vendor = samsung
+# soc = s3c64xx
+arch="$2"
+cpu=`echo $3 | awk 'BEGIN {FS = ":"} ; {print $1}'`
+spl_cpu=`echo $3 | awk 'BEGIN {FS = ":"} ; {print $2}'`
+if [ "$4" = "-" ] ; then
+	board=${BOARD_NAME}
+else
+	board="$4"
+fi
+[ $# -gt 4 ] && [ "$5" != "-" ] && vendor="$5"
+[ $# -gt 5 ] && [ "$6" != "-" ] && soc="$6"
+# $# = 6不进行下面的命令
+[ $# -gt 6 ] && [ "$7" != "-" ] && {
+	# check if we have a board config name in the options field
+	# the options field mave have a board config name and a list
+	# of options, both separated by a colon (':'); the options are
+	# separated by commas (',').
+	#
+	# Check for board name
+	tmp="${7%:*}"
+	if [ "$tmp" ] ; then
+		CONFIG_NAME="$tmp"
+	fiz
+	# Check if we only have a colon...
+	if [ "${tmp}" != "$7" ] ; then
+		options=${7#*:}
+		TARGETS="`echo ${options} | sed 's:,: :g'` ${TARGETS}"
+	fi
+}
+
+# 第一次执行mkconfig时下面条件不会成立，ARCH不存在；之后执行make xxx_config时，Makefile会加载第一次生成的include/config.mk文件(内含ARCH)
+if [ "${ARCH}" -a "${ARCH}" != "${arch}" ]; then
+	echo "Failed: \$ARCH=${ARCH}, should be '${arch}' for ${BOARD_NAME}" 1>&2
+	exit 1
+fi
+
+# options 为空，执行else
+if [ "$options" ] ; then
+	echo "Configuring for ${BOARD_NAME} - Board: ${CONFIG_NAME}, Options: ${options}"
+else
+	echo "Configuring for ${BOARD_NAME} board..."
+fi
+
+#
+# Create link to architecture specific headers
+#
+# SRCTREE与OBJTREE在Makefile定义，都为CURDIR，执行else
+if [ "$SRCTREE" != "$OBJTREE" ] ; then
+	mkdir -p ${OBJTREE}/include
+	mkdir -p ${OBJTREE}/include2
+	cd ${OBJTREE}/include2
+	rm -f asm
+	ln -s ${SRCTREE}/arch/${arch}/include/asm asm
+	LNPREFIX=${SRCTREE}/arch/${arch}/include/asm/
+# 注意，shell脚本后面执行的命令在include文件夹执行	
+	cd ../include
+	mkdir -p asm
+else
+	cd ./include
+# 强制删除以前的链接文件夹asm
+	rm -f asm
+# 重新创建链接文件夹asm（软链接）
+	ln -s ../arch/${arch}/include/asm asm
+fi
+
+# 强制删除../arch/arm/include/asm/arch文件夹，arch文件夹是从其他arch-xxx处理器文件夹拷贝过来的
+rm -f asm/arch
+
+# soc 不为空，执行else，其中LNPREFIX为空
+# 重新创建链接文件夹asm/arch（软链接）
+if [ -z "${soc}" ] ; then
+	ln -s ${LNPREFIX}arch-${cpu} asm/arch
+else
+	ln -s ${LNPREFIX}arch-${soc} asm/arch
+fi
+
+# 为真，执行
+# 重新创建链接文件夹asm/proc（软链接）
+if [ "${arch}" = "arm" ] ; then
+	rm -f asm/proc
+	ln -s ${LNPREFIX}proc-armv asm/proc
+fi
+
+#
+# Create include file for Make
+#
+# 重新创建config.mk，将以下显示的字符串全部拷贝到config.mk，其中CONFIG_SPL_BUILD不存在
+# 所以config.mk文件内容是
+# ARCH   = arm
+# CPU    = arm1176
+# BOARD  = smdk6400
+# VENDOR = samsung
+# SOC    = s3c64xx
+( echo "ARCH   = ${arch}"
+    if [ ! -z "$spl_cpu" ] ; then
+	echo 'ifeq ($(CONFIG_SPL_BUILD),y)'
+	echo "CPU    = ${spl_cpu}"
+	echo "else"
+	echo "CPU    = ${cpu}"
+	echo "endif"
+    else
+	echo "CPU    = ${cpu}"
+    fi
+    echo "BOARD  = ${board}"
+
+    [ "${vendor}" ] && echo "VENDOR = ${vendor}"
+    [ "${soc}"    ] && echo "SOC    = ${soc}"
+    exit 0 ) > config.mk
+
+# Assign board directory to BOARDIR variable
+# 为假，执行else
+# BOARDDIR = samsung/smdk6400
+if [ -z "${vendor}" ] ; then
+    BOARDDIR=${board}
+else
+    BOARDDIR=${vendor}/${board}
+fi
+
+#
+# Create board specific header file
+#
+# 为假，执行else，创建新的文件config.h(include/config.h)
+if [ "$APPEND" = "yes" ]	# Append to existing config file
+then
+	echo >> config.h
+else
+	> config.h		# Create new config file
+fi
+
+# 以下命令都是拷贝到config.h文件中
+echo "/* Automatically generated - do not edit */" >>config.h
+
+for i in ${TARGETS} ; do
+	i="`echo ${i} | sed '/=/ {s/=/	/;q; } ; { s/$/	1/; }'`"
+	echo "#define CONFIG_${i}" >>config.h ;
+done
+
+echo "#define CONFIG_SYS_ARCH  \"${arch}\""  >> config.h
+echo "#define CONFIG_SYS_CPU   \"${cpu}\""   >> config.h
+echo "#define CONFIG_SYS_BOARD \"${board}\"" >> config.h
+
+[ "${vendor}" ] && echo "#define CONFIG_SYS_VENDOR \"${vendor}\"" >> config.h
+
+[ "${soc}"    ] && echo "#define CONFIG_SYS_SOC    \"${soc}\""    >> config.h
+
+# 输入的所有东西全部拷贝到config.h，并且以EOF为输入结束标志
+cat << EOF >> config.h
+#define CONFIG_BOARDDIR board/$BOARDDIR
+#include <config_cmd_defaults.h>
+#include <config_defaults.h>
+#include <configs/${CONFIG_NAME}.h>
+#include <asm/config.h>
+#include <config_fallbacks.h>
+#include <config_uncmd_spl.h>
+EOF
+
+exit 0

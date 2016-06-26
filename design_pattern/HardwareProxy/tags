@@ -1,0 +1,46 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BITError	MotorData.h	/^    unsigned char BITError;$/;"	m	struct:MotorData
+DirectionType	HardWareProxyExample.h	/^typedef enum DirectionType {$/;"	g
+DirectionType	HardWareProxyExample.h	/^} DirectionType;$/;"	t	typeref:enum:DirectionType
+FORWARD	HardWareProxyExample.h	/^    FORWARD,$/;"	e	enum:DirectionType
+HWProxyExample_H	HardWareProxyExample.h	2;"	d
+MotorData	MotorData.h	/^struct MotorData {$/;"	s
+MotorData	MotorData.h	/^typedef struct MotorData MotorData;$/;"	t	typeref:struct:MotorData
+MotorData_H	MotorData.h	2;"	d
+MotorProxy	MotorProxy.h	/^struct MotorProxy {$/;"	s
+MotorProxy	MotorProxy.h	/^typedef struct MotorProxy MotorProxy;$/;"	t	typeref:struct:MotorProxy
+MotorProxy_Cleanup	MotorProxy.c	/^MotorProxy_Cleanup(MotorProxy* const me)$/;"	f
+MotorProxy_Create	MotorProxy.c	/^MotorProxy_Create(void)$/;"	f
+MotorProxy_Destroy	MotorProxy.c	/^MotorProxy_Destroy(MotorProxy* const me)$/;"	f
+MotorProxy_H	MotorProxy.h	2;"	d
+MotorProxy_Init	MotorProxy.c	/^MotorProxy_Init(MotorProxy* const me)$/;"	f
+MotorProxy_accessMotorDirection	MotorProxy.c	/^MotorProxy_accessMotorDirection(MotorProxy* const me)$/;"	f
+MotorProxy_accessMotorSpeed	MotorProxy.c	/^MotorProxy_accessMotorSpeed(MotorProxy* const me)$/;"	f
+MotorProxy_accessMotorState	MotorProxy.c	/^MotorProxy_accessMotorState(MotorProxy* const me)$/;"	f
+MotorProxy_clearErrorStatus	MotorProxy.c	/^MotorProxy_clearErrorStatus(MotorProxy* const me)$/;"	f
+MotorProxy_configure	MotorProxy.c	/^MotorProxy_configure(MotorProxy* const me, unsigned int length, unsigned int* location)$/;"	f
+MotorProxy_disable	MotorProxy.c	/^MotorProxy_disable(MotorProxy* const me)$/;"	f
+MotorProxy_enable	MotorProxy.c	/^MotorProxy_enable(MotorProxy* const me)$/;"	f
+MotorProxy_initialize	MotorProxy.c	/^MotorProxy_initialize(MotorProxy* const me)$/;"	f
+MotorProxy_writeMotorSpeed	MotorProxy.c	/^MotorProxy_writeMotorSpeed(MotorProxy* const me, const DirectionType* direction, unsigned int speed)$/;"	f
+NO_DIRCTION	HardWareProxyExample.h	/^    NO_DIRCTION,$/;"	e	enum:DirectionType
+REVERSE	HardWareProxyExample.h	/^    REVERSE,$/;"	e	enum:DirectionType
+direction	MotorData.h	/^    DirectionType direction;$/;"	m	struct:MotorData
+errorStatus	MotorData.h	/^    unsigned char errorStatus;$/;"	m	struct:MotorData
+marshal	MotorProxy.c	/^marshal(MotorProxy* const me, const struct MotorData* mData)$/;"	f	file:
+motorAddr	MotorProxy.h	/^    unsigned int* motorAddr;$/;"	m	struct:MotorProxy
+noPowerError	MotorData.h	/^    unsigned char noPowerError;$/;"	m	struct:MotorData
+noTorqueError	MotorData.h	/^    unsigned char noTorqueError;$/;"	m	struct:MotorData
+on_off	MotorData.h	/^    unsigned char on_off;$/;"	m	struct:MotorData
+overTemperatureError	MotorData.h	/^    unsigned char overTemperatureError;$/;"	m	struct:MotorData
+reservedError1	MotorData.h	/^    unsigned char reservedError1;$/;"	m	struct:MotorData
+reservedError2	MotorData.h	/^    unsigned char reservedError2;$/;"	m	struct:MotorData
+rotaryArmLength	MotorProxy.h	/^    unsigned int rotaryArmLength;$/;"	m	struct:MotorProxy
+speed	MotorData.h	/^    unsigned int speed;$/;"	m	struct:MotorData
+unknownError	MotorData.h	/^    unsigned char unknownError;$/;"	m	struct:MotorData
+unmarshal	MotorProxy.c	/^unmarshal(MotorProxy* const me, unsigned int encodedMData)$/;"	f	file:
