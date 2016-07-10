@@ -10,4 +10,6 @@ end
 print("enter a number:")
 a = io.read("*number")
 print(fact(a))
-
+--[[
+print(10)     --abc
+--]]
