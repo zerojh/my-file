@@ -1,0 +1,15 @@
+print("123")
+
+page = [[
+<html>
+<head>
+<title>hello</title>
+</head>
+<body>
+Lua
+[[a text between brackets]]
+</body>
+</html>
+]]
+
+io.write(page)
