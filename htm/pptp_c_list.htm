@@ -1,0 +1,249 @@
+<%+header%>
+
+<style type="text/css">
+/* The filters input style. */
+input.connfilter {
+	width: 80%;
+}
+
+/* The filter button. */
+button.filter-btn {
+	color: #3498db;
+	background-color: #ffffff;
+	padding: 5px;
+	border-radius: 4px;
+}
+
+/* General table style. */
+table td {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; text-align:center;}
+table {table-layout: fixed;}
+</style>
+
+<script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
+<script>
+var filter_in = 0;
+
+function filter_result()
+{
+	$("#filter-id").toggle();
+
+	if ("none" != $(".the-end").css("display") || 1 == filter_in)
+	{
+		if (0 == filter_in)
+			filter_in = 1;
+		else if(1 == filter_in)
+			filter_in = 0;
+		$(".the-end").toggle();
+	}
+
+	keyup_event();
+}
+
+function keyup_event()
+{
+	$(".connfilter").val("");
+	/* Simulate a keyup event. */
+	var e = $.Event("keyup");
+	e.which = 13;
+	$(".connfilter").trigger(e);
+}
+</script>
+
+<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
+<div>
+	<fieldset>
+		<table>
+			<colgroup>
+				<col style="width:5%;"/>
+				<col style="width:9%;"/>
+				<col style="width:11%;"/>
+				<col style="width:11%;"/>
+				<col style="width:17%;"/>
+				<col style="width:15%;"/>
+				<col style="width:14%;"/>
+				<col style="width:13%;"/>
+				<col style="width:5%;"/>
+			</colgroup>
+			<tr>
+				<th><%:Index%></th>
+				<th><%:Username%></th>
+				<th><%:IP Address%></th>
+				<th><%:Gateway%></th>
+				<th><%:Server Address%></th>
+				<th><%:RX / TX Bytes%></th>
+				<th><%:Login Time%></th>
+				<th style="text-align:right;padding-right:20px"><%:Connection Time%></th>
+				<th><div><button type="button" class="filter-btn" onclick="filter_result()"><%:Filter%></button></div></th>
+			</tr>
+			<tr id="filter-id" style="display: none;">
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td><input type="text" class="connfilter"/></td>
+				<td></td>
+			</tr>
+		</table>
+		<div style="height:550px;overflow:auto;">
+		<table class="cbi-section-table" id="content-table">
+			<colgroup>
+				<col style="width:5%;"/>
+				<col style="width:9%;"/>
+				<col style="width:11%;"/>
+				<col style="width:11%;"/>
+				<col style="width:17%;"/>
+				<col style="width:15%;"/>
+				<col style="width:14%;"/>
+				<col style="width:13%;"/>
+				<col style="width:5%;"/>
+			</colgroup>
+			<tbody id="content-id">
+			<%
+			if #content > 0 then
+				for k,v in ipairs(content) do
+					local str=""
+					if 1 == k%2 then
+						str=str.."<tr id='row-"..k.."' class='cbi-rowstyle-odd'"
+					else
+						str=str.."<tr id='row-"..k.."' class='cbi-rowstyle-even'"
+					end
+					str=str..">"
+					for i,j in ipairs(v) do
+						if k <= live_num and 2==i then
+							str=str.."<td class='text-center' style='background:#62C462'>"..j.."</td>"
+						elseif 8 == i then
+							str=str.."<td colspan='2' class='sectohuman text-center' id='sectohuman-"..k.."'>"..j.."</td>"
+						else
+							str=str.."<td class='text-center'>"..j.."</td>"
+						end
+					end
+					write(str.."</tr>")
+				end
+			else
+				write("<tr><td class='no-value' colspan='10'>"..translate("This section contains no records yet").."</td></tr>")
+			end%>
+			</tbody>
+		</table>
+		<div id="div-showmoreconn-id" class='cbi-page-actions'>
+			<button type='button' class="cbi-button" onclick='show_more_conn()' id='showmoreconn'><%:Get More%></button>
+		</div>
+		</div>
+	</fieldset>
+</div>
+</form>
+
+<script>
+function show_more_conn()
+{
+	$(".no-result").remove();
+	var sum = $(".sectohuman").size();
+	var live_num = "<%=live_num%>";
+	var history_num = sum - live_num;
+
+	var old_url = "<%=REQUEST_URI%>";
+	var url = old_url.replace(/pptp_client/, "more/pptp_client");
+	url = url + "?h=" + history_num + "?s=" + sum;
+	textobj = $.ajax({
+		url: url,
+		async: false
+	});
+	$("#content-id").append($(textobj.responseText));
+	keyup_event();
+}
+
+function refresh_time(id, time_sec)
+{
+	var d = (Math.floor(time_sec / (3600 * 24)))
+	var h = (Math.floor(time_sec / 3600) % 24)
+	var m = (Math.floor((time_sec % 3600) / 60))
+	var s = (Math.floor(time_sec % 60))
+
+	var buff = ""
+	if(d > 0 )
+		buff = d + ' <%:d%> ' + h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> ';
+	else if(0 == d && h > 0)
+		buff = h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> ';
+	else if(0 == d && 0 == h && m > 0)
+		buff = m + ' <%:m%> ' + s + ' <%:s%> ';
+	else
+		buff = s + ' <%:s%>';
+
+	document.getElementById(id).innerHTML = buff;
+}
+
+function refresh_time_more(start) {
+	var idprefix = "sectohuman";
+	for (var i = start; ; i++)
+	{
+		if(document.getElementById(idprefix+"-"+i) != null)
+		{
+			var old_sec =  document.getElementById(idprefix+"-"+i).innerHTML;
+			if (old_sec != 0)
+				refresh_time(idprefix+"-"+i, old_sec);
+		}
+		else
+			break;
+	}
+}
+
+$(document).ready(function() {
+	/* Convert sec to human readable. */
+	var idprefix = "sectohuman";
+	for (var i = 1; ; i++)
+	{
+		if (document.getElementById(idprefix+"-"+i) != null)
+		{
+			var old_sec =  document.getElementById(idprefix+"-"+i).innerHTML;
+			if (old_sec != 0)
+				refresh_time(idprefix+"-"+i, old_sec);
+		}
+		else
+			break;
+	}
+
+	$(".connfilter").keyup(function(e) {
+		$(".no-result").remove();
+
+		/* ignore tab. */
+		var code = e.keyCode || e.which;
+		if ("9" == code) {
+			return;
+		}
+
+		var $input = $(this),
+		inputContent = $input.val().toLowerCase(),
+		$panel = $input.parents("#filter-id"),
+		column = $panel.find("td").index($input.parents("td"))
+		$table = $(".sectohuman").parent("tr"),
+		$rows = $table;
+		var $filteredRows = $rows.filter(function()
+		{
+			var value = $(this).find("td").eq(column).text().toLowerCase();
+			return value.indexOf(inputContent) === -1;
+		});
+		$rows.show();
+		$filteredRows.hide();
+		if ($filteredRows.length === $rows.length)
+			$("#content-id").append($('<tr class="no-result text-center"><td colspan="9"><%:No result found%></td></tr>'));
+
+		if (true == $("td").hasClass("no-value"))
+			$(".no-result").hide();
+	});
+
+	$("#div-showmoreconn-id").append($('<table><tr class="the-end text-center" style="display: none;"><td colspan="9"><%:The End%></td></tr></table>'));
+	<% if #content - live_num < 10 then %>
+		$('#showmoreconn').hide();
+		$('.the-end').show();
+	<% end %>
+
+	if (true == $("td").hasClass("no-value"))
+	{
+		$("#showmoreconn").hide();
+		$(".the-end").hide();
+	}
+});
+</script>
+<%+footer%>
