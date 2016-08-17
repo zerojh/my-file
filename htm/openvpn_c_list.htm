@@ -1,0 +1,163 @@
+<%
+%>
+
+<%+header%>
+<style>
+input.connfilter{width:80%;}
+table td {overflow: hidden; text-overflow: ellipsis; white-space:nowrap; text-align: center;}
+table {table-layout: fixed;}
+</style>
+<script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
+<script src="<%=resource_cbi_js%>"></script>
+<script>
+function filter_result()
+{
+	$("#filter-id").toggle();
+	keyup_event();
+}
+function keyup_event()
+{
+	$(".connfilter").val("");
+
+	/* Simulate a keyup event. */
+	var e = $.Event("keyup");
+	e.which = 13;
+	$(".connfilter").trigger(e);
+}
+function get_nat_conn_list()
+{
+
+}
+$(document).ready(function() {
+	$(".connfilter").keyup(function(e) {
+		$(".no-result").remove();
+		/* ignore tab. */
+		var code = e.keyCode || e.which;
+		if ("9" == code) {
+			return;
+		}
+
+		var $input = $(this),
+		inputContent = $input.val().toLowerCase(),
+		$panel = $input.parents("#filter-id"),
+		column = $panel.find("td").index($input.parents("td"))
+		$table = $(".connlist").parent("tr"),
+		$rows = $table;
+		var $filteredRows = $rows.filter(function() {
+			var value = $(this).find("td").eq(column).text().toLowerCase();
+			return value.indexOf(inputContent) === -1;
+		});
+		$rows.show();
+		$filteredRows.hide();
+		if ($filteredRows.length === $rows.length) {
+			$("#content-id").append($('<tr class="no-result"><td colspan="8"><%:No result found%></td></tr>'));
+		}
+	});
+	$("#content-live-id").append($('<tr class="loading-now"><td colspan="8"><img src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/></td></tr>'));
+	$("#content-history-id").append($('<tr class="loading-now"><td colspan="8"><img src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/></td></tr>'));
+
+	get_nat_conn_list();
+});
+</script>
+<div>
+<fieldset>
+	<table>
+		<colgroup>
+			<col style="width:5%;"/>
+			<col style="width:10%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:20%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:5%;"/>
+		</colgroup>
+		<tr>
+			<th><%:Index%></th>
+			<th><%:Protocol%></th>
+			<th><%:IP Address%></th>
+			<th><%:Gateway%></th>
+			<th><%:RX / TX Bytes%></th>
+			<th><%:Login Time%></th>
+			<th><%:Connection Time%></th>
+			<th><div><button type="button" class="btn filter button-filter" onclick="filter_result()"><%:Filter%></button></div></th>
+		</tr>
+		<tr id="filter-id" style="display: none;">
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td></td>
+		</tr>
+	</table>
+
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:5%;"/>
+			<col style="width:10%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:20%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:5%;"/>
+		</colgroup>
+		<tbody id="content-live-id">
+		</tbody>
+	</table>
+</fieldset>
+
+<fieldset>
+	<table>
+		<colgroup>
+			<col style="width:5%;"/>
+			<col style="width:10%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:20%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:5%;"/>
+		</colgroup>
+		<tr>
+			<th><%:Index%></th>
+			<th><%:Protocol%></th>
+			<th><%:IP Address%></th>
+			<th><%:Gateway%></th>
+			<th><%:RX / TX Bytes%></th>
+			<th><%:Login Time%></th>
+			<th><%:Connection Time%></th>
+			<th><div><button type="button" class="btn filter button-filter" onclick="filter_result()"><%:Filter%></button></div></th>
+		</tr>
+		<tr id="filter-id" style="display: none;">
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td><input type="text" class="connfilter"/></td>
+			<td></td>
+		</tr>
+	</table>
+
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:5%;"/>
+			<col style="width:10%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:20%;"/>
+			<col style="width:15%;"/>
+			<col style="width:15%;"/>
+			<col style="width:5%;"/>
+		</colgroup>
+		<tbody id="content-history-id">
+		</tbody>
+	</table>
+</fieldset>
+</div>
+<%+footer%>
