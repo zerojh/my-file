@@ -16,10 +16,10 @@ function index()
 	entry({"admin", "status", "vpn","more","l2tp_client"},call("action_l2tp_client_more"),"More",10).dependent = false
 	entry({"admin", "status", "vpn","more","pptp_client"},call("action_pptp_client_more"),"More",10).dependent = false
 
-	entry({"admin", "status", "currentcall"}, template("admin_status/currentcall"), _("Current Call"), 6)
-	entry({"admin", "status", "cdr"}, call("action_cdrs"), _("CDRs"), 7)
-	entry({"admin", "status", "service"}, template("admin_status/service"),_("Service"),8)
-	entry({"admin", "status", "about"}, template("admin_status/about"),_("About"),9)
+	entry({"admin", "status", "currentcall"}, template("admin_status/currentcall"), _("Current Call"), 5)
+	entry({"admin", "status", "cdr"}, call("action_cdrs"), _("CDRs"), 6)
+	entry({"admin", "status", "service"}, template("admin_status/service"),_("Service"),7)
+	entry({"admin", "status", "about"}, template("admin_status/about"),_("About"),8)
 	page = entry({"admin","status","getcdrs"},call("action_get_cdrs"),nil)
 	page.leaf = true
 end
@@ -45,21 +45,22 @@ end
 function action_l2tp_client_more()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
 
-	if param == "default" then
+	if param == "auto" then
 		-- l2tp client live show.
-		local login_rec = util.exec("tail -n 1 /ramlog/l2tpc_log")
-		if login_rec:match("^login:") then
-			-- '\004' means EOF.
-			local login_rec_tbl = util.split(login_rec, '\004')
+		local num_l2tp_log = util.exec("cat /ramlog/l2tpc_log | wc -l")
+		num_l2tp_log = tonumber(num_l2tp_log)
+		if num_l2tp_log and num_l2tp_log % 2 == 1 then
 			local ppp_name = "ppp1701"
 			local ret_cmd = util.exec("ifconfig "..ppp_name)
 			local ifconfig_tbl = util.split(ret_cmd, "\n\n")
+
+			local login_rec = util.exec("tail -n 1 /ramlog/l2tpc_log")
+			-- '\004' means EOF.
+			local login_rec_tbl = util.split(login_rec, '\004')
 
 			local index = 1
 			local tmp = {}
@@ -83,64 +84,173 @@ function action_l2tp_client_more()
 			table.insert(live_cont, tmp)
 			info["live_cont"] = live_cont
 		end
-    end
+		
+		-- l2tp client connection history show.
+		local first_num = 10
+		local history
+		if num_l2tp_log and 1 == num_l2tp_log % 2 then
+			if first_num > (num_l2tp_log - 1) / 2 then
+				first_num = (num_l2tp_log - 1) / 2
+				history_num = first_num * 2
+			else
+				history_num = first_num * 2
+			end
+			local starti = num_l2tp_log - history_num
+			if starti < 1 then
+				starti = 1
+			end
+			history = util.exec("sed -n '"..starti..","..(num_l2tp_log-1).."p' /ramlog/l2tpc_log")
+			history_num = history_num / 2
+		else
+			if first_num > num_l2tp_log / 2 then
+				first_num = num_l2tp_log / 2
+				history_num = first_num * 2
+			else
+				history_num = first_num * 2
+			end
+			history = util.exec("tail -n "..history_num.." /ramlog/l2tpc_log")
+			history_num = history_num / 2
+		end
 
-	-- l2tp client connection history show.
-	local exist_num = history_start -1
-	local logout_sum = util.exec("grep -n 'logout' /ramlog/l2tpc_log|wc -l")
-	local log_start = logout_sum - exist_num - history_num+ 1
-	local log_end = logout_sum - exist_num
-	local history
-    local history_tbl = {}
-    local history_tbl_r = {}
-	local tmp = {}
-	local flag = 0
-	local index = history_start
-
-	if log_start <= 0 then
-		log_start = 1
-    end
-    if log_end > 0 then
-        history = util.exec("grep -n 'logout' /ramlog/l2tpc_log|sed -n '"..log_start..","..log_end.."p'|awk -F : '{print $1}'")
-        history_tbl = util.split(history,"\n")
-        for i=1, #history_tbl do
-            table.insert(history_tbl_r,table.remove(history_tbl))
-        end
-        for i,j in pairs(history_tbl_r) do
-            local value = tonumber(j)
-            if value ~= nil then
-                local inout = util.exec("sed -n '"..(value-1)..","..value.."p' /ramlog/l2tpc_log")
-                local inout_tbl = util.split(inout,"\n")
-                for k,v in pairs(inout_tbl) do
-                    if v and v:match("^login:") then
-                        tmp[1] = index
-                        tmp[2] = v:match("user:(.-),") or ""
-                        tmp[3] = v:match("local ip:(.-),") or ""
-                        tmp[4] = v:match("gateway:(.-),") or ""
-                        tmp[5] = v:match("server:(.-),") or ""
-                        tmp[7] = v:match("login date:(.*)") or ""
-                        flag = flag + 1
-                    end
-                    if v and v:match("^logout:") then
-                        tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
-                        tmp[8] = v:match("connect_time:(.-),") or ""
-                        flag = flag + 1
-                    end
-                    if 2 == flag then
-                        table.insert(hist_cont, tmp)
-                        tmp = {}
-                        flag = 0
-                        index = index + 1
-                    end
-                end
-            end
-        end
-		info["hist_cont"] = hist_cont
-    end
-	
+		if history_num then
+			local history_tbl = util.split(history, "\n")
+			local insert_pos = 1
+			local index = 1
+			local list_sum = history_num + insert_pos - 1
+			local tmp = {}
+			local flag = 0
+			for k, v in pairs(history_tbl) do
+				if v and v:match("^login:") then
+					tmp[1] = list_sum + insert_pos - index
+					tmp[2] = v:match("user:(.-),") or ""
+					tmp[3] = v:match("local ip:(.-),") or ""
+					tmp[4] = v:match("gateway:(.-),") or ""
+					tmp[5] = v:match("server:(.-),") or ""
+					tmp[7] = v:match("login date:(.*)") or ""
+					flag = flag + 1
+				end
+				if v and v:match("^logout:") then
+					tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+					tmp[8] = v:match("connect_time:(.-),") or ""
+					flag = flag + 1
+				end
+				if 2 == flag then
+					table.insert(hist_cont, insert_pos, tmp)
+					tmp = {}
+					flag = 0
+					index = index + 1
+				end
+			end
+			info["hist_cont"] = hist_cont
+		end
+		
+	end
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(info)
 end
+
+--[[
+function action_l2tp_client_more()
+	local util = require "luci.util"
+	local request_uri = luci.http.getenv("REQUEST_URI")
+	local exist_history_num, exist_num = request_uri:match("?h=([0-9]-)?s=([0-9]-)$")
+	local one_more = 10
+
+	local sum = util.exec("cat /ramlog/l2tpc_log | wc -l")
+	local endi
+	if 1 == sum % 2 then
+		endi = tonumber(sum) - 1 - (tonumber(exist_history_num) * 2)
+	else
+		endi = tonumber(sum) - (tonumber(exist_history_num) * 2)
+	end
+	if 0 == endi then
+		luci.http.write("<script>$('#showmoreconn').hide()</script>")
+		return
+	end
+	local starti = endi - (one_more * 2) + 1;
+	if starti <=0 then
+		starti = 1
+	end
+
+	local history = util.exec("cat /ramlog/l2tpc_log | sed -n '"..starti..","..endi.."p'")
+	local history_num = (endi - starti + 1) / 2
+	local history_tbl = util.split(history, "\n")
+
+	local index = exist_num + history_num
+	local tbl_index = history_num
+	local long_str_tbl = {}
+	local tmp = {}
+	local flag = 0
+	for k, v in pairs(history_tbl) do
+		if v and v:match("^login:") then
+			local tmp2
+
+			tmp[1] = "<tr id='row-"..index.."' "
+
+			if 1 == index % 2 then
+				tmp[2] = "class='cbi-rowstyle-odd'>"
+			else
+				tmp[2] = "class='cbi-rowstyle-even'>"
+			end
+
+			tmp[3] = "<td>"..index.."</td>"
+
+			tmp2 = v:match("user:(.-),") or ""
+			tmp[4] = "<td>"..tmp2.."</td>"
+
+			tmp2 = v:match("local ip:(.-),") or ""
+			tmp[5] = "<td>"..tmp2.."</td>"
+
+			tmp2 = v:match("gateway:(.-),") or ""
+			tmp[6] = "<td>"..tmp2.."</td>"
+
+			tmp2 = v:match("server:(.-),") or ""
+			tmp[7] = "<td>"..tmp2.."</td>"
+
+			tmp2 = v:match("login date:(.*)") or ""
+			tmp[10] = "<td>"..tmp2.."</td>"
+
+			flag = flag + 1
+		end
+		if v and v:match("^logout:") then
+			local tmp2
+
+			tmp2 = change_packets_view(v:match("rcvd_bytes:(.-),") or "0")
+			tmp[8] = "<td>"..tmp2.." / "
+
+			tmp2 = change_packets_view(v:match("sent_bytes:(.-),") or "0")
+			tmp[9] = tmp2.."</td>"
+
+			tmp2 = v:match("connect_time:(.-),") or ""
+			tmp[11] = "<td id='sectohuman-"..index.."' class='sectohuman' colspan='2'>"..tmp2.."</td>"
+
+			flag = flag + 1
+		end
+		if 2 == flag then
+			local long_str = ""
+			for i, v in ipairs(tmp) do
+				long_str = long_str..v
+			end
+			long_str_tbl[tbl_index] = long_str
+			index = index - 1
+			tbl_index = tbl_index - 1
+			tmp = {}
+			flag = 0
+		end
+	end
+
+	for i, v in ipairs(long_str_tbl) do
+		luci.http.write(v)
+	end
+
+	luci.http.write("<script>refresh_time_more("..(exist_num+1)..")</script>")
+
+	if 1 == starti then
+		luci.http.write("<script>$('#showmoreconn').hide()</script>")
+		luci.http.write("<script>$('.the-end').show();</script>")
+	end
+end
+]]--
 
 function action_l2tp_client()
 	local util = require "luci.util"

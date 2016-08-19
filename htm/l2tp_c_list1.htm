@@ -10,6 +10,11 @@ table {table-layout: fixed;}
 <script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
 <script src="<%=resource_cbi_js%>"></script>
 <script>
+var starth = 1
+var numh = 20
+var uptime = 0
+var uptime_id = ""
+
 function filter_result()
 {
 	$("#filter-id").toggle();
@@ -24,61 +29,6 @@ function keyup_event()
 	var e = $.Event("keyup");
 	e.which = 13;
 	$(".connfilter").trigger(e);
-}
-
-function get_list(param)
-{
-	XHR.get('<%=luci.dispatcher.build_url("admin", "status","getl2tplist")%>',{action:param},function(x, info)
-	{
-		$("#sss").text("second stage")
-		if (info != null) {
-			if (info["live_cont"] != null) {
-				var live_cont = info["live_cont"]
-				for (i=0;i<live_cont.length;i++) {
-					var str = ""
-					var live_raw = live_cont[i]
-					if (1 == i%2)
-						str += "<tr class='cbi-rowstyle-odd'>"
-					else
-						str += "<tr class='cbi-rowstyle-even'>"
-					for (j=0;j<live_raw.length;j++) {
-						if (7 == j)
-							str += "<td class='text-center sec-dynamic'>" + live_raw[j] + "</td>"
-						else
-							str += "<td class='text-center'>" + live_raw[j] + "</td>"
-					}
-					str += "<td></td></tr>"
-					$("table.live-section-table tbody").append(str)
-				}
-				$(".live-fieldset-class").show()
-			}
-
-			$("#sss").text("third stage")
-			if (info["hist_cont"] != null) {
-				$("#sss").text("4th stage")
-				var hist_cont = info["hist_cont"]
-				for (i=0;i<hist_cont.length;i++) {
-					var str = ""
-					var hist_raw = hist_cont[i]
-					$("#sss").text(hist_raw.length)
-
-					if (1 == i%2)
-						str += "<tr class='cbi-rowstyle-odd'>"
-					else
-						str += "<tr class='cbi-rowstyle-even'>"
-					for (j=0;j<hist_raw.length;j++) {
-						if (7 == j)
-							str += "<td class='text-center sec-static'>" + hist_raw[j] + "</td>"
-						else
-							str += "<td class='text-center'>" + hist_raw[j] + "</td>"
-					}
-					str += "<td></td></tr>"
-					$("table.history-section-table tbody").append(str)
-				}
-				$(".history-fieldset-class").show()
-			}
-		}
-	});
 }
 
 function refresh_time(id, time_sec)
@@ -101,28 +51,103 @@ function refresh_time(id, time_sec)
 	document.getElementById(id).innerHTML = buff;
 }
 
-function sec_to_human(idprefix)
+function refresh()
 {
-	var prefix = idprefix;
-	for (var i = 1; ; i++)
+	refresh_time(uptime_id,uptime)
+	uptime += 1
+}
+
+function sec_to_human(idstr, index)
+{
+	var str = idstr;
+	for (var i = index; ; i++)
 	{
-		if (document.getElementById(prefix+"-"+i) != null)
+		if (document.getElementById(str+"-"+i) != null)
 		{
-			var old_sec =  document.getElementById(prefix+"-"+i).innerHTML;
+			var old_sec =  document.getElementById(str+"-"+i).innerHTML;
 			if (old_sec != 0)
-				refresh_time(prefix+"-"+i, old_sec);
+				refresh_time(str+"-"+i, old_sec);
 		}
 		else
 			break;
 	}
 }
 
-$(document).ready(function() {
-	get_list("auto")
-	/* Convert sec to human readable. */
-	sec_to_human("live-sectohuman")
-	sec_to_human("hist-sectohuman")
+function get_list(param)
+{
+	XHR.get('<%=luci.dispatcher.build_url("admin","status","vpn","more","l2tp_client")%>',{action:param,starth:starth,numh:numh},function(x, info)
+	{
+		if (info != null) {
+			var content,raw,sec_str
 
+			if (info["live_cont"] != null) {
+				content = info["live_cont"]
+				sec_str = "sec-dynamic"
+
+				for (i=0;i<content.length;i++) {
+					var str = ""
+					var raw = content[i]
+
+					if (1 == i%2)
+						str += "<tr class='cbi-rowstyle-odd'>"
+					else
+						str += "<tr class='cbi-rowstyle-even'>"
+					for (j=0;j<raw.length;j++) {
+					if (7 == j) {
+						uptime = raw[j]
+						uptime_id = sec_str + "-" + (i+1)
+						str += "<td class='text-center' id='"+uptime_id+"'></td>"
+					}
+						else
+							str += "<td class='text-center'>"+raw[j]+"</td>"
+					}
+					str += "<td></td></tr>"
+					$("table.live-section-table tbody").append(str)
+				}
+				refresh()
+				window.setInterval("refresh()",1000)
+				obj = document.getElementById("loading-id")
+				if (obj)
+					obj.remove()
+				$(".live-fieldset-class").show()
+			}
+
+			if (info["hist_cont"] != null) {
+				content = info["hist_cont"]
+				sec_str = "sec-static"
+				var num = starth
+
+				for (i=0;i<content.length;i++) {
+					var str = ""
+					var raw = content[i]
+
+					if (1 == i%2)
+						str += "<tr class='cbi-rowstyle-odd'>"
+					else
+						str += "<tr class='cbi-rowstyle-even'>"
+					for (j=0;j<raw.length;j++) {
+						if (7 == j)
+							str += "<td class='text-center' id='"+sec_str+"-"+num+"'>"+raw[j]+"</td>"
+						else
+							str += "<td class='text-center'>"+raw[j]+"</td>"
+					}
+					str += "<td></td></tr>"
+					$("table.history-section-table tbody").append(str)
+					num += 1
+				}
+				sec_to_human("sec-static",starth)
+				starth = num
+				obj = document.getElementById("loading-id")
+				if (obj)
+					obj.remove()
+				$(".history-fieldset-class").show()
+				$("#sss").text(starth)
+			}
+		}
+	});
+}
+
+$(document).ready(function() {
 	$(".connfilter").keyup(function(e) {
 		$(".no-result").remove();
 		/* ignore tab. */
@@ -147,24 +172,29 @@ $(document).ready(function() {
 			$("#content-id").append($('<tr class="no-result"><td colspan="9"><%:No result found%></td></tr>'));
 		}
 	})
+
+	$(".loading-class").append($('<img id="loading-id" src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/>'));
+    XHR.halt()
+	get_list("default",starth,numh)
 });
 </script>
 <div>
-<div id="wait-id"></div>
+<p class="loading-class" align="center"></p>
 <fieldset class="live-fieldset-class" style="display:none">
+    <h3>Live</h3>
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
-			<col style="width:11%;"/>
-			<col style="width:11%;"/>
-			<col style="width:17%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
 			<col style="width:15%;"/>
-			<col style="width:14%;"/>
+			<col style="width:17%;"/>
 			<col style="width:13%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
-		<tr>
+        <tr>
 			<th><%:Index%></th>
 			<th><%:Username%></th>
 			<th><%:IP Address%></th>
@@ -188,33 +218,35 @@ $(document).ready(function() {
 		</tr>
 	</table>
 
+	<div style="max-height:285px;overflow:auto;">
 	<table class="live-section-table">
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
-			<col style="width:11%;"/>
-			<col style="width:11%;"/>
-			<col style="width:17%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
 			<col style="width:15%;"/>
-			<col style="width:14%;"/>
+			<col style="width:17%;"/>
 			<col style="width:13%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
 		<tbody>
 		</tbody>
-	</table>
+	</table></div>
 </fieldset>
 
 <fieldset class="history-fieldset-class" style="display:none">
+    <h3>History</h3>
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
-			<col style="width:11%;"/>
-			<col style="width:11%;"/>
-			<col style="width:17%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
 			<col style="width:15%;"/>
-			<col style="width:14%;"/>
+			<col style="width:17%;"/>
 			<col style="width:13%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
@@ -242,23 +274,24 @@ $(document).ready(function() {
 		</tr>
 	</table>
 
+	<div style="max-height:285px;overflow:auto;">
 	<table class="history-section-table">
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
-			<col style="width:11%;"/>
-			<col style="width:11%;"/>
-			<col style="width:17%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
+			<col style="width:12%;"/>
 			<col style="width:15%;"/>
-			<col style="width:14%;"/>
+			<col style="width:17%;"/>
 			<col style="width:13%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
 		<tbody id="history-content-id">
 		</tbody>
-	</table>
+	</table></div>
 </fieldset>
-<button type="button" class="btn1" onclick="get_list('auto')"><%:click%></button>
+<button type="button" class="btn1" onclick="get_list('more')"><%:click%></button>
 <p id="sss">first stage</p>
 </div>
 <%+footer%>
