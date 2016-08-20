@@ -75,6 +75,14 @@ function sec_to_human(idstr, index)
 	}
 }
 
+function page_align()
+{
+	var cont_h = $(".history-section-table").get(0).scrollHeight
+	var vis_h = $(".history-section-table").height()
+	if (cont_h != vis_h)
+		$(".padding-class").css("padding-right","15px")
+}
+
 function get_list(param)
 {
 	if ("running" == access_state)
@@ -97,11 +105,11 @@ function get_list(param)
 						else
 							str += "<tr class='cbi-rowstyle-even'>"
 						for (j=0;j<raw.length;j++) {
-						if (7 == j) {
-							uptime = raw[j]
-							uptime_id = sec_str + "-" + (i+1)
-							str += "<td class='text-center' id='"+uptime_id+"'></td>"
-						}
+							if (7 == j) {
+								uptime = raw[j]
+								uptime_id = sec_str + "-" + (i+1)
+								str += "<td class='text-center' id='"+uptime_id+"'></td>"
+							}
 							else
 								str += "<td class='text-center'>"+raw[j]+"</td>"
 						}
@@ -149,6 +157,7 @@ function get_list(param)
 					access_state = "halt"
 				}
 				
+				page_align()
 			}
 		});
 	}
@@ -192,8 +201,7 @@ $(document).ready(function() {
 	})
 
 	$(".loading-class").append($('<img id="loading-id" src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/>'));
-	XHR.halt()
-	get_list("default",starth,numh)
+	get_list("default")
 });
 </script>
 <div>
@@ -245,6 +253,7 @@ $(document).ready(function() {
 
 <fieldset class="history-fieldset-class" style="display:none">
 	<legend><%:History%></legend>
+	<div class="padding-class">
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
@@ -280,6 +289,7 @@ $(document).ready(function() {
 			<td></td>
 		</tr>
 	</table>
+	</div>
 
 	<div class="history-section-table" style="max-height:285px;overflow:auto;">
 	<table>

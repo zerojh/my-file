@@ -45,8 +45,8 @@ end
 function action_get_l2tp_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
+	local history_start = tonumber(luci.http.formvalue("starth"))
+	local history_num = tonumber(luci.http.formvalue("numh"))
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
@@ -72,10 +72,10 @@ function action_get_l2tp_client()
 				end
 			end
 			for k, v in pairs(login_rec_tbl) do
-				tmp[2] = v:match("user:(.-),") or ""
-				tmp[3] = v:match("local ip:(.-),") or ""
-				tmp[4] = v:match("gateway:(.-),") or ""
-				tmp[5] = v:match("server:(.-),") or ""
+				tmp[2] = v:match("user:(.-)[,%s]") or ""
+				tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[7] = v:match("login date:(.*)") or ""
 				local year,month,day,hour,min,sec = tmp[7]:match(pattern)
 				tmp[8] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
@@ -114,16 +114,16 @@ function action_get_l2tp_client()
 				for k,v in pairs(inout_tbl) do
 					if v and v:match("^login:") then
 						tmp[1] = index
-						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(.-),") or ""
-						tmp[4] = v:match("gateway:(.-),") or ""
-						tmp[5] = v:match("server:(.-),") or ""
+						tmp[2] = v:match("user:(.-)[,%s]") or ""
+						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 						tmp[7] = v:match("login date:(.*)") or ""
 						flag = flag + 1
 					end
 					if v and v:match("^logout:") then
 						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
-						tmp[8] = v:match("connect_time:(.-),") or ""
+						tmp[8] = v:match("connect_time:(%d+)") or ""
 						flag = flag + 1
 					end
 					if 2 == flag then
@@ -145,8 +145,8 @@ end
 function action_get_pptp_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
+	local history_start = tonumber(luci.http.formvalue("starth"))
+	local history_num = tonumber(luci.http.formvalue("numh"))
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
@@ -172,10 +172,10 @@ function action_get_pptp_client()
 				end
 			end
 			for k, v in pairs(login_rec_tbl) do
-				tmp[2] = v:match("user:(.-),") or ""
-				tmp[3] = v:match("local ip:(.-),") or ""
-				tmp[4] = v:match("gateway:(.-),") or ""
-				tmp[5] = v:match("server:(.-),") or ""
+				tmp[2] = v:match("user:(.-)[,%s]") or ""
+				tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[7] = v:match("login date:(.*)") or ""
 				local year,month,day,hour,min,sec = tmp[7]:match(pattern)
 				tmp[8] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
@@ -214,16 +214,16 @@ function action_get_pptp_client()
 				for k,v in pairs(inout_tbl) do
 					if v and v:match("^login:") then
 						tmp[1] = index
-						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(.-),") or ""
-						tmp[4] = v:match("gateway:(.-),") or ""
-						tmp[5] = v:match("server:(.-),") or ""
+						tmp[2] = v:match("user:(.-)[,%s]") or ""
+						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 						tmp[7] = v:match("login date:(.*)") or ""
 						flag = flag + 1
 					end
 					if v and v:match("^logout:") then
 						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
-						tmp[8] = v:match("connect_time:(.-),") or ""
+						tmp[8] = v:match("connect_time:(%d+)") or ""
 						flag = flag + 1
 					end
 					if 2 == flag then
@@ -245,8 +245,8 @@ end
 function action_get_openvpn_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
+	local history_start = tonumber(luci.http.formvalue("starth"))
+	local history_num = tonumber(luci.http.formvalue("numh"))
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
@@ -271,13 +271,13 @@ function action_get_openvpn_client()
 				end
 			end
 			for _, v in pairs(login_rec_tbl) do
-				tmp[2] = v:match("proto:(.-),") or ""
-				tmp[3] = v:match("local_ip:(.-),") or ""
+				tmp[2] = v:match("proto:(tcp)") or v:match("proto:(udp)") or ""
+				tmp[3] = v:match("local_ip:(%d+%.%d+%.%d+%.%d+)") or ""
 				--tmp[4] = ""
-				tmp[4] = v:match("gateway:(.-) ") or ""
-				tmp[5] = v:match("server_ip:(.-):") or ""
+				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[5] = v:match("server_ip:(%d+%.%d+%.%d+%.%d+)") or v:match("server_ip:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[7] = ""
-				local login_time = v:match("login_time:(.*)") or ""
+				local login_time = v:match("login_time:(%d+)") or ""
 				if login_time ~= "" then
 					tmp[7] = os.date("%Y-%m-%d %H:%M:%S",login_time)
 				end
@@ -311,16 +311,16 @@ function action_get_openvpn_client()
 		for _,v in pairs(history_tbl_r) do
 			if v ~= "" then
 				tmp[1] = index
-				tmp[2] = v:match("proto:(.-),") or ""
-				tmp[3] = v:match("local_ip:(.-),") or ""
+				tmp[2] = v:match("proto:(tcp)") or v:match("proto:(udp)") or ""
+				tmp[3] = v:match("local_ip:(%d+%.%d+%.%d+%.%d+)") or ""
 				--tmp[4] = ""
-				tmp[4] = v:match("gateway:(.-) ") or ""
-				tmp[5] = v:match("server_ip:(.-),") or ""
+				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+				tmp[5] = v:match("server_ip:(%d+%.%d+%.%d+%.%d+)") or v:match("server_ip:(.-/%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
 				tmp[7] = ""
 				tmp[8] = ""
-				local login_time = v:match("login_time:(.-),") or ""
-				local logout_time = v:match("logout_time:(.*)") or ""
+				local login_time = v:match("login_time:(%d+)") or ""
+				local logout_time = v:match("logout_time:(%d+)") or ""
 				if login_time ~= "" and logout_time ~= "" then
 					tmp[7] = os.date("%Y-%m-%d %H:%M:%S",login_time)
 					tmp[8] = tonumber(logout_time) - tonumber(login_time)
