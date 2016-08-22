@@ -45,8 +45,9 @@ end
 function action_get_l2tp_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
+	local history_start = tonumber(luci.http.formvalue("starth"))
+	local history_reqnum = tonumber(luci.http.formvalue("reqnumh"))
+	local history_errnum = tonumber(luci.http.formvalue("errnumh"))
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
@@ -87,9 +88,9 @@ function action_get_l2tp_client()
 
 	-- l2tp client connection history show.
 	local exist_num = history_start -1
-	local logout_sum = util.exec("grep -n 'logout' /ramlog/l2tpc_log|wc -l")
-	local log_start = logout_sum - exist_num - history_num+ 1
-	local log_end = logout_sum - exist_num
+	local logsum = util.exec("cat /ramlog/l2tpc_log| tr '\n' '|' | sed 's/log\\(in:[^|]*|\\)log\\(out:[^|]*|\\)/\\n\\1\\2\\n/g' | grep '^in:' | wc -l")
+	local log_start = logsum - exist_num - history_reqnum - history_errnum + 1
+	local log_end = logsum - exist_num - history_errnum
 	local history
 	local history_tbl = {}
 	local history_tbl_r = {}
@@ -97,46 +98,50 @@ function action_get_l2tp_client()
 	local flag = 0
 	local index = history_start
 
+	local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
+	local year1,month1,day1,hour1,min1,sec1
+	local year2,month2,day2,hour2,min2,sec2
+	local t1,t2
+
 	if log_start <= 0 then
 		log_start = 1
 	end
 	if log_end > 0 then
-		history = util.exec("grep -n 'logout' /ramlog/l2tpc_log|sed -n '"..log_start..","..log_end.."p'|awk -F : '{print $1}'")
+		history = util.exec("cat /ramlog/l2tpc_log| tr '\n' '|' | sed 's/log\\(in:[^|]*|\\)log\\(out:[^|]*|\\)/\\n\\1\\2\\n/g' | grep '^in:' | sed -n '"..log_start..","..log_end.."p'")
 		history_tbl = util.split(history,"\n")
 		for i=1, #history_tbl do
 			table.insert(history_tbl_r,table.remove(history_tbl))
 		end
-		for i,j in pairs(history_tbl_r) do
-			local value = tonumber(j)
-			if value ~= nil then
-				local inout = util.exec("sed -n '"..(value-1)..","..value.."p' /ramlog/l2tpc_log")
-				local inout_tbl = util.split(inout,"\n")
-				for k,v in pairs(inout_tbl) do
-					if v and v:match("^login:") then
+		for _,v in pairs(history_tbl_r) do
+			if v ~= "" then
+				t1 = v:match("in:.*login date:(.-)|") or ""
+				t2 = v:match("out:.*login_time:(.-)|") or ""
+				if t1 ~= "" and t2 ~= "" then	
+					year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
+					year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
+					local ret = math.abs(os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1}) - os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2}))
+					if ret <= 1 then
 						tmp[1] = index
 						tmp[2] = v:match("user:(.-),") or ""
 						tmp[3] = v:match("local ip:(.-),") or ""
 						tmp[4] = v:match("gateway:(.-),") or ""
 						tmp[5] = v:match("server:(.-),") or ""
-						tmp[7] = v:match("login date:(.*)") or ""
-						flag = flag + 1
-					end
-					if v and v:match("^logout:") then
 						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+						tmp[7] = v:match("login date:(.-)|") or ""
 						tmp[8] = v:match("connect_time:(.-),") or ""
-						flag = flag + 1
-					end
-					if 2 == flag then
 						table.insert(hist_cont, tmp)
-						tmp = {}
-						flag = 0
 						index = index + 1
+						tmp = {}
+					else
+						history_errnum = history_errnum + 1
 					end
 				end
 			end
 		end
 		info["hist_cont"] = hist_cont
 	end
+	
+	info["errnum"] = history_errnum
 	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(info)
@@ -145,8 +150,9 @@ end
 function action_get_pptp_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = luci.http.formvalue("starth")
-	local history_num = luci.http.formvalue("numh")
+	local history_start = tonumber(luci.http.formvalue("starth"))
+	local history_reqnum = tonumber(luci.http.formvalue("reqnumh"))
+	local history_errnum = tonumber(luci.http.formvalue("errnumh"))
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
@@ -157,7 +163,7 @@ function action_get_pptp_client()
 		if login_rec:match("^login:") then
 			-- '\004' means EOF.
 			local login_rec_tbl = util.split(login_rec, '\004')
-			local ppp_name = "ppp1723"
+			local ppp_name = "ppp1701"
 			local ret_cmd = util.exec("ifconfig "..ppp_name)
 			local ifconfig_tbl = util.split(ret_cmd, "\n\n")
 
@@ -187,9 +193,9 @@ function action_get_pptp_client()
 
 	-- pptp client connection history show.
 	local exist_num = history_start -1
-	local logout_sum = util.exec("grep -n 'logout' /ramlog/pptpc_log|wc -l")
-	local log_start = logout_sum - exist_num - history_num+ 1
-	local log_end = logout_sum - exist_num
+	local logsum = util.exec("cat /ramlog/pptpc_log| tr '\n' '|' | sed 's/log\\(in:[^|]*|\\)log\\(out:[^|]*|\\)/\\n\\1\\2\\n/g' | grep '^in:' | wc -l")
+	local log_start = logsum - exist_num - history_reqnum - history_errnum + 1
+	local log_end = logsum - exist_num - history_errnum
 	local history
 	local history_tbl = {}
 	local history_tbl_r = {}
@@ -197,46 +203,50 @@ function action_get_pptp_client()
 	local flag = 0
 	local index = history_start
 
+	local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
+	local year1,month1,day1,hour1,min1,sec1
+	local year2,month2,day2,hour2,min2,sec2
+	local t1,t2
+
 	if log_start <= 0 then
 		log_start = 1
 	end
 	if log_end > 0 then
-		history = util.exec("grep -n 'logout' /ramlog/pptpc_log|sed -n '"..log_start..","..log_end.."p'|awk -F : '{print $1}'")
+		history = util.exec("cat /ramlog/pptpc_log| tr '\n' '|' | sed 's/log\\(in:[^|]*|\\)log\\(out:[^|]*|\\)/\\n\\1\\2\\n/g' | grep '^in:' | sed -n '"..log_start..","..log_end.."p'")
 		history_tbl = util.split(history,"\n")
 		for i=1, #history_tbl do
 			table.insert(history_tbl_r,table.remove(history_tbl))
 		end
-		for i,j in pairs(history_tbl_r) do
-			local value = tonumber(j)
-			if value ~= nil then
-				local inout = util.exec("sed -n '"..(value-1)..","..value.."p' /ramlog/pptpc_log")
-				local inout_tbl = util.split(inout,"\n")
-				for k,v in pairs(inout_tbl) do
-					if v and v:match("^login:") then
+		for _,v in pairs(history_tbl_r) do
+			if v ~= "" then
+				t1 = v:match("in:.*login date:(.-)|") or ""
+				t2 = v:match("out:.*login_time:(.-)|") or ""
+				if t1 ~= "" and t2 ~= "" then	
+					year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
+					year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
+					local ret = math.abs(os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1}) - os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2}))
+					if ret <= 1 then
 						tmp[1] = index
 						tmp[2] = v:match("user:(.-),") or ""
 						tmp[3] = v:match("local ip:(.-),") or ""
 						tmp[4] = v:match("gateway:(.-),") or ""
 						tmp[5] = v:match("server:(.-),") or ""
-						tmp[7] = v:match("login date:(.*)") or ""
-						flag = flag + 1
-					end
-					if v and v:match("^logout:") then
 						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+						tmp[7] = v:match("login date:(.-)|") or ""
 						tmp[8] = v:match("connect_time:(.-),") or ""
-						flag = flag + 1
-					end
-					if 2 == flag then
 						table.insert(hist_cont, tmp)
-						tmp = {}
-						flag = 0
 						index = index + 1
+						tmp = {}
+					else
+						history_errnum = history_errnum + 1
 					end
 				end
 			end
 		end
 		info["hist_cont"] = hist_cont
 	end
+	
+	info["errnum"] = history_errnum
 	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(info)
