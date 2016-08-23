@@ -24,6 +24,24 @@ function index()
 	page.leaf = true
 end
 
+function change_packets_view(packets)
+	local ret_str = ""
+
+	if packets then
+		if tonumber(packets) > 1024*1024*1024 then
+			ret_str = string.format("%.2f",tonumber(packets)/(1024*1024*1024)).."GB"
+		elseif tonumber(packets) > 1024*1024 then
+			ret_str = string.format("%.2f",tonumber(packets)/(1024*1024)).."MB"
+		elseif tonumber(packets) > 1024 then
+			ret_str = string.format("%.2f",tonumber(packets)/1024).."KB"
+		else
+			ret_str = packets.."B"
+		end
+	end
+	
+	return ret_str
+end
+
 function action_get_l2tp_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
@@ -36,42 +54,35 @@ function action_get_l2tp_client()
 
 	if param == "default" then
 		-- l2tp client live show.
-		local ppp_name = "ppp1701"
-		local ret_cmd = util.exec("ifconfig "..ppp_name)
-		if ret_cmd ~= "" then
+		local login_rec = util.exec("tail -n 1 /ramlog/l2tpc_log")
+		if login_rec:match("^login:") then
+			-- '\004' means EOF.
+			local login_rec_tbl = util.split(login_rec, '\004')
+			local ppp_name = "ppp1701"
+			local ret_cmd = util.exec("ifconfig "..ppp_name)
 			local ifconfig_tbl = util.split(ret_cmd, "\n\n")
-			local login_rec = util.exec("tail -n 1 /ramlog/l2tpc_log")
-			if login_rec:match("^login:") then
-				-- '\004' means EOF.
-				local login_rec_tbl = util.split(login_rec, '\004')
 
-				local index = 1
-				local tmp = {}
-				local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
-				-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
-				for _, v in pairs(ifconfig_tbl) do
-					if v and v:match("^"..ppp_name) then
-						tmp[1] = index
-						tmp[6] = v:match("RX bytes:([0-9]+)") or "0"
-						tmp[7] = v:match("TX bytes:([0-9]+)") or "0"
-					end
+			local index = 1
+			local tmp = {}
+			local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
+			-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
+			for k, v in pairs(ifconfig_tbl) do
+				if v and v:match("^"..ppp_name) then
+					tmp[1] = index
+					tmp[6] = change_packets_view(v:match("RX bytes:([0-9]+)") or "0").." / "..change_packets_view(v:match("TX bytes:([0-9]+)") or "0")
 				end
-				for _, v in pairs(login_rec_tbl) do
-					tmp[2] = v:match("user:(.-),") or ""
-					tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[8] = v:match("login date:(.*)") or ""
-					local year,month,day,hour,min,sec = tmp[8]:match(pattern)
-					if year ~= "" and month ~= "" and day ~= "" and hour ~= "" and min ~= "" and sec ~= "" then
-						tmp[9] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
-					else
-						tmp[9] = "0"
-					end
-				end
-				table.insert(live_cont, tmp)
-				info["live_cont"] = live_cont
 			end
+			for k, v in pairs(login_rec_tbl) do
+				tmp[2] = v:match("user:(.-),") or ""
+				tmp[3] = v:match("local ip:(.-),") or ""
+				tmp[4] = v:match("gateway:(.-),") or ""
+				tmp[5] = v:match("server:(.-),") or ""
+				tmp[7] = v:match("login date:(.*)") or ""
+				local year,month,day,hour,min,sec = tmp[7]:match(pattern)
+				tmp[8] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
+			end
+			table.insert(live_cont, tmp)
+			info["live_cont"] = live_cont
 		end
 	end
 
@@ -112,13 +123,12 @@ function action_get_l2tp_client()
 					if ret <= 1 then
 						tmp[1] = index
 						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
-						tmp[7] = v:match("sent_bytes:(%d+)") or "0"
-						tmp[8] = v:match("login date:(.-)|") or ""
-						tmp[9] = v:match("connect_time:(%d+)") or "0"
+						tmp[3] = v:match("local ip:(.-),") or ""
+						tmp[4] = v:match("gateway:(.-),") or ""
+						tmp[5] = v:match("server:(.-),") or ""
+						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+						tmp[7] = v:match("login date:(.-)|") or ""
+						tmp[8] = v:match("connect_time:(.-),") or ""
 						table.insert(hist_cont, tmp)
 						index = index + 1
 						tmp = {}
@@ -149,42 +159,35 @@ function action_get_pptp_client()
 
 	if param == "default" then
 		-- pptp client live show.
-		local ppp_name = "ppp1723"
-		local ret_cmd = util.exec("ifconfig "..ppp_name)
-		if ret_cmd ~= "" then
+		local login_rec = util.exec("tail -n 1 /ramlog/pptpc_log")
+		if login_rec:match("^login:") then
+			-- '\004' means EOF.
+			local login_rec_tbl = util.split(login_rec, '\004')
+			local ppp_name = "ppp1701"
+			local ret_cmd = util.exec("ifconfig "..ppp_name)
 			local ifconfig_tbl = util.split(ret_cmd, "\n\n")
-			local login_rec = util.exec("tail -n 1 /ramlog/pptpc_log")
-			if login_rec:match("^login:") then
-				-- '\004' means EOF.
-				local login_rec_tbl = util.split(login_rec, '\004')
 
-				local index = 1
-				local tmp = {}
-				local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
-				-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
-				for _, v in pairs(ifconfig_tbl) do
-					if v and v:match("^"..ppp_name) then
-						tmp[1] = index
-						tmp[6] = v:match("RX bytes:([0-9]+)") or "0"
-						tmp[7] = v:match("TX bytes:([0-9]+)") or "0"
-					end
+			local index = 1
+			local tmp = {}
+			local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)"
+			-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
+			for k, v in pairs(ifconfig_tbl) do
+				if v and v:match("^"..ppp_name) then
+					tmp[1] = index
+					tmp[6] = change_packets_view(v:match("RX bytes:([0-9]+)") or "0").." / "..change_packets_view(v:match("TX bytes:([0-9]+)") or "0")
 				end
-				for _, v in pairs(login_rec_tbl) do
-					tmp[2] = v:match("user:(.-),") or ""
-					tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[8] = v:match("login date:(.*)") or ""
-					local year,month,day,hour,min,sec = tmp[8]:match(pattern)
-					if year ~= "" and month ~= "" and day ~= "" and hour ~= "" and min ~= "" and sec ~= "" then
-						tmp[9] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
-					else
-						tmp[9] = "0"
-					end
-				end
-				table.insert(live_cont, tmp)
-				info["live_cont"] = live_cont
 			end
+			for k, v in pairs(login_rec_tbl) do
+				tmp[2] = v:match("user:(.-),") or ""
+				tmp[3] = v:match("local ip:(.-),") or ""
+				tmp[4] = v:match("gateway:(.-),") or ""
+				tmp[5] = v:match("server:(.-),") or ""
+				tmp[7] = v:match("login date:(.*)") or ""
+				local year,month,day,hour,min,sec = tmp[7]:match(pattern)
+				tmp[8] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
+			end
+			table.insert(live_cont, tmp)
+			info["live_cont"] = live_cont
 		end
 	end
 
@@ -225,13 +228,12 @@ function action_get_pptp_client()
 					if ret <= 1 then
 						tmp[1] = index
 						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
-						tmp[7] = v:match("sent_bytes:(%d+)") or "0"
-						tmp[8] = v:match("login date:(.-)|") or ""
-						tmp[9] = v:match("connect_time:(%d+)") or "0"
+						tmp[3] = v:match("local ip:(.-),") or ""
+						tmp[4] = v:match("gateway:(.-),") or ""
+						tmp[5] = v:match("server:(.-),") or ""
+						tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+						tmp[7] = v:match("login date:(.-)|") or ""
+						tmp[8] = v:match("connect_time:(.-),") or ""
 						table.insert(hist_cont, tmp)
 						index = index + 1
 						tmp = {}
@@ -253,57 +255,53 @@ end
 function action_get_openvpn_client()
 	local util = require "luci.util"
 	local param = luci.http.formvalue("action")
-	local history_start = tonumber(luci.http.formvalue("starth"))
-	local history_reqnum = tonumber(luci.http.formvalue("reqnumh"))
+	local history_start = luci.http.formvalue("starth")
+	local history_num = luci.http.formvalue("numh")
 	local info = {}
 	local live_cont = {}
 	local hist_cont = {}
 
 	if param == "default" then
 		-- openvpn client live show.
-		local ppp_name = "tun0"
-		local ret_cmd = util.exec("ifconfig "..ppp_name)
-		if ret_cmd ~= "" then 
+		local login_rec = util.exec("tail -n 1 /ramlog/openvpnc_log")
+		if login_rec:match("^login:") then
+			-- '\004' means EOF.
+			local login_rec_tbl = util.split(login_rec, '\004')
+			local ppp_name = "tun0"
+			local ret_cmd = util.exec("ifconfig "..ppp_name)
 			local ifconfig_tbl = util.split(ret_cmd, "\n\n")
-			local login_rec = util.exec("tail -n 1 /ramlog/openvpnc_log")
-			if login_rec:match("^login:") then
-				-- '\004' means EOF.
-				local login_rec_tbl = util.split(login_rec, '\004')
-				local ppp_name = "tun0"
 
-				local index = 1
-				local tmp = {}
-				-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
-				for _, v in pairs(ifconfig_tbl) do
-					if v and v:match("^"..ppp_name) then
-						tmp[1] = index
-						tmp[6] = v:match("RX bytes:([0-9]+)") or "0"
-						tmp[7] = v:match("TX bytes:([0-9]+)") or "0"
-					end
+			local index = 1
+			local tmp = {}
+			-- index, username, local_ip, remote_ip, server_ip, rx, tx, login_time, conn_time.
+			for _, v in pairs(ifconfig_tbl) do
+				if v and v:match("^"..ppp_name) then
+					tmp[1] = index
+					tmp[6] = change_packets_view(v:match("RX bytes:([0-9]+)") or "0").." / "..change_packets_view(v:match("TX bytes:([0-9]+)") or "0")
 				end
-				for _, v in pairs(login_rec_tbl) do
-					tmp[2] = v:match("proto:(tcp)") or v:match("proto:(udp)") or ""
-					tmp[3] = v:match("local_ip:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[5] = v:match("server_ip:(%d+%.%d+%.%d+%.%d+)") or v:match("server_ip:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[8] = ""
-					tmp[9] = "0"
-					local login_time = v:match("login_time:(%d+)") or ""
-					if login_time ~= "" then
-						tmp[8] = os.date("%Y-%m-%d %H:%M:%S",login_time)
-						tmp[9] = os.time() - tonumber(login_time)
-					end
-				end
-				table.insert(live_cont, tmp)
-				info["live_cont"] = live_cont
 			end
+			for _, v in pairs(login_rec_tbl) do
+				tmp[2] = v:match("proto:(.-),") or ""
+				tmp[3] = v:match("local_ip:(.-),") or ""
+				--tmp[4] = ""
+				tmp[4] = v:match("gateway:(.-) ") or ""
+				tmp[5] = v:match("server_ip:(.-):") or ""
+				tmp[7] = ""
+				local login_time = v:match("login_time:(.*)") or ""
+				if login_time ~= "" then
+					tmp[7] = os.date("%Y-%m-%d %H:%M:%S",login_time)
+				end
+				tmp[8] = os.time() - tonumber(login_time)
+			end
+			table.insert(live_cont, tmp)
+			info["live_cont"] = live_cont
 		end
 	end
 
 	-- openvpn client connection history show.
 	local exist_num = history_start -1
 	local logout_sum = util.exec("grep 'logout' /ramlog/openvpnc_log|wc -l")
-	local log_start = logout_sum - exist_num - history_reqnum+ 1
+	local log_start = logout_sum - exist_num - history_num+ 1
 	local log_end = logout_sum - exist_num
 	local history
 	local history_tbl = {}
@@ -323,19 +321,19 @@ function action_get_openvpn_client()
 		for _,v in pairs(history_tbl_r) do
 			if v ~= "" then
 				tmp[1] = index
-				tmp[2] = v:match("proto:(tcp)") or v:match("proto:(udp)") or ""
-				tmp[3] = v:match("local_ip:(%d+%.%d+%.%d+%.%d+)") or ""
-				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-				tmp[5] = v:match("server_ip:(%d+%.%d+%.%d+%.%d+)") or v:match("server_ip:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-				tmp[6] = v:match("rcvd_bytes:(.-),") or "0"
-				tmp[7] = v:match("sent_bytes:(.-),") or "0"
+				tmp[2] = v:match("proto:(.-),") or ""
+				tmp[3] = v:match("local_ip:(.-),") or ""
+				--tmp[4] = ""
+				tmp[4] = v:match("gateway:(.-) ") or ""
+				tmp[5] = v:match("server_ip:(.-),") or ""
+				tmp[6] = change_packets_view(v:match("rcvd_bytes:(.-),") or "0").."/"..change_packets_view(v:match("sent_bytes:(.-),") or "0")
+				tmp[7] = ""
 				tmp[8] = ""
-				tmp[9] = "0"
 				local login_time = v:match("login_time:(.-),") or ""
 				local logout_time = v:match("logout_time:(.*)") or ""
 				if login_time ~= "" and logout_time ~= "" then
-					tmp[8] = os.date("%Y-%m-%d %H:%M:%S",login_time)
-					tmp[9] = tonumber(logout_time) - tonumber(login_time)
+					tmp[7] = os.date("%Y-%m-%d %H:%M:%S",login_time)
+					tmp[8] = tonumber(logout_time) - tonumber(login_time)
 				end
 				table.insert(hist_cont, tmp)
 				tmp = {}

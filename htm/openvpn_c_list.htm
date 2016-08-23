@@ -1,6 +1,30 @@
 <%+header%>
 <style>
-input.connfilter{width:80%;}
+/* Make text align center. */
+.text-center {
+	text-align: center;
+}
+
+/* The filters input style. */
+input.connfilter {
+	width: 80%;
+}
+
+/* The filter button. */
+button.filter-btn {
+	color: #3498db;
+	background-color: #ffffff;
+	padding: 5px;
+	border-radius: 4px;
+}
+
+/* Content table style */
+div.div-table {
+	max-height: 285px;
+	overflow: auto;
+}
+
+/* General table style. */
 table td {overflow: hidden; text-overflow: ellipsis; white-space:nowrap; text-align: center;}
 table {table-layout: fixed;}
 </style>
@@ -9,9 +33,8 @@ table {table-layout: fixed;}
 <script>
 var access_state = "running"
 var starth = 1
-var numh = 20
+var reqnumh = 20
 var uptime = 0
-var uptime_id = ""
 
 function filter_result()
 {
@@ -33,6 +56,27 @@ function keyup_event()
 	$(".connfilter").trigger(e)
 }
 
+function change_packets_view(packets)
+{
+	var num = parseFloat(packets)
+	var ret_str
+
+	if (num > 0) {
+		if (num > 1024*1024*1024)
+			ret_str = parseFloat(num/(1024*1024*1024)).toFixed(1) + "GB"
+		else if (num > 1024*1024)
+			ret_str = parseFloat(num/(1024*1024)).toFixed(1) + "MB"
+		else if (num > 1024)
+			ret_str = parseFloat(num/1024).toFixed(1) + "KB"
+		else
+			ret_str = parseFloat(num).toFixed(1) + "B"
+	} else {
+		ret_str = "0B"
+	}
+	
+	return ret_str
+}
+
 function refresh_time(id, time_sec)
 {
 	var d = (Math.floor(time_sec / (3600 * 24)))
@@ -42,20 +86,20 @@ function refresh_time(id, time_sec)
 
 	var buff = ""
 	if(d > 0 )
-		buff = d + ' <%:d%> ' + h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> ';
+		buff = d + ' <%:d%> ' + h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> '
 	else if(0 == d && h > 0)
-		buff = h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> ';
+		buff = h + ' <%:h%> ' + m + ' <%:m%> ' + s + ' <%:s%> '
 	else if(0 == d && 0 == h && m > 0)
-		buff = m + ' <%:m%> ' + s + ' <%:s%> ';
+		buff = m + ' <%:m%> ' + s + ' <%:s%> '
 	else
-		buff = s + ' <%:s%>';
+		buff = s + ' <%:s%>'
 
-	document.getElementById(id).innerHTML = buff;
+	document.getElementById(id).innerHTML = buff
 }
 
 function refresh()
 {
-	refresh_time(uptime_id,uptime)
+	refresh_time("sec-dynamic",uptime)
 	uptime += 1
 }
 
@@ -66,12 +110,12 @@ function sec_to_human(idstr, index)
 	{
 		if (document.getElementById(str+"-"+i) != null)
 		{
-			var old_sec =  document.getElementById(str+"-"+i).innerHTML;
+			var old_sec =  document.getElementById(str+"-"+i).innerHTML
 			if (old_sec != 0)
-				refresh_time(str+"-"+i, old_sec);
+				refresh_time(str+"-"+i, old_sec)
 		}
 		else
-			break;
+			break
 	}
 }
 
@@ -79,77 +123,63 @@ function get_list(param)
 {
 	if ("running" == access_state)
 	{
-		XHR.get('<%=luci.dispatcher.build_url("admin","status","get_openvpn_client")%>',{action:param,starth:starth,numh:numh},function(x, info)
+		XHR.get('<%=luci.dispatcher.build_url("admin","status","get_openvpn_client")%>',{action:param,starth:starth,reqnumh:reqnumh},function(x, info)
 		{
 			if (info != null) {
-				var content,raw,sec_str
-
 				if (info["live_cont"] != null) {
-					content = info["live_cont"]
-					sec_str = "sec-dynamic"
+					var str = ""
+					var raw = info["live_cont"][0]
 
-					for (i=0;i<content.length;i++) {
-						var str = ""
-						var raw = content[i]
-
-						if (1 == i%2)
-							str += "<tr class='cbi-rowstyle-odd'>"
-						else
-							str += "<tr class='cbi-rowstyle-even'>"
-						for (j=0;j<raw.length;j++) {
-						if (7 == j) {
-							uptime = raw[j]
-							uptime_id = sec_str + "-" + (i+1)
-							str += "<td class='text-center' id='"+uptime_id+"'></td>"
-						}
-							else
-								str += "<td class='text-center'>"+raw[j]+"</td>"
-						}
-						str += "<td></td></tr>"
-						$(".live-section-table tbody").append(str)
+					str += "<tr class='cbi-rowstyle-odd'>"
+					for (var j=0;j<5;j++) {
+						str += "<td class='text-center'>"+raw[j]+"</td>"
 					}
+					str += "<td class='text-center'>"+change_packets_view(raw[5])+"/"+change_packets_view(raw[6])+"</td>"
+					str += "<td class='text-center'>"+raw[7]+"</td>"
+					uptime = parseInt(raw[8])
+					str += "<td class='text-center' id='sec-dynamic'></td></tr>"
+
+					$(".live-section-table tbody").append(str)
 					refresh()
 					window.setInterval("refresh()",1000)
-					obj = document.getElementById("loading-id")
-					if (obj)
-						obj.remove()
-					$(".live-fieldset-class").show()
 				}
+				if ($(".live-section-table tbody").find("tr").length == 0)
+					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:No Online Record!%></td></tr>"));
+					
 
 				if (info["hist_cont"] != null) {
-					content = info["hist_cont"]
-					sec_str = "sec-static"
+					var content = info["hist_cont"]
+					var sec_str = "sec-static"
 					var num = starth
+					var raw
 
 					for (i=0;i<content.length;i++) {
 						var str = ""
-						var raw = content[i]
+						raw = content[i]
 
 						if (1 == i%2)
 							str += "<tr class='cbi-rowstyle-odd'>"
 						else
 							str += "<tr class='cbi-rowstyle-even'>"
-						for (j=0;j<raw.length;j++) {
-							if (7 == j)
-								str += "<td class='text-center' id='"+sec_str+"-"+num+"'>"+raw[j]+"</td>"
-							else
-								str += "<td class='text-center'>"+raw[j]+"</td>"
+						for (var j=0;j<5;j++) {
+							str += "<td class='text-center'>"+raw[j]+"</td>"
 						}
-						str += "<td class='connlist'></td></tr>"
+						str += "<td class='text-center'>"+change_packets_view(raw[5])+"/"+change_packets_view(raw[6])+"</td>"
+						str += "<td class='text-center'>"+raw[7]+"</td>"
+						str += "<td class='text-center connlist' id='"+sec_str+"-"+num+"' colspan='2'>"+parseInt(raw[8])+"</td></tr>"
 						$(".history-section-table tbody").append(str)
 						num += 1
 					}
 					sec_to_human("sec-static",starth)
 					starth = num
-					obj = document.getElementById("loading-id")
-					if (obj)
-						obj.remove()
-					$(".history-fieldset-class").show()
 				} else {
+					$(".history-section-table tbody").append($("<tr><td colspan='9'><%:The End%></td></tr>"));
 					access_state = "halt"
 				}
-				
+				if ($(".history-section-table tbody").find("tr").length == 1)
+					$(".history-section-table tbody").append($("<tr><td class='text-center' colspan='9'><%:No History Record!%></td></tr>"));
 			}
+			$(".history-section-table tbody").find("#loading-id").remove()
 		});
 	}
 }
@@ -176,7 +206,7 @@ $(document).ready(function() {
 		$rows.show();
 		$filteredRows.hide();
 		if ($filteredRows.length === $rows.length) {
-			$("#history-content-id").append($('<tr class="no-result"><td colspan="9"><%:No result found%></td></tr>'));
+			$(".history-section-table tbody").append($("<tr class='no-result'><td colspan='9'><%:No result found%></td></tr>"));
 		}
 	})
 
@@ -191,26 +221,23 @@ $(document).ready(function() {
 		}
 	})
 
-	$(".loading-class").append($('<img id="loading-id" src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/>'));
-	XHR.halt()
-	get_list("default",starth,numh)
+	$(".history-section-table tbody").append($("<tr id='loading-id'><td colspan='9'><img src='<%=resource%>/icons/loading.gif' alt='<%:Loading%>'/></td></tr>"));
+	get_list("default")
 });
 </script>
 <div>
-<div class="loading-class" align="center"></div>
-<fieldset class="live-fieldset-class" style="display:none">
-	<legend><%:Live%></legend>
+<fieldset>
+	<legend><%:Online%></legend>
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
-			<col style="width:12%;"/>
-			<col style="width:15%;"/>
 			<col style="width:17%;"/>
 			<col style="width:13%;"/>
-			<col style="width:5%;"/>
+			<col style="width:17%;"/>
+			<col style="width:15%;"/>
 		</colgroup>
 		<tr>
 			<th><%:Index%></th>
@@ -225,25 +252,24 @@ $(document).ready(function() {
 		</tr>
 	</table>
 
-	<div class="live-section-table" style="max-height:285px;overflow:auto;">
+	<div class="table-div live-section-table">
 	<table class="live-section-table">
 		<colgroup>
 			<col style="width:5%;"/>
 			<col style="width:9%;"/>
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
-			<col style="width:12%;"/>
-			<col style="width:15%;"/>
 			<col style="width:17%;"/>
 			<col style="width:13%;"/>
-			<col style="width:5%;"/>
+			<col style="width:17%;"/>
+			<col style="width:15%;"/>
 		</colgroup>
 		<tbody>
 		</tbody>
 	</table></div>
 </fieldset>
 
-<fieldset class="history-fieldset-class" style="display:none">
+<fieldset>
 	<legend><%:History%></legend>
 	<table>
 		<colgroup>
@@ -252,9 +278,9 @@ $(document).ready(function() {
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
-			<col style="width:15%;"/>
-			<col style="width:17%;"/>
 			<col style="width:13%;"/>
+			<col style="width:17%;"/>
+			<col style="width:15%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
 		<tr>
@@ -265,8 +291,8 @@ $(document).ready(function() {
 			<th><%:Server Address%></th>
 			<th><%:RX / TX Bytes%></th>
 			<th><%:Login Time%></th>
-			<th><%:Connection Time%></th>
-			<th><div><button type="button" class="btn filter button-filter" onclick="filter_result()"><%:Filter%></button></div></th>
+			<th style="padding-right=20px"><%:Connection Time%></th>
+			<th><div><button type="button" class="filter-btn" onclick="filter_result()"><%:Filter%></button></div></th>
 		</tr>
 		<tr id="filter-id" style="display: none;">
 			<td><input type="text" class="connfilter"/></td>
@@ -281,7 +307,7 @@ $(document).ready(function() {
 		</tr>
 	</table>
 
-	<div class="history-section-table" style="max-height:285px;overflow:auto;">
+	<div class="div-table history-section-table">
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
@@ -289,12 +315,12 @@ $(document).ready(function() {
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
 			<col style="width:12%;"/>
-			<col style="width:15%;"/>
-			<col style="width:17%;"/>
 			<col style="width:13%;"/>
+			<col style="width:17%;"/>
+			<col style="width:15%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
-		<tbody id="history-content-id">
+		<tbody>
 		</tbody>
 	</table></div>
 </fieldset>
