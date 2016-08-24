@@ -116,7 +116,7 @@ function sec_to_human(idstr, index)
 				refresh_time(str+"-"+i, old_sec)
 		}
 		else
-			break;
+			break
 	}
 }
 
@@ -147,7 +147,7 @@ function get_list(param)
 					window.setInterval("refresh()",1000)
 				}
 				if ($(".live-section-table tbody").find("tr").length == 0)
-					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:No Online Record!%></td></tr>"));
+					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:This section contains no records yet%></td></tr>"));
 					
 
 				if (info["hist_cont"] != null) {
@@ -184,16 +184,27 @@ function get_list(param)
 					access_state = "running"
 				}
 				if ($(".history-section-table tbody").find("tr").length == 1)
-					$(".history-section-table tbody").append($("<tr><td class='text-center' colspan='9'><%:No History Record!%></td></tr>"));
+					$(".history-section-table tbody").append($("<tr><td class='text-center' colspan='9'><%:This section contains no records yet%></td></tr>"));
 
-/*
 				$(".div-table td").mouseover(function(e){
-					$("#ccc").text($(this).width()+","+$(this)[0].scrollWidth+","+$(this).outerWidth(false))
+					var $input = $(this)
+					var cont_w = $input[0].scrollWidth
+					var vis_w = $input.outerWidth()
+					if (cont_w > vis_w) {
+						var $fieldset = $input.parents("fieldset")
+						var column_name = $fieldset.find(".col-name").find("th").eq($input.index()).text()
+						$("#popover-content").html(column_name+" : "+$input.text())
+						$("#popover-content").show()
+						$("#popover-content").offset({top:$(this).offset().top+30,left:$(this).offset().left-50})
+					}
 				})
 
 				$(".div-table td").mouseout(function(e){
+					$("#popover-content").html("")
+					$("#popover-content").hide()
 				})
-*/
+
+				$(".history-section-table").parents("fieldset").find(".col-name").parents("table").css("width",$(".history-section-table table").css("width"))
 			}
 			$(".history-section-table tbody").find("#loading-id").remove()
 		});
@@ -226,7 +237,6 @@ $(document).ready(function() {
 		}
 	})
 
-	
 	$(".history-section-table").scroll(function(e) {
 		if("running" == access_state) {
 			var cont_h = $(".history-section-table").get(0).scrollHeight
@@ -244,7 +254,7 @@ $(document).ready(function() {
 </script>
 <div>
 <fieldset>
-	<legend><%:Online%></legend>
+	<legend><%:On-line Records%></legend>
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
@@ -256,7 +266,7 @@ $(document).ready(function() {
 			<col style="width:17%;"/>
 			<col style="width:20%;"/>
 		</colgroup>
-		<tr>
+		<tr class="col-name">
 			<th><%:Index%></th>
 			<th><%:Username%></th>
 			<th><%:IP Address%></th>
@@ -268,7 +278,7 @@ $(document).ready(function() {
 		</tr>
 	</table>
 
-	<div class="table-div live-section-table">
+	<div class="div-table live-section-table">
 	<table class="live-section-table">
 		<colgroup>
 			<col style="width:5%;"/>
@@ -286,7 +296,7 @@ $(document).ready(function() {
 </fieldset>
 
 <fieldset>
-	<legend><%:History%></legend>
+	<legend><%:History Records%></legend>
 	<table>
 		<colgroup>
 			<col style="width:5%;"/>
@@ -296,10 +306,10 @@ $(document).ready(function() {
 			<col style="width:12%;"/>
 			<col style="width:13%;"/>
 			<col style="width:17%;"/>
-			<col style="width:15%;"/>
-			<col style="width:5%;"/>
+			<col style="width:13%;"/>
+			<col style="width:7%;"/>
 		</colgroup>
-		<tr>
+		<tr class="col-name">
 			<th><%:Index%></th>
 			<th><%:Username%></th>
 			<th><%:IP Address%></th>
@@ -307,7 +317,7 @@ $(document).ready(function() {
 			<th><%:Server Address%></th>
 			<th><%:RX / TX Bytes%></th>
 			<th><%:Login Time%></th>
-			<th><%:Connection Time%></th>
+			<th style="text-align:right;"><%:Connection Time%></th>
 			<th><div><button type="button" class="filter-btn" onclick="filter_result()"><%:Filter%></button></div></th>
 		</tr>
 		<tr id="filter-id" style="display: none;">
@@ -333,13 +343,13 @@ $(document).ready(function() {
 			<col style="width:12%;"/>
 			<col style="width:13%;"/>
 			<col style="width:17%;"/>
-			<col style="width:15%;"/>
-			<col style="width:5%;"/>
+			<col style="width:13%;"/>
+			<col style="width:7%;"/>
 		</colgroup>
 		<tbody>
 		</tbody>
 	</table></div>
 </fieldset>
 </div>
-<div id="ccc">aaa</div>
+<span id="popover-content" style="display:none;color:#a04112;background:#feffc6;padding:5px;"></span>
 <%+footer%>
