@@ -31,7 +31,8 @@ table {table-layout: fixed;}
 <script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
 <script src="<%=resource_cbi_js%>"></script>
 <script>
-var access_state = "running"
+var access_state = "ready"
+var tmp_access = ""
 var starth = 1
 var reqnumh = 20
 var uptime = 0
@@ -39,10 +40,14 @@ var uptime = 0
 function filter_result()
 {
 	$("#filter-id").toggle()
-	if ("none" == $("#filter-id").css("display"))
-		access_state = "running"
-	else
+	if ("none" == $("#filter-id").css("display")) {
+		access_state = tmp_access
+		tmp_access = ""
+	}
+	else {
+		tmp_access = access_state
 		access_state = "halt"
+	}
 	keyup_event()
 }
 
@@ -121,8 +126,9 @@ function sec_to_human(idstr, index)
 
 function get_list(param)
 {
-	if ("running" == access_state)
+	if ("ready" == access_state)
 	{
+		access_state = "query"
 		XHR.get('<%=luci.dispatcher.build_url("admin","status","get_openvpn_client")%>',{action:param,starth:starth,reqnumh:reqnumh},function(x, info)
 		{
 			if (info != null) {
@@ -140,8 +146,10 @@ function get_list(param)
 					str += "<td class='text-center' id='sec-dynamic'></td></tr>"
 
 					$(".live-section-table tbody").append(str)
-					refresh()
-					window.setInterval("refresh()",1000)
+					if (raw[7] != "") {
+						refresh()
+						window.setInterval("refresh()",1000)
+					}
 				}
 				if ($(".live-section-table tbody").find("tr").length == 0)
 					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:This section contains no records yet%></td></tr>"));
@@ -172,6 +180,7 @@ function get_list(param)
 					}
 					sec_to_human("sec-static",starth)
 					starth = num
+					access_state = "ready"
 				} else if (1 != starth) {
 					$(".history-section-table tbody").append($("<tr><td colspan='9'><%:The End%></td></tr>"));
 					access_state = "halt"
@@ -231,11 +240,12 @@ $(document).ready(function() {
 	})
 
 	$(".history-section-table").scroll(function(e) {
-		if("running" == access_state) {
+		if("ready" == access_state) {
 			var cont_h = $(".history-section-table").get(0).scrollHeight
 			var vis_h = $(".history-section-table").height()
 			var scroll_y = $(".history-section-table").scrollTop()
 			if (scroll_y == cont_h - vis_h) {
+				$(".history-section-table tbody").append($("<tr id='loading-id'><td colspan='9'><img src='<%=resource%>/icons/loading.gif' alt='<%:Loading%>'/></td></tr>"));
 				get_list("more")
 			}
 		}
@@ -321,8 +331,7 @@ $(document).ready(function() {
 			<td><input type="text" class="connfilter"/></td>
 			<td><input type="text" class="connfilter"/></td>
 			<td><input type="text" class="connfilter"/></td>
-			<td><input type="text" class="connfilter"/></td>
-			<td></td>
+			<td colspan="2"><input type="text" class="connfilter"/></td>
 		</tr>
 	</table>
 

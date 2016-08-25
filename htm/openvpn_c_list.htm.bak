@@ -140,11 +140,13 @@ function get_list(param)
 					str += "<td class='text-center' id='sec-dynamic'></td></tr>"
 
 					$(".live-section-table tbody").append(str)
-					refresh()
-					window.setInterval("refresh()",1000)
+					if (raw[7] != "") {
+                        refresh()
+                        window.setInterval("refresh()",1000)
+					}
 				}
 				if ($(".live-section-table tbody").find("tr").length == 0)
-					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:No Online Record!%></td></tr>"));
+					$(".live-section-table tbody").append($("<tr><td colspan='8'><%:This section contains no records yet%></td></tr>"));
 					
 
 				if (info["hist_cont"] != null) {
@@ -177,7 +179,7 @@ function get_list(param)
 					access_state = "halt"
 				}
 				if ($(".history-section-table tbody").find("tr").length == 1)
-					$(".history-section-table tbody").append($("<tr><td class='text-center' colspan='9'><%:No History Record!%></td></tr>"));
+					$(".history-section-table tbody").append($("<tr><td class='text-center' colspan='9'><%:This section contains no records yet%></td></tr>"));
 
 				$(".div-table td").mouseover(function(e){
 					var $input = $(this)

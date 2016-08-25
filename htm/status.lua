@@ -61,12 +61,17 @@ function action_get_l2tp_client()
 					tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
 					tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
 					tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[8] = v:match("login date:(.*)") or ""
-					local year,month,day,hour,min,sec = tmp[8]:match(pattern)
-					if year ~= "" and month ~= "" and day ~= "" and hour ~= "" and min ~= "" and sec ~= "" then
-						tmp[9] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
-					else
-						tmp[9] = "0"
+					tmp[8] = ""
+					tmp[9] = "0"
+
+					local log_time = v:match("login date:(.*)")
+					local year,month,day,hour,min,sec = log_time:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
+					if year ~= nil and month ~= nil and day ~= nil and hour ~= nil and min ~= nil and sec ~= nil then
+						local t_stamp = os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
+						if t_stamp ~= nil then
+							tmp[8] = log_time
+							tmp[9] = os.time() - t_stamp
+						end
 					end
 				end
 				table.insert(live_cont, tmp)
@@ -105,26 +110,34 @@ function action_get_l2tp_client()
 			if v ~= "" then
 				t1 = v:match("in:.*login date:(.-)|") or ""
 				t2 = v:match("out:.*login_time:(.-)|") or ""
-				if t1 ~= "" and t2 ~= "" then	
-					year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
-					year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
-					local ret = math.abs(os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1}) - os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2}))
-					if ret <= 1 then
-						tmp[1] = index
-						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
-						tmp[7] = v:match("sent_bytes:(%d+)") or "0"
-						tmp[8] = v:match("login date:(.-)|") or ""
-						tmp[9] = v:match("connect_time:(%d+)") or "0"
-						table.insert(hist_cont, tmp)
-						index = index + 1
-						tmp = {}
+				year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
+				year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
+				if year1 ~= nil and month1 ~= nil and day1 ~= nil and hour1 ~= nil and min1 ~= nil and sec1 ~= nil and year2 ~= nil and month2 ~= nil and day2 ~= nil and hour2 ~= nil and min2 ~= nil and sec2 ~= nil then
+					local t1_stamp = os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1})
+					local t2_stamp = os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2})
+					if t1_stamp ~= nil and t2_stamp ~= nil then
+						local ret = math.abs(t1_stamp - t2_stamp)
+						if ret <= 1 then
+							tmp[1] = index
+							tmp[2] = v:match("user:(.-),") or ""
+							tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
+							tmp[7] = v:match("sent_bytes:(%d+)") or "0"
+							tmp[8] = t1
+							tmp[9] = v:match("connect_time:(%d+)") or "0"
+							table.insert(hist_cont, tmp)
+							index = index + 1
+							tmp = {}
+						else
+							history_errnum = history_errnum + 1
+						end
 					else
 						history_errnum = history_errnum + 1
 					end
+				else
+					history_errnum = history_errnum + 1
 				end
 			end
 		end
@@ -174,12 +187,17 @@ function action_get_pptp_client()
 					tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
 					tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
 					tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-					tmp[8] = v:match("login date:(.*)") or ""
-					local year,month,day,hour,min,sec = tmp[8]:match(pattern)
-					if year ~= "" and month ~= "" and day ~= "" and hour ~= "" and min ~= "" and sec ~= "" then
-						tmp[9] = os.time() - os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
-					else
-						tmp[9] = "0"
+					tmp[8] = ""
+					tmp[9] = "0"
+
+					local log_time = v:match("login date:(.*)")
+					local year,month,day,hour,min,sec = log_time:match("(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)")
+					if year ~= nil and month ~= nil and day ~= nil and hour ~= nil and min ~= nil and sec ~= nil then
+						local t_stamp = os.time({year=year,month=month,day=day,hour=hour,min=min,sec=sec})
+						if t_stamp ~= nil then
+							tmp[8] = log_time
+							tmp[9] = os.time() - t_stamp
+						end
 					end
 				end
 				table.insert(live_cont, tmp)
@@ -218,26 +236,34 @@ function action_get_pptp_client()
 			if v ~= "" then
 				t1 = v:match("in:.*login date:(.-)|") or ""
 				t2 = v:match("out:.*login_time:(.-)|") or ""
-				if t1 ~= "" and t2 ~= "" then	
-					year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
-					year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
-					local ret = math.abs(os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1}) - os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2}))
-					if ret <= 1 then
-						tmp[1] = index
-						tmp[2] = v:match("user:(.-),") or ""
-						tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-						tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
-						tmp[7] = v:match("sent_bytes:(%d+)") or "0"
-						tmp[8] = v:match("login date:(.-)|") or ""
-						tmp[9] = v:match("connect_time:(%d+)") or "0"
-						table.insert(hist_cont, tmp)
-						index = index + 1
-						tmp = {}
+				year1,month1,day1,hour1,min1,sec1 = t1:match(pattern)
+				year2,month2,day2,hour2,min2,sec2 = t2:match(pattern)
+				if year1 ~= nil and month1 ~= nil and day1 ~= nil and hour1 ~= nil and min1 ~= nil and sec1 ~= nil and year2 ~= nil and month2 ~= nil and day2 ~= nil and hour2 ~= nil and min2 ~= nil and sec2 ~= nil then
+					local t1_stamp = os.time({year=year1,month=month1,day=day1,hour=hour1,min=min1,sec=sec1})
+					local t2_stamp = os.time({year=year2,month=month2,day=day2,hour=hour2,min=min2,sec=sec2})
+					if t1_stamp ~= nil and t2_stamp ~= nil then
+						local ret = math.abs(t1_stamp - t2_stamp)
+						if ret <= 1 then
+							tmp[1] = index
+							tmp[2] = v:match("user:(.-),") or ""
+							tmp[3] = v:match("local ip:(%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[5] = v:match("server:(%d+%.%d+%.%d+%.%d+)") or v:match("server:(.-/%d+%.%d+%.%d+%.%d+)") or ""
+							tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
+							tmp[7] = v:match("sent_bytes:(%d+)") or "0"
+							tmp[8] = t1
+							tmp[9] = v:match("connect_time:(%d+)") or "0"
+							table.insert(hist_cont, tmp)
+							index = index + 1
+							tmp = {}
+						else
+							history_errnum = history_errnum + 1
+						end
 					else
 						history_errnum = history_errnum + 1
 					end
+				else
+					history_errnum = history_errnum + 1
 				end
 			end
 		end
@@ -327,12 +353,12 @@ function action_get_openvpn_client()
 				tmp[3] = v:match("local_ip:(%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[4] = v:match("gateway:(%d+%.%d+%.%d+%.%d+)") or ""
 				tmp[5] = v:match("server_ip:(%d+%.%d+%.%d+%.%d+)") or v:match("server_ip:(.-/%d+%.%d+%.%d+%.%d+)") or ""
-				tmp[6] = v:match("rcvd_bytes:(.-),") or "0"
-				tmp[7] = v:match("sent_bytes:(.-),") or "0"
+				tmp[6] = v:match("rcvd_bytes:(%d+)") or "0"
+				tmp[7] = v:match("sent_bytes:(%d+)") or "0"
 				tmp[8] = ""
 				tmp[9] = "0"
-				local login_time = v:match("login_time:(.-),") or ""
-				local logout_time = v:match("logout_time:(.*)") or ""
+				local login_time = v:match("login_time:(%d+)") or ""
+				local logout_time = v:match("logout_time:(%d+)") or ""
 				if login_time ~= "" and logout_time ~= "" then
 					tmp[8] = os.date("%Y-%m-%d %H:%M:%S",login_time)
 					tmp[9] = tonumber(logout_time) - tonumber(login_time)
