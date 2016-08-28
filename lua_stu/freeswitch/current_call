@@ -1,0 +1,1 @@
+extension_number:1001, uuid:8c4fb3e3-0337-4d35-9b2d-9cea0eab8313, read_codec:pcma, read_pack_time:20, read_bit_rate64000, write_codec:pcmu, write_pack_time:20, write_bit_rate:64000, local_media_port:1000, remote_media_ip:172.16.88.172, remote_media_port:2000, callstate:RINGING
