@@ -6,7 +6,6 @@ local read_codec = session:getVariable("read_codec")
 local read_rate = session:getVariable("read_rate")
 local write_codec = session:getVariable("write_codec")
 local write_rate = session:getVariable("write_rate")
-local local_media_ip = api:executeString("uuid_getvar "..uuid.." local_media_ip")
 local local_media_port = api:executeString("uuid_getvar "..uuid.." local_media_port")
 local remote_media_ip = session:getVariable("remote_media_ip")
 local remote_media_port = session:getVariable("remote_media_port")
@@ -31,9 +30,6 @@ if write_codec then
 end
 if write_rate then
     os.execute("echo 'write_rate = "..write_rate.."' >> /tmp/a-legt")
-end
-if local_media_ip then
-    os.execute("echo 'local_media_ip = "..local_media_ip.."' >> /tmp/a-legt")
 end
 if local_media_port then
     os.execute("echo 'local_media_port = "..local_media_port.."' >> /tmp/a-legt")
