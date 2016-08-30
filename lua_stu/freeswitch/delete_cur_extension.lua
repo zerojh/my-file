@@ -6,8 +6,7 @@ function exec(command)
 	return data
 end
 
-local api = freeswitch.API()
-local session_uuid = session:getVariable("uuid")
+local session_uuid = env:getHeader("uuid")
 local match_str = "uuid:"..session_uuid
 
 local uid_file = "/tmp/access_uid"

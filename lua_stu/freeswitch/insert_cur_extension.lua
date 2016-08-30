@@ -10,20 +10,30 @@ local api = freeswitch.API()
 
 local tb = {}
 local extension_number = argv[1] or "null"
-local session_uuid = session:getVariable("uuid") or "null"
+local local_uuid = session:getVariable("uuid") or "null"
+local remote_uuid = ""
+local direction = session:getVariable("direction")
+if direction == "inbound" then
+	remote_uuid = session:getVariable("originated_legs")
+	remote_uuid = remote_uuid:match("(.-);")
+else
+	remote_uuid = session:getVariable("originator")
+end
 local read_codec = session:getVariable("read_codec") or "null"
 local read_pack_time = "null"
-local read_bit_rate = session:getVariable("read_rate") or "null"
+local read_rate = session:getVariable("read_rate") or "null"
+local read_bit_rate = api:executeString("eval uuid:"..local_uuid.." ${Channel-Read-Codec-Bit-Rate}") or "null"
 local write_codec = session:getVariable("write_codec") or "null"
 local write_pack_time = "null"
-local write_bit_rate = session:getVariable("write_rate") or "null"
-local local_media_port = api:executeString("uuid_getvar "..session_uuid.." local_media_port") or "null"
+local write_rate = session:getVariable("write_rate") or "null"
+local write_bit_rate = api:executeString("eval uuid:"..local_uuid.." ${Channel-Write-Codec-Bit-Rate}") or "null"
+local local_media_port = api:executeString("uuid_getvar "..local_uuid.." local_media_port") or "null"
 local remote_media_ip = session:getVariable("remote_media_ip") or "null"
 local remote_media_port = session:getVariable("remote_media_port") or "null"
 local callstate = argv[2] or "null"
 
 tb[1] = "extension_number:"..extension_number
-tb[2] = "uuid:"..session_uuid
+tb[2] = "uuid:"..local_uuid
 tb[3] = "read_codec:"..read_codec
 tb[4] = "read_pack_time:"..read_pack_time
 tb[5] = "read_bit_rate"..read_bit_rate
