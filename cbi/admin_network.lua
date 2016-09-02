@@ -19,32 +19,32 @@ function index()
 	
 	--@ LTE License
 	if luci.version.license and luci.version.license.lte then
-		entry({"admin","network","lte"},cbi("admin_network/wan_lte_edit"),_("LTE"),11)
-		entry({"admin","network","uplink"},cbi("admin_network/uplink_edit"),_("Uplink Config"),12)
+		entry({"admin","network","lte"},cbi("admin_network/wan_lte_edit"),_("LTE"),30)
+		entry({"admin","network","uplink"},cbi("admin_network/uplink_edit"),_("Uplink Config"),40)
 	end
 
 	
-	entry({"admin","network","access_control"}, cbi("admin_network/access_control"), _("Access Control"), 30).leaf = true
-	entry({"admin","network","firewall"}, call("firewall"), _("Firewall"), 40)
-	entry({"admin","network","firewall","filter"},cbi("admin_network/filter_edit"),nil,40).leaf = true
-	entry({"admin","network","dhcp_server"}, cbi("admin_network/dhcp_server"), _("DHCP Server"), 50).leaf = true
-	entry({"admin","network","port_map"},call("port_map"),_("Port Mapping"),60)
-	entry({"admin","network","port_map","port_map"},cbi("admin_network/port_map_edit"),nil,60).leaf = true
-	entry({"admin","network","dmz"}, cbi("admin_network/dmz"), _("DMZ Setting"), 70).leaf = true
-	entry({"admin","network","diagnostics"},call("action_tcpdump"), _("Diagnostics"), 80).leaf = true
-	entry({"admin","network","ddns"},cbi("admin_network/ddns_config"), _("DDNS"), 90).leaf = true
+	entry({"admin","network","access_control"}, cbi("admin_network/access_control"), _("Access Control"), 50).leaf = true
+	entry({"admin","network","firewall"}, call("firewall"), _("Firewall"), 60)
+	entry({"admin","network","firewall","filter"},cbi("admin_network/filter_edit"),nil,60).leaf = true
+	entry({"admin","network","dhcp_server"}, cbi("admin_network/dhcp_server"), _("DHCP Server"), 70).leaf = true
+	entry({"admin","network","port_map"},call("port_map"),_("Port Mapping"),80)
+	entry({"admin","network","port_map","port_map"},cbi("admin_network/port_map_edit"),nil,80).leaf = true
+	entry({"admin","network","dmz"}, cbi("admin_network/dmz"), _("DMZ Setting"), 90).leaf = true
+	entry({"admin","network","diagnostics"},call("action_tcpdump"), _("Diagnostics"), 100).leaf = true
+	entry({"admin","network","ddns"},cbi("admin_network/ddns_config"), _("DDNS"), 110).leaf = true
 
-	entry({"admin","network","static_route"}, call("static_route_list"),_("Static Route"),100)
-	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,100).leaf = true	
+	entry({"admin","network","static_route"}, call("static_route_list"),_("Static Route"),120)
+	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,120).leaf = true	
 	entry({"admin","network","diag_ping"}, call("diag_ping"), nil).leaf = true
 	entry({"admin","network","diag_nslookup"}, call("diag_nslookup"), nil).leaf = true
 	entry({"admin","network","diag_traceroute"}, call("diag_traceroute"), nil).leaf = true
-	entry({"admin","network","upnpc"},cbi("admin_network/upnpc"),_("UPnP Client"),110).leaf = true
-	entry({"admin","network","vpn"}, alias("admin","network","vpn","pptp"),_("VPN Client"),120)
-	entry({"admin","network","vpn","pptp"},cbi("admin_network/pptp_client_edit"),_("PPTP"),120)
-	entry({"admin","network","vpn","l2tp"},cbi("admin_network/l2tp_client_edit"),_("L2TP"),121).leaf = true
-	entry({"admin","network","vpn","openvpn"},call("action_openvpn"),_("Openvpn"),122)
-	entry({"admin","network","hosts"},call("action_hosts"),_("Hosts"),130).leaf = true
+	entry({"admin","network","upnpc"},cbi("admin_network/upnpc"),_("UPnP Client"),130).leaf = true
+	entry({"admin","network","vpn"}, alias("admin","network","vpn","pptp"),_("VPN Client"),140)
+	entry({"admin","network","vpn","pptp"},cbi("admin_network/pptp_client_edit"),_("PPTP"),140)
+	entry({"admin","network","vpn","l2tp"},cbi("admin_network/l2tp_client_edit"),_("L2TP"),141).leaf = true
+	entry({"admin","network","vpn","openvpn"},call("action_openvpn"),_("Openvpn"),142)
+	entry({"admin","network","hosts"},call("action_hosts"),_("Hosts"),150).leaf = true
 end
 
 function firewall()
@@ -409,17 +409,25 @@ function action_wds()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
 	local fs_server = require "luci.scripts.fs_server"
+	local fs = require "luci.fs"
 	
+	local dev_name = ""
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		dev_name = "ra0"
+	else
+		dev_name = "radio0"
+	end
+
 	uci:check_cfg("wireless")
 
-	local g_wds_mode = uci:get("wireless","ra0","wdsmode") or "disable"
+	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
 	local g_server_ssid = uci:get("wireless","wifi0","ssid")
 	local g_server_network = string.upper(uci:get("wireless","wifi0","network") or "")
 	
 	--@ service 
 	if luci.http.formvalue("save") then
 		g_wds_mode = luci.http.formvalue("wdsmode")
-		uci:set("wireless","ra0","wdsmode",g_wds_mode)
+		uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
 		uci:save("wireless")
 	end
 	
@@ -457,6 +465,7 @@ function action_wds()
 	local addnewable = true
 	local cnt = 0
 
+--[[
 	local tmp_cfg = uci:get_all("wireless") or {}
 	local wifi_list = fs_server.get_wifi_list()
 	
@@ -509,6 +518,7 @@ function action_wds()
 	 		end
 	 	end
 	 end
+]]--
 	if MAX_EXTENSION == cnt or g_wds_mode == "disable" then
 		addnewable = false
 	end

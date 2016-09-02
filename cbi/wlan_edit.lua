@@ -6,13 +6,13 @@ local uci = require "luci.model.uci".cursor()
 local fs = require "luci.fs"
 
 local dev_name = ""
-local if_name
+local if_prefix
 if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
     dev_name = "ra0"
-    if_name = "ra"
+    if_prefix = "ra"
 else
     dev_name = "radio0"
-    if_name = "radio"
+    if_prefix = "radio"
 end
 
 this_section = arg[1] or ""
@@ -141,7 +141,7 @@ function option.parse(self,section,value)
 
 		--@ set default option
 		m.uci:set("wireless",this_section,"device",dev_name)
-		m.uci:set("wireless",this_section,"ifname",if_name..(tonumber(tmp_index)-1))
+		m.uci:set("wireless",this_section,"ifname",if_prefix..(tonumber(tmp_index)-1))
 		m.uci:set("wireless",this_section,"mode","ap")
 	end
 end
