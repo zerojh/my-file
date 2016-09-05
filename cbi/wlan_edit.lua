@@ -123,6 +123,7 @@ option.default = "0"
 option:value("0",translate("Disable"))
 option:value("1",translate("Enable"))
 
+--[[
 --@ wps only for ra0/radio0
 if this_section == "wifi0" then
 	--@ WPS button
@@ -131,6 +132,7 @@ if this_section == "wifi0" then
 		option.template = "admin_network/wps"
 	end
 end
+]]--
 
 option = s:option(DummyValue,"tmp_no_useful",translate(""))
 function option.parse(self,section,value)

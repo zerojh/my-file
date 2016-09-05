@@ -249,7 +249,7 @@ function action_wps()
 	if not luci.http.formvalue("status") then
 		if action_type == "pin" then
 			--@ pin code set wps
-			luci.util.exec("iwpriv "..dev_name" set WscPinCode="..pin_code)
+			luci.util.exec("iwpriv "..dev_name.." set WscPinCode="..pin_code)
 			luci.util.exec("iwpriv "..dev_name.." set WscMode=1")
 			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
 		else
@@ -465,7 +465,6 @@ function action_wds()
 	local addnewable = true
 	local cnt = 0
 
---[[
 	local tmp_cfg = uci:get_all("wireless") or {}
 	local wifi_list = fs_server.get_wifi_list()
 	
@@ -514,11 +513,11 @@ function action_wds()
 					uci_cfg[cnt] = "wireless." .. k
 					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
 					table.insert(content,tmp)
-	 			end
-	 		end
-	 	end
-	 end
-]]--
+				end
+			end
+		end
+	end
+
 	if MAX_EXTENSION == cnt or g_wds_mode == "disable" then
 		addnewable = false
 	end
