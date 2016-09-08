@@ -267,7 +267,7 @@ function action_wps()
 end
 
 function action_wlan()
-	local MAX_EXTENSION = 1
+	local MAX_EXTENSION = 4
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
@@ -421,8 +421,6 @@ function action_wds()
 	uci:check_cfg("wireless")
 
 	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
-	local g_server_ssid = uci:get("wireless","wifi0","ssid")
-	local g_server_network = string.upper(uci:get("wireless","wifi0","network") or "")
 	
 	--@ service 
 	if luci.http.formvalue("save") then
@@ -530,8 +528,6 @@ function action_wds()
 		uci_cfg = uci_cfg,
 		status = status,
 		wds_mode = g_wds_mode,
-		server_ssid = g_server_ssid,
-		server_network = g_server_network,
 		addnewable = addnewable,
 		})
 end

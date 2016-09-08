@@ -5,38 +5,46 @@ function index()
 	local page
 	page = node("admin","network")
 	page.target = firstchild()
-	page.title  = _("Network")
-	page.order  = 40
-	page.index  = true
+	page.title	= _("Network")
+	page.order	= 40
+	page.index	= true
 	entry({"admin","network","network"}, cbi("admin_network/setting"), _("Setting"), 10).leaf = true
+	
+	entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
+	entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
+	entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
+	entry({"admin","network","wlan","wds_config"},call("action_wds"),_("WDS Config"),22)
+	entry({"admin","network","wlan","wds_config","edit"},cbi("admin_network/wds_edit"),nil,23).leaf = true
+	entry({"admin","network","wps"},call("action_wps"))
 	
 	--@ LTE License
 	if luci.version.license and luci.version.license.lte then
-		entry({"admin","network","lte"},cbi("admin_network/wan_lte_edit"),_("LTE"),11)
-		entry({"admin","network","uplink"},cbi("admin_network/uplink_edit"),_("Uplink Config"),12)
+		entry({"admin","network","lte"},cbi("admin_network/wan_lte_edit"),_("LTE"),30)
+		entry({"admin","network","uplink"},cbi("admin_network/uplink_edit"),_("Uplink Config"),40)
 	end
+
 	
-	entry({"admin","network","access_control"}, cbi("admin_network/access_control"), _("Access Control"), 13).leaf = true
-	entry({"admin","network","firewall"}, call("firewall"), _("Firewall"), 20)
-	entry({"admin","network","firewall","filter"},cbi("admin_network/filter_edit"),nil,20).leaf = true
-	entry({"admin","network","dhcp_server"}, cbi("admin_network/dhcp_server"), _("DHCP Server"), 30).leaf = true
-	entry({"admin","network","port_map"},call("port_map"),_("Port Mapping"),50)
-	entry({"admin","network","port_map","port_map"},cbi("admin_network/port_map_edit"),nil,50).leaf = true
-	entry({"admin","network","dmz"}, cbi("admin_network/dmz"), _("DMZ Setting"), 60).leaf = true
-	entry({"admin","network","diagnostics"},call("action_tcpdump"), _("Diagnostics"), 70).leaf = true
-	page = entry({"admin","network","ddns"},cbi("admin_network/ddns_config"), _("DDNS"), 80)
-	page.leaf = true
-	entry({"admin","network","static_route"}, call("static_route_list"),_("Static Route"),90)
-	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,90).leaf = true	
+	entry({"admin","network","access_control"}, cbi("admin_network/access_control"), _("Access Control"), 50).leaf = true
+	entry({"admin","network","firewall"}, call("firewall"), _("Firewall"), 60)
+	entry({"admin","network","firewall","filter"},cbi("admin_network/filter_edit"),nil,60).leaf = true
+	entry({"admin","network","dhcp_server"}, cbi("admin_network/dhcp_server"), _("DHCP Server"), 70).leaf = true
+	entry({"admin","network","port_map"},call("port_map"),_("Port Mapping"),80)
+	entry({"admin","network","port_map","port_map"},cbi("admin_network/port_map_edit"),nil,80).leaf = true
+	entry({"admin","network","dmz"}, cbi("admin_network/dmz"), _("DMZ Setting"), 90).leaf = true
+	entry({"admin","network","diagnostics"},call("action_tcpdump"), _("Diagnostics"), 100).leaf = true
+	entry({"admin","network","ddns"},cbi("admin_network/ddns_config"), _("DDNS"), 110).leaf = true
+
+	entry({"admin","network","static_route"}, call("static_route_list"),_("Static Route"),120)
+	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,120).leaf = true	
 	entry({"admin","network","diag_ping"}, call("diag_ping"), nil).leaf = true
 	entry({"admin","network","diag_nslookup"}, call("diag_nslookup"), nil).leaf = true
 	entry({"admin","network","diag_traceroute"}, call("diag_traceroute"), nil).leaf = true
-	entry({"admin","network","upnpc"},cbi("admin_network/upnpc"),_("UPnP Client"),91).leaf = true
-	entry({"admin","network","vpn"}, alias("admin","network","vpn","pptp"),_("VPN Client"),100)
-	entry({"admin","network","vpn","pptp"},cbi("admin_network/pptp_client_edit"),_("PPTP"),100)
-	entry({"admin","network","vpn","l2tp"},cbi("admin_network/l2tp_client_edit"),_("L2TP"),101).leaf = true
-	entry({"admin","network","vpn","openvpn"},call("action_openvpn"),_("Openvpn"),102)
-	entry({"admin","network","hosts"},call("action_hosts"),_("Hosts"),110).leaf = true
+	entry({"admin","network","upnpc"},cbi("admin_network/upnpc"),_("UPnP Client"),130).leaf = true
+	entry({"admin","network","vpn"}, alias("admin","network","vpn","pptp"),_("VPN Client"),140)
+	entry({"admin","network","vpn","pptp"},cbi("admin_network/pptp_client_edit"),_("PPTP"),140)
+	entry({"admin","network","vpn","l2tp"},cbi("admin_network/l2tp_client_edit"),_("L2TP"),141).leaf = true
+	entry({"admin","network","vpn","openvpn"},call("action_openvpn"),_("Openvpn"),142)
+	entry({"admin","network","hosts"},call("action_hosts"),_("Hosts"),150).leaf = true
 end
 
 function firewall()
@@ -111,8 +119,8 @@ function firewall()
 				--delchk[cnt] = uci:check_cfg_deps("endpoint_sipphone",k,"route.endpoint")
 				uci_cfg[cnt] = "firewall." .. k
 				table.insert(content,tmp)
-	 		end
-	 	end
+			end
+		end
 	 end
 	if MAX_RULE == cnt then
 		addnewable = false
@@ -176,8 +184,8 @@ function port_map()
 				edit[cnt] = ds.build_url("admin","network","port_map","port_map",k,"edit")
 				uci_cfg[cnt] = "firewall." .. k
 				table.insert(content,tmp)
-	 		end
-	 	end
+			end
+		end
 	 end
 	if MAX_RULE == cnt then
 		addnewable = false
@@ -225,11 +233,314 @@ function diag_nslookup()
 	diag_command("nslookup %q 2>&1")
 end
 
+function action_wps()
+	local util = require "luci.util"
+	local action_type = luci.http.formvalue("action_type")
+	local pin_code = luci.http.formvalue("pin_code")
+	local fs = require "luci.fs"
+
+	local dev_name = ""
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		dev_name = "ra0"
+	else
+		dev_name = "radio0"
+	end
+
+	if not luci.http.formvalue("status") then
+		if action_type == "pin" then
+			--@ pin code set wps
+			luci.util.exec("iwpriv "..dev_name.." set WscPinCode="..pin_code)
+			luci.util.exec("iwpriv "..dev_name.." set WscMode=1")
+			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+		else
+			--@ pbc set wps
+			luci.util.exec("iwpriv "..dev_name.." set WscMode=2")
+			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+		end
+		luci.util.exec("iwpriv "..dev_name.." show WscPeerList && dmesg -c")		
+	end
+	
+	local ret_status = luci.util.exec("iwpriv "..dev_name.." show WscPeerList && dmesg -c"):match(dev_name.."%s*WscStatus:%s*([0-9]+)")
+	
+	luci.http.prepare_content("application/json")
+	luci.http.write_json({ status = ret_status})
+end
+
+function action_wlan()
+	local MAX_EXTENSION = 1
+	local uci = require "luci.model.uci".cursor()
+	local ds = require "luci.dispatcher"
+	local i18n = require "luci.i18n"
+	local fs = require "luci.fs"
+
+	local dev_name = ""
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		dev_name = "ra0"
+	else
+		dev_name = "radio0"
+	end
+
+	uci:check_cfg("wireless")
+
+	local g_channel = uci:get("wireless",dev_name,"channel")
+	local g_bandwidth = uci:get("wireless",dev_name,"htmode")
+	local g_hwmode = uci:get("wireless",dev_name,"hwmode") or "11bgn"
+	local g_txpower = uci:get("wireless",dev_name,"txpower") or "100"
+	local g_isolate = uci:get("wireless",dev_name,"isolate")
+	local g_disabled = uci:get("wireless",dev_name,"disabled") or "0"
+	local g_wps = uci:get("wireless",dev_name,"wps") or "off"
+	
+	--@ service save
+	if luci.http.formvalue("save") then
+		g_channel = luci.http.formvalue("channel")
+		g_bandwidth = luci.http.formvalue("bandwidth")
+		g_hwmode = luci.http.formvalue("hwmode") 
+		g_txpower = luci.http.formvalue("txpower")
+		g_isolate = luci.http.formvalue("isolate")
+		g_disabled = luci.http.formvalue("disabled")
+		g_wps = luci.http.formvalue("wps")
+		
+		uci:set("wireless",dev_name,"channel",g_channel)
+		uci:set("wireless",dev_name,"htmode",g_bandwidth)
+		uci:set("wireless",dev_name,"hwmode",g_hwmode)
+		uci:set("wireless",dev_name,"txpower",g_txpower)
+		uci:set("wireless",dev_name,"isolate",g_isolate)
+		uci:set("wireless",dev_name,"wps",g_wps)
+
+		local tmp_cfg = uci:get_all("wireless") or {}
+		for k,v in pairs(tmp_cfg) do
+			if v['.type'] == "wifi-device" then
+				uci:set("wireless",k,"disabled",g_disabled)
+			end
+		end
+		
+		uci:save("wireless")
+	end
+	
+	local del_target = luci.http.formvaluetable("Delete")
+	if del_target then
+		uci:delete_section(del_target)
+	end
+
+	if luci.http.formvalue("New") then
+		local created = uci:section("wireless","wifi-iface")
+		uci:save("wireless")
+		luci.http.redirect(ds.build_url("admin","network","wlan","wlan_config","edit",created,"add"))
+		return
+	end
+	
+	--@ Enable/Disable
+	local status_target = luci.http.formvaluetable("Status")
+	if status_target and "table" == type(status_target) then
+		for k,v in pairs(status_target) do
+			local state,cfg,section = k:match("([A-Za-z]+)%.([a-zA-Z_]+)%.(%w+).x")
+			if cfg and section and state then
+				uci:set(cfg,section,"disabled",state == "Enabled" and "0" or "1")
+				uci:save(cfg)
+			end
+		end
+	end
+
+	local th = {"Index","SSID","Encryption","Interface","Isolation","WMM","Status"}
+	local colgroup = {"5%","25%","15%","15%","10%","10%","10%","10%"}
+	local content = {}
+	local edit = {}
+	local delchk = {}
+	local uci_cfg = {}
+	local status = {}
+	local addnewable = true
+	local cnt = 0
+
+	local tmp_cfg = uci:get_all("wireless") or {}
+	
+	for i=1,MAX_EXTENSION do
+		for k,v in pairs(tmp_cfg) do
+			if v.index and v['.type'] == "wifi-iface" and v.ssid then
+				if i == tonumber(v.index) then
+					cnt = cnt + 1
+					local tmp = {}
+					tmp[1] = v.index
+					tmp[2] = v.ssid
+					tmp[3] = v.encryption == "none" and i18n.translate("NONE") or (v.encryption == "psk" and "WPA+PSK" or "WPA2+PSK")
+					tmp[4] = v.network == "lan" and "LAN" or v.network
+					tmp[5] = i18n.translate(v.isolate == "0" and "Disabled" or "Enabled")
+					tmp[6] = i18n.translate(v.wmm == "0" and "Off" or "On")
+					tmp[7] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
+					
+					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
+					uci_cfg[cnt] = "wireless." .. k
+					if cnt ~= 1 then
+						delchk[cnt] = ""
+					end
+					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
+					table.insert(content,tmp)
+	 			end
+	 		elseif v['.type'] == "wifi-iface" and not v.index then
+	 			--uci:delete("wireless",k)
+	 			--uci:save("wireless")
+	 		end
+	 	end
+	 end
+	if MAX_EXTENSION == cnt then
+		addnewable = false
+	end
+	luci.template.render("admin_network/wlan",{
+		colgroup = colgroup,
+		th = th,
+		content = content,
+		edit = edit,
+		delchk = delchk,
+		uci_cfg = uci_cfg,
+		status = status,
+		channel = g_channel,
+		txpower = g_txpower,
+		bandwidth = g_bandwidth,
+		hwmode = g_hwmode,
+		isolate = g_isolate,
+		disabled = g_disabled,
+		wps = g_wps,
+		addnewable = addnewable,
+		})
+end
+
+function action_wds()
+	local MAX_EXTENSION = 1
+	local uci = require "luci.model.uci".cursor()
+	local ds = require "luci.dispatcher"
+	local i18n = require "luci.i18n"
+	local fs_server = require "luci.scripts.fs_server"
+	local fs = require "luci.fs"
+	
+	local dev_name = ""
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		dev_name = "ra0"
+	else
+		dev_name = "radio0"
+	end
+
+	uci:check_cfg("wireless")
+
+	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
+	local g_server_ssid = uci:get("wireless","wifi0","ssid")
+	local g_server_network = string.upper(uci:get("wireless","wifi0","network") or "")
+	
+	--@ service 
+	if luci.http.formvalue("save") then
+		g_wds_mode = luci.http.formvalue("wdsmode")
+		uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
+		uci:save("wireless")
+	end
+	
+	local del_target = luci.http.formvaluetable("Delete")
+	if del_target then
+		uci:delete_section(del_target)
+	end
+
+	if luci.http.formvalue("New") then
+		local created = uci:section("wireless","wifi-iface")
+		uci:save("wireless")
+		luci.http.redirect(ds.build_url("admin","network","wlan","wds_config","edit",created,"add"))
+		return
+	end
+	
+	--@ Enable/Disable
+	local status_target = luci.http.formvaluetable("Status")
+	if status_target and "table" == type(status_target) then
+		for k,v in pairs(status_target) do
+			local state,cfg,section = k:match("([A-Za-z]+)%.([a-zA-Z_]+)%.(%w+).x")
+			if cfg and section and state then
+				uci:set(cfg,section,"disabled",state == "Enabled" and "0" or "1")
+				uci:save(cfg)
+			end
+		end
+	end
+
+	local th = {"Index","SSID","Encryption","Physical Mode","Status"}
+	local colgroup = {"5%","30%","15%","25%","15%","10%"}
+	local content = {}
+	local edit = {}
+	local delchk = {}
+	local uci_cfg = {}
+	local status = {}
+	local addnewable = true
+	local cnt = 0
+
+	local tmp_cfg = uci:get_all("wireless") or {}
+	local wifi_list = fs_server.get_wifi_list()
+	
+	function change_encryption_view(param)
+		local ret_str = ""
+
+		if param == "aes" then
+			ret_str = "AES"
+		elseif param == "psk" then
+			ret_str = "WPA+PSK"
+		elseif param == "psk2" then
+			ret_str = "WPA2+PSK"
+		elseif param == "none" then
+			ret_str = i18n.translate("NONE")
+		end
+		
+		return ret_str
+	end
+
+	function change_view(param)
+		local ret_str = param
+		
+		for k,v in pairs(wifi_list) do
+			if v.bssid == param then
+				ret_str = v.ssid
+				break
+			end
+		end
+
+		return ret_str
+	end
+	
+	for i=1,MAX_EXTENSION do
+		for k,v in pairs(tmp_cfg) do
+			if v.index and v['.type'] == "wifi-iface" and v.wdsphymode then
+				if i == tonumber(v.index) then
+					cnt = cnt + 1
+					local tmp = {}
+					tmp[1] = v.index
+					tmp[2] = g_wds_mode == "lazy" and "" or (change_view(v.wdspeermac or ""))
+					tmp[3] = change_encryption_view(v.wdsencryptype or "")
+					tmp[4] = v.wdsphymode or ""
+					tmp[5] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
+					
+					edit[cnt] = ds.build_url("admin","network","wlan","wds_config","edit",k,"edit")
+					uci_cfg[cnt] = "wireless." .. k
+					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
+					table.insert(content,tmp)
+				end
+			end
+		end
+	end
+
+	if MAX_EXTENSION == cnt or g_wds_mode == "disable" then
+		addnewable = false
+	end
+	luci.template.render("admin_network/wds",{
+		colgroup = colgroup,
+		th = th,
+		content = content,
+		edit = edit,
+		delchk = delchk,
+		uci_cfg = uci_cfg,
+		status = status,
+		wds_mode = g_wds_mode,
+		server_ssid = g_server_ssid,
+		server_network = g_server_network,
+		addnewable = addnewable,
+		})
+end
+
 function action_tcpdump()
 	local sys = require "luci.sys"
 	local fs  = require "luci.fs"
 	local util = require "luci.util"
- 	local uci = require "luci.model.uci".cursor()
+	local uci = require "luci.model.uci".cursor()
 
 	if luci.http.formvalue("diag_tcpdump_start") then
 		local tcpdump_cmd
@@ -429,7 +740,7 @@ function static_route_list()
 				--delchk[cnt] = uci:check_cfg_deps("static_route",k,"route.endpoint")
 				uci_cfg[cnt] = "static_route." .. k
 				table.insert(content,tmp)
-	 		end
+			end
 		end				
 	end
 	if MAX_RULE == cnt then
