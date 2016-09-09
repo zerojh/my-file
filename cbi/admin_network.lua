@@ -404,7 +404,7 @@ function action_wlan()
 end
 
 function action_wds()
-	local MAX_EXTENSION = 1
+	local MAX_EXTENSION = 4
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
@@ -453,8 +453,8 @@ function action_wds()
 		end
 	end
 
-	local th = {"Index","SSID","Encryption","Physical Mode","Status"}
-	local colgroup = {"5%","30%","15%","25%","15%","10%"}
+	local th = {"Index","SSID","SSID","Encryption","Physical Mode","Status"}
+	local colgroup = {"5%","20%","20%","15%","15%","15%","10%"}
 	local content = {}
 	local edit = {}
 	local delchk = {}
@@ -495,17 +495,25 @@ function action_wds()
 		return ret_str
 	end
 	
+	local tmp_ssid_tb = {}
+	for k,v in pairs(tmp_cfg) do
+		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"ra") then
+			tmp_ssid_tb[v.ifname] = v.ssid
+		end
+	end
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
-			if v.index and v['.type'] == "wifi-iface" and v.wdsphymode then
+			if v.index and v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
 				if i == tonumber(v.index) then
 					cnt = cnt + 1
 					local tmp = {}
+					local ifname = v.ifname
 					tmp[1] = v.index
-					tmp[2] = g_wds_mode == "lazy" and "" or (change_view(v.wdspeermac or ""))
-					tmp[3] = change_encryption_view(v.wdsencryptype or "")
-					tmp[4] = v.wdsphymode or ""
-					tmp[5] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
+					tmp[2] = tmp_ssid_tb["ra"..ifname:match("wds(%d+)")]
+					tmp[3] = g_wds_mode == "lazy" and "" or (change_view(v.wdspeermac or ""))
+					tmp[4] = change_encryption_view(v.wdsencryptype or "")
+					tmp[5] = v.wdsphymode or ""
+					tmp[6] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
 					
 					edit[cnt] = ds.build_url("admin","network","wlan","wds_config","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k

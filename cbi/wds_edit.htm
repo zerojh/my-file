@@ -1,5 +1,5 @@
 <%-
-    local uci = require "luci.model.uci".cursor()
+	local uci = require "luci.model.uci".cursor()
 
 -%>
 
@@ -176,6 +176,23 @@ text-align:left;
 				<% end %>
 			</td>			
 		</tr>	
+		<!--local ssid-->
+		<tr >
+			<td width="40%" ><%:SSID%></td>
+			<td >
+				<select class="cbi-input-select" id="wds_ifname" name="wds.ifname" >
+					<%
+						local str = ""
+						
+						for k,v in pairs(local_ssid) do
+							str = str.."<option value='"..k.."' >"..v.."</option>"	
+						end
+
+						write(str)
+					%>
+				</select>
+			</td>			
+		</tr>	
 		<!--status-disabled-->
 		<tr >
 			<td ><%:Status%></td>
@@ -228,9 +245,7 @@ text-align:left;
 				</td>			
 			</tr>
 		<% end %>
-		<!--channel-->
-		<tr >
-			<td width="40%" ><%:Channel%></td>
+		<!--channel--> <tr > <td width="40%" ><%:Channel%></td>
 			<td >
 				<label id="channel" name="channel" >-</label>
 			</td>			
@@ -283,7 +298,7 @@ text-align:left;
 		<tr>
 			<td >&nbsp;</td>
 			<td>
-	       	 	<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" />
+				<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" />
 				<input class="cbi-button cbi-button-save" type="submit" name="save" value="<%:Save%>" onclick="return save_action();"/>
 				<input class="cbi-button" type="reset" value="<%:Reset%>" />
 			</td>
