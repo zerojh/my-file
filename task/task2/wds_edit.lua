@@ -22,7 +22,7 @@ if luci.http.formvalue("save") then
 	--@ save action
 	local wds_config_tb = luci.http.formvaluetable("wds") or {}
 
-	--@ 
+	--@
 	for k,v in pairs(wds_config_tb) do
 		if k ~= "cus_bssid" and v then
 			uci:set("wireless",this_section,k,v)
@@ -31,6 +31,10 @@ if luci.http.formvalue("save") then
 
 	if wds_config_tb.cus_bssid and wds_config_tb.wdspeermac == "none" then
 		uci:set("wireless",this_section,"wdspeermac",wds_config_tb.cus_bssid)
+	end
+
+	if wds_config_tb.wdsencryptype == "none" then
+		uci:delete("wireless",this_section,"wdskey")
 	end
 	
 	--@ new section

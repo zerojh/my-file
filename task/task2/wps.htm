@@ -24,6 +24,7 @@
 		}
 	}
 	
+	var break_flag = false
 	function action_wps(bt)
 	{
 		var bt_name = bt.name
@@ -41,7 +42,14 @@
 			var timeuse = 0
 			
 			var this_id = window.setInterval(function(){
-				var break_flag = false
+				if (break_flag == true || timeuse > 120 )
+				{
+					document.getElementById('pin_code').disabled = false
+					document.getElementById('pin').disabled = status
+					document.getElementById('pbc').disabled = false	
+					window.clearInterval(this_id)
+					return
+				}
 				
 				XHR.get('<%=luci.dispatcher.build_url("admin", "network", "wps")%>',{ status:1 },
 				function(x,info){
@@ -49,12 +57,12 @@
 					
 					if (info.status == "2")
 					{
-						$('#con_status').text('<%:Failed%>'+' ...... '+timeuse)
+						$('#con_status').text('<%:Failed%>')
 						break_flag = true
 					}
 					else if (info.status == "34")
 					{
-						$('#con_status').text('<%:Connected%>'+' ...... '+timeuse)
+						$('#con_status').text('<%:Connected%>')
 						break_flag = true
 					}
 					else
@@ -63,14 +71,6 @@
 						break_flag = false
 					}
 				})
-
-				if (break_flag == true || timeuse > 120 )
-				{
-					document.getElementById('pin_code').disabled = false
-					document.getElementById('pin').disabled = status
-					document.getElementById('pbc').disabled = false	
-					window.clearInterval(this_id)
-				}
 			},5000)
 		})
 	}
