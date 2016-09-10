@@ -1,0 +1,194 @@
+msgid "AddCfg"
+msgstr "Add New Config"
+
+msgid "SaveNewCfg"
+msgstr "Save New Config"
+
+msgid "CancelNewCfg"
+msgstr "Cancel New Config"
+
+msgid "SaveEditCfg"
+msgstr "Save Edit Config"
+
+msgid "CancelEditCfg"
+msgstr "Cancel Edit Config"
+
+msgid "EditCfg"
+msgstr "Edit Config"
+
+msgid "DelCfg"
+msgstr "Delete Config"
+
+msgid "QueryCDRs"
+msgstr "Query CDRs"
+
+msgid "ChangePassword"
+msgstr "Change Password"
+
+msgid "LoginFail"
+msgstr "Login Fail"
+
+msgid "LoginSucc"
+msgstr "Login Succ"
+
+msgid "SendMsg"
+msgstr "Send SMS"
+
+msgid "UpgradeSysSucc"
+msgstr "Upgrade Sys Succ"
+
+msgid "UpgradeSysFail"
+msgstr "Upgrade Sys Fail"
+
+msgid "UpgradeFXSSucc"
+msgstr "Upgrade FXS Succ"
+
+msgid "UpgradeFXSFail"
+msgstr "Upgrade FXS Fail"
+
+msgid "UpgradeFXOSucc"
+msgstr "Upgrade FXO Succ"
+
+msgid "UpgradeFXOFail"
+msgstr "Upgrade FXO Fail"
+
+msgid "UpgradeGSMSucc"
+msgstr "Upgrade GSM Succ"
+
+msgid "UpgradeGSMFail"
+msgstr "Upgrade GSM Fail"
+
+msgid "UpgradeCDMASucc"
+msgstr "Upgrade CDMA Succ"
+
+msgid "UpgradeCDMAFail"
+msgstr "Upgrade CDMA Fail"
+
+msgid "route"
+msgstr "Route"
+
+msgid "profile_sip"
+msgstr "SIP Profile"
+
+msgid "endpoint_mobile"
+msgstr "GSM/CDMA Trunk"
+
+msgid "endpoint_siptrunk"
+msgstr "SIP Trunk"
+
+msgid "sequence"
+msgstr "Sequence(Ascending)"
+
+msgid "loop_sequence"
+msgstr "Sequence(Cyclic Ascending)"
+
+msgid "simultaneous"
+msgstr "Simultaneous"
+
+msgid "random"
+msgstr "Random"
+
+msgid "udp"
+msgstr "UDP"
+
+msgid "tcp"
+msgstr "TCP"
+
+msgid "auto"
+msgstr "Auto"
+
+msgid "dhcp"
+msgstr "DHCP"
+
+msgid "static"
+msgstr "Static"
+
+msgid "pppoe"
+msgstr "PPPoE"
+
+msgid "Chinese"
+msgstr "中文"
+
+msgid "ORIGINATOR_CANCEL"
+msgstr "Caller Cancel"
+
+msgid "NORMAL_CLEARING"
+msgstr "Normal Clearing"
+
+msgid "NORMAL_UNSPECIFIED"
+msgstr "Normal,Unspecified"
+
+msgid "SYSTEM_SHUTDOWN"
+msgstr "System Shutdown"
+
+msgid "NO_ROUTE_DESTINATION"
+msgstr "No Route Destination"
+
+msgid "NORMAL_TEMPORARY_FAILURE"
+msgstr "Temporary Failure"
+
+msgid "CALL_REJECTED"
+msgstr "Call Reject"
+
+msgid "INCOMPATIBLE_DESTINATION"
+msgstr "Incompatible Destination"
+
+msgid "INVALID_GATEWAY"
+msgstr "Invalid Gateway"
+
+msgid "USER_BUSY"
+msgid "User Busy"
+
+msgid "NORMAL_CIRCUIT_CONGESTION"
+msgstr "Circuit Congestion"
+
+msgid "UNALLOCATED_NUMBER"
+msgstr "Unallocated Number"
+
+msgid "GATEWAY_DOWN"
+msgstr "Gateway Down"
+
+msgid "NONE"
+msgstr "None"
+
+msgid "NO_ANSWER"
+msgstr "No User Answer"
+
+msgid "RECOVERY_ON_TIMER_EXPIRE"
+msgstr "Recovery on Timer Expire"
+
+msgid "EXCHANGE_ROUTING_ERROR"
+msgstr "Exchange Routeing Err"
+
+msgid "USER_NOT_REGISTERED"
+msgstr "User not Registered"
+
+msgid "DESTINATION_OUT_OF_ORDER"
+msgstr "Dest Out of Order"
+
+msgid "NO_USER_RESPONSE"
+msgstr "No User Response"
+
+msgid "REQUESTED_CHAN_UNAVAIL"
+msgstr "Channel Unavailable"
+
+msgid "t30"
+msgstr "T.30"
+
+msgid "t38"
+msgstr "T.38"
+
+msgid "ntp"
+msgstr "NTP"
+
+msgid "http"
+msgstr "HTTP"
+
+msgid "https"
+msgstr "HTTPS"
+
+msgid "telnet"
+msgstr "Telnet"
+
+msgid "defaults"
+msgstr "General"
