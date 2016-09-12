@@ -352,6 +352,12 @@ function action_wlan()
 	local cnt = 0
 
 	local tmp_cfg = uci:get_all("wireless") or {}
+	local wds_tb = {}
+	for k,v in pairs(tmp_cfg) do
+		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
+			wds_tb[v.ifname] = 1
+		end
+	end
 	
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
@@ -370,14 +376,17 @@ function action_wlan()
 					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k
 					if cnt ~= 1 then
-						delchk[cnt] = ""
+						local ssid_str = v.ifname
+						local wds_str = "wds"..ssid_str:match("ra(%d+)")
+						if wds_tb[wds_str] then
+							delchk[cnt] = "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false"
+						else
+							delchk[cnt] = "return true"
+						end
 					end
 					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
 					table.insert(content,tmp)
 	 			end
-	 		elseif v['.type'] == "wifi-iface" and not v.index then
-	 			--uci:delete("wireless",k)
-	 			--uci:save("wireless")
 	 		end
 	 	end
 	 end
@@ -410,6 +419,7 @@ function action_wds()
 	local i18n = require "luci.i18n"
 	local fs_server = require "luci.scripts.fs_server"
 	local fs = require "luci.fs"
+	local util = require "luci.util"
 	
 	local dev_name = ""
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
@@ -453,13 +463,14 @@ function action_wds()
 		end
 	end
 
-	local th = {"Index","SSID","SSID","Encryption","Physical Mode","Status"}
+	local th = {"Index","Local SSID","Remote SSID","Encryption","Physical Mode","Status"}
 	local colgroup = {"5%","20%","20%","15%","15%","15%","10%"}
 	local content = {}
 	local edit = {}
 	local delchk = {}
 	local uci_cfg = {}
 	local status = {}
+	local message = {}
 	local addnewable = true
 	local cnt = 0
 
@@ -501,6 +512,18 @@ function action_wds()
 			tmp_ssid_tb[v.ifname] = v.ssid
 		end
 	end
+
+	local tmp_wds_info = {}
+	local info = util.exec("cat /tmp/wdsinfo")
+	info = util.split(info,"\n")
+	for _,v in pairs(info) do
+		local wds_str,status = info:match("(WDS%d+).-%((%a+)%)")
+		if wds_str and status then
+			wds_str = wds_str:lower()
+			message[wds_str] = status
+		end
+	end
+
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
 			if v.index and v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then

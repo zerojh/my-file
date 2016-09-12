@@ -53,38 +53,53 @@ table {
 	<fieldset>
 		<table class="cbi-section-table">
 		<% 
-		if colgroup then
-			for k,v in ipairs(colgroup) do 
+			if colgroup then
+				for k,v in ipairs(colgroup) do 
 		%>
 			<col style="width:<%=v%>">
 		<%	
+				end
 			end
-		end
 		%>
 			<tbody>
-			<% if th then %>
+			<%
+				if th then
+			%>
 				<tr>
-				<% for k,v in ipairs(th) do %>
+				<%
+					for k,v in ipairs(th) do 
+				%>
 					<th><%=translate(v)%></th>
-				<% end %>
-				<% if edit or delchk then %>
+				<%
+					end
+				%>
+				<%
+					if edit or delchk then
+				%>
 					<th></th>
-				<% end %>
+				<%
+					end
+				%>
 				</tr>
-			<% end %>
-			<% if #content > 0 then
+			<%
+				end
+			%>
+			<%
+				if #content > 0 then
 				for k,v in ipairs(content) do
 					if 1 == k%2 then
 			%>
 				<tr class='cbi-rowstyle-odd'>
-			<% else %>
+			<% 
+					else
+			%>
 				<tr class='cbi-rowstyle-even'>
 			<%
-			end 
-			for i,j in ipairs(v) do
-				if "table" == type(j) then
+					end 
+					for i,j in ipairs(v) do
+						if "table" == type(j) then
 			%>
-						<td><table>
+					<td><table>
 						<%
 							local td_cnt = 0
 							local col = split_col
@@ -92,18 +107,19 @@ table {
 								col = #j
 							end
 							for x,y in ipairs(j) do
-								
 								if 0 == (td_cnt % col) then
 						%>
-									<tr>
-							<%	end %>
+							<tr>
+							<%
+								end
+							%>
 
 								<td class="<%=classname or "nopadding"%>"><%=y%></td>
 							<%	
 								td_cnt = td_cnt + 1
 								if 0 == (td_cnt % col) then 
 							%>
-									</tr>
+							</tr>
 						<% 
 								end
 							end
@@ -114,7 +130,9 @@ table {
 							end
 						%>
 						</td></table>
-					<% else %>
+					<%
+						else
+					%>
 						<td><%=j%></td>
 				<%		
 						end
