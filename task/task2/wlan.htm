@@ -1,15 +1,15 @@
 <%+header%>
 <style type="text/css">
 table td.nopadding{
-    padding:0px 0px 0px 10px;
+	padding:0px 0px 0px 10px;
 }
 table td.paddingtight{
-    padding:0px 0px 0px 0px;
+	padding:0px 0px 0px 0px;
 }
 table td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 table {
 	table-layout:fixed;
@@ -36,6 +36,20 @@ table {
 					</select>
 				</div>			
 			</div>		
+			<!--wds mode-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:WDS Service%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="wdsmode" name="wdsmode" >
+						<option value="lazy" <%=("lazy" == wds_mode) and "selected" or ""%>><%:Lazy%></option>
+						<option value="bridge" <%=("bridge" == wds_mode) and "selected" or ""%>><%:Bridge%></option>
+						<option value="repeater" <%=("repeater" == wds_mode) and "selected" or ""%>><%:Repeater%></option>
+						<option value="disable" <%=("disable" == wds_mode) and "selected" or ""%>><%:Disable%></option>
+					</select>
+				</div>
+			</div>
 			<!--channel-->
 			<div class="cbi-section-node">
 				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
@@ -183,10 +197,10 @@ table {
 								if 0 == (td_cnt % col) then
 						%>
 									<tr>
-							<%  end %>
+							<%	end %>
 
 								<td class="<%=classname or "nopadding"%>"><%=y%></td>
-							<% 	
+							<%	
 								td_cnt = td_cnt + 1
 								if 0 == (td_cnt % col) then 
 							%>
@@ -225,7 +239,7 @@ table {
 					
 					</td>
 					
-				<%  
+				<%	
 					end 
 				end
 				%>
@@ -235,9 +249,9 @@ table {
 				if edit and delchk then 
 			%>
 					<tr><td colspan="<%=#th+1%>"><%=translate("This section contains no values yet")%></td></tr>
-			<% 	else %>
+			<%	else %>
 					<tr><td colspan="<%=#th%>"><%=translate("This section contains no values yet")%></td></tr>
-			<% 	
+			<%	
 				end 
 			end
 			%>

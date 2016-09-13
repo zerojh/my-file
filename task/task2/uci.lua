@@ -195,7 +195,7 @@ function action_apply()
 						apply_param.sipendpoint = "on"
 					end
 				end
-		    end
+			end
 		elseif "endpoint_mobile" == r or "profile_mobile" == r then
 			apply_param.mobile = "on"
 			apply_param.route = "on"
@@ -223,7 +223,7 @@ function action_apply()
 						apply_param.sipprofile = "on"
 					end
 				end
-		    end
+			end
 		elseif "feature_code" == r then
 			apply_param.featurecode = "on"
 			apply_param.extension = "on"
@@ -307,6 +307,8 @@ function action_apply()
 			
 		elseif "network" == r then
 			apply_param.network = "on"
+		elseif "wireless" == r then
+			apply_param.network = "on"
 		elseif "static_route" == r then
 			apply_param.static_route = "on"
 			apply_param.network = "on"
@@ -342,8 +344,7 @@ function action_apply()
 			apply_param.openvpn = "on"
 		elseif "xl2tpd" == r then
 			apply_param.xl2tpd = "reload"
-			if tbl.l2tpd or tbl.main then
-				apply_param.xl2tpd = "restart"
+			if tbl.l2tpd or tbl.main then apply_param.xl2tpd = "restart"
 				apply_param.firewall = "on"
 			end
 		elseif "pptpc" == r then

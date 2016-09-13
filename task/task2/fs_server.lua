@@ -775,19 +775,13 @@ function get_wifi_list(param)
 	local ret_wifi_list = {}
 	local wifi_list_dir = "/tmp/ra0_wifi_list"
 	local fs = require "luci.fs"
+	local param = param
 
-	if fs.access(wifi_list_dir) then
-		local modify_time = fs.mtime(wifi_list_dir)
-		local cur_time = os.time()
-
-		if cur_time - modify_time > 300 then
-			param = "refresh"
-		end
-	else
+	if not fs.access(wifi_list_dir) then
 		param = "refresh"
 	end
 	
-	if param == "refresh" then
+	if param and param == "refresh" then
 		local ret_str = luci.util.exec("iwpriv ra0 set SiteSurvey=")
 		ret_str = luci.util.exec("iwpriv ra0 get_site_survey")
 

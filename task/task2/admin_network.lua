@@ -274,10 +274,13 @@ function action_wlan()
 	local fs = require "luci.fs"
 
 	local dev_name = ""
+	local ra_name = ""
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 		dev_name = "ra0"
+		ra_name = "ra"
 	else
 		dev_name = "radio0"
+		ra_name = "radio"
 	end
 
 	uci:check_cfg("wireless")
@@ -289,6 +292,7 @@ function action_wlan()
 	local g_isolate = uci:get("wireless",dev_name,"isolate")
 	local g_disabled = uci:get("wireless",dev_name,"disabled") or "0"
 	local g_wps = uci:get("wireless",dev_name,"wps") or "off"
+	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
 	
 	--@ service save
 	if luci.http.formvalue("save") then
@@ -299,20 +303,16 @@ function action_wlan()
 		g_isolate = luci.http.formvalue("isolate")
 		g_disabled = luci.http.formvalue("disabled")
 		g_wps = luci.http.formvalue("wps")
+		g_wds_mode = luci.http.formvalue("wdsmode")
 		
 		uci:set("wireless",dev_name,"channel",g_channel)
 		uci:set("wireless",dev_name,"htmode",g_bandwidth)
 		uci:set("wireless",dev_name,"hwmode",g_hwmode)
 		uci:set("wireless",dev_name,"txpower",g_txpower)
 		uci:set("wireless",dev_name,"isolate",g_isolate)
+		uci:set("wireless",dev_name,"disabled",g_disabled)
 		uci:set("wireless",dev_name,"wps",g_wps)
-
-		local tmp_cfg = uci:get_all("wireless") or {}
-		for k,v in pairs(tmp_cfg) do
-			if v['.type'] == "wifi-device" then
-				uci:set("wireless",k,"disabled",g_disabled)
-			end
-		end
+		uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
 		
 		uci:save("wireless")
 	end
@@ -377,7 +377,7 @@ function action_wlan()
 					uci_cfg[cnt] = "wireless." .. k
 					if cnt ~= 1 then
 						local ssid_str = v.ifname
-						local wds_str = "wds"..ssid_str:match("ra(%d+)")
+						local wds_str = "wds"..ssid_str:match(ra_name.."(%d+)")
 						if wds_tb[wds_str] then
 							delchk[cnt] = "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false"
 						else
@@ -408,6 +408,7 @@ function action_wlan()
 		isolate = g_isolate,
 		disabled = g_disabled,
 		wps = g_wps,
+		wds_mode = g_wds_mode,
 		addnewable = addnewable,
 		})
 end
@@ -422,10 +423,13 @@ function action_wds()
 	local util = require "luci.util"
 	
 	local dev_name = ""
+	local ra_name = ""
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 		dev_name = "ra0"
+		ra_name = "ra"
 	else
 		dev_name = "radio0"
+		ra_name = "radio"
 	end
 
 	uci:check_cfg("wireless")
@@ -435,7 +439,7 @@ function action_wds()
 	--@ service 
 	if luci.http.formvalue("save") then
 		g_wds_mode = luci.http.formvalue("wdsmode")
-		uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
+		--uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
 		uci:save("wireless")
 	end
 	
@@ -482,7 +486,7 @@ function action_wds()
 
 		if param == "aes" then
 			ret_str = "AES"
-		elseif param == "psk" then
+		elseif parama== "psk" then
 			ret_str = "WPA+PSK"
 		elseif param == "psk2" then
 			ret_str = "WPA2+PSK"
@@ -508,11 +512,12 @@ function action_wds()
 	
 	local tmp_ssid_tb = {}
 	for k,v in pairs(tmp_cfg) do
-		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"ra") then
+		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,ra_name) then
 			tmp_ssid_tb[v.ifname] = v.ssid
 		end
 	end
 
+--[[
 	local tmp_wds_info = {}
 	local info = util.exec("cat /tmp/wdsinfo")
 	info = util.split(info,"\n")
@@ -523,6 +528,7 @@ function action_wds()
 			message[wds_str] = status
 		end
 	end
+]]--
 
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
@@ -532,7 +538,7 @@ function action_wds()
 					local tmp = {}
 					local ifname = v.ifname
 					tmp[1] = v.index
-					tmp[2] = tmp_ssid_tb["ra"..ifname:match("wds(%d+)")]
+					tmp[2] = tmp_ssid_tb[ra_name..ifname:match("wds(%d+)")]
 					tmp[3] = g_wds_mode == "lazy" and "" or (change_view(v.wdspeermac or ""))
 					tmp[4] = change_encryption_view(v.wdsencryptype or "")
 					tmp[5] = v.wdsphymode or ""

@@ -7,10 +7,13 @@ local fs_server = require "luci.scripts.fs_server"
 local fs = require "luci.fs"
 
 local dev_name = ""
+local ra_name = ""
 if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 	dev_name = "ra0"
+	ra_name = "ra"
 else
 	dev_name = "radio0"
+	ra_name = "radio"
 end
 
 local this_section = arg[1] or ""
@@ -64,7 +67,7 @@ else
 	local tmp_ssid_tb = {}
 	local tmp_wds_tb = {}
 	for k,v in pairs(profile) do
-		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"ra") then
+		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,ra_name) then
 			tmp_ssid_tb[v.ifname] = v.ssid
 		end
 		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
@@ -91,7 +94,7 @@ else
 	else
 		local tmp_tb = uci:get_all("wireless",this_section) or {}
 		local wds_str = uci:get("wireless",this_section,"ifname")
-		local ssid_str = "ra"..wds_str:match("wds(%d+)")
+		local ssid_str = ra_name..wds_str:match("wds(%d+)")
 		local_ssid[wds_str] = tmp_ssid_tb[ssid_str]
 		
 		for k,v in pairs(tmp_tb) do
@@ -103,7 +106,7 @@ else
 	end
 
 	for k,v in pairs(tmp_ssid_tb) do
-		local wds_str = "wds"..k:match("ra(%d+)")
+		local wds_str = "wds"..k:match(ra_name.."(%d+)")
 		if not tmp_wds_tb[wds_str] then
 			local_ssid[wds_str] = v
 		end

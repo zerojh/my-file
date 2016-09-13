@@ -1,6 +1,6 @@
 require "mxml"
 require "ESL"
-	
+
 module ("luci.scripts.luci_load_scripts", package.seeall)
 
 local exe = os.execute
@@ -195,7 +195,7 @@ function get_cdr_is_enable()
 end
 
 function add_param_name_value(parent_node,name,value)
-	if parent_node  and name  and value then
+	if parent_node	and name  and value then
 		param = mxml.newnode(parent_node,"param")
 		mxml.setattr(param,"name",name)
 		mxml.setattr(param,"value",value)
@@ -357,16 +357,16 @@ function get_all_configed_gw()
 	local trunk_list_str = ""
 
 	trunk = uci:get_all("endpoint_siptrunk")
-    for k,v in pairs(trunk) do
-    	if v.index and v.profile then
-	    	table.insert(trunk_list,{gw_name=v.profile.."_"..v.index,gw_profile=v.profile})
-	    	trunk_list_tmp[v.index] = v.profile.."+"..v.index
-	    	profile_list[v.index] = v.profile
-	    	trunk_list_str = trunk_list_str..v.profile.."+"..v.index..","
-    	end
-    end
+	for k,v in pairs(trunk) do
+		if v.index and v.profile then
+			table.insert(trunk_list,{gw_name=v.profile.."_"..v.index,gw_profile=v.profile})
+			trunk_list_tmp[v.index] = v.profile.."+"..v.index
+			profile_list[v.index] = v.profile
+			trunk_list_str = trunk_list_str..v.profile.."+"..v.index..","
+		end
+	end
 
-    trunk = uci:get_all("endpoint_fxso")
+	trunk = uci:get_all("endpoint_fxso")
 	for k,v in pairs(trunk) do
 		if "Enabled" == v.status then
 			if v.port_1_reg and "on" == v.port_1_reg and v.number_1 then
@@ -433,7 +433,7 @@ function freeswitch_reload(param)
 		local profilechanges = {}
 		local profilechanges_str = param.profile_changes or ""
 
- 		-- get all config profile--
+		-- get all config profile--
 		local sip_profile = uci:get_all("profile_sip")
 		for k,v in pairs(sip_profile) do
 			if v.index then
@@ -610,11 +610,6 @@ function config_network()
 		if network_model == "route" then
 			uci:set("network","lan","ifname","eth0.1")
 			uci:set("network","lan","proto","static")
-			if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-				uci:set("wireless","ra0","disabled","0")
-			else
-				uci:set("wireless","radio0","disabled","0")
-			end
 			uci:set("wireless","wifi0","network","lan")
 			uci:set("wireless","wifi0","mode","ap")
 			uci:set("wireless","wifi0","network","lan")
@@ -656,11 +651,6 @@ function config_network()
 			uci:set("network","lan","ifname","eth0.1 eth0.2")
 			--@ lan must be static
 			uci:set("network","lan","proto","static")
-			if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-				uci:set("wireless","ra0","disabled","0")
-			else
-				uci:set("wireless","radio0","disabled","0")
-			end
 			uci:set("wireless","wifi0","network","wlan")
 			uci:set("wireless","wifi0","mode","sta")
 			uci:set("wireless","wifi0","network","wlan")
@@ -685,30 +675,6 @@ function config_network()
 				elseif k:match("^wlan_") then
 					local option_name = k:match("^wlan_(.*)")
 					uci:set("network","wlan",option_name,v)		
-				elseif k:match("^wifi_") then
-					local option_name = k:match("^wifi_(.*)")
-					--@special ssid
-					if option_name:match("^ssid") then
-						uci:set("wireless","wifi0","ssid",v)
-					else
-						if option_name == "channel" then
-							if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-								uci:set("wireless","ra0",option_name,v)
-							else
-								uci:set("wireless","radio0",option_name,v)
-							end
-						elseif option_name == "disabled" then
-							if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-								uci:set("wireless","ra0","disabled",v)
-							else
-								uci:set("wireless","radio0","disabled",v)
-							end
-						elseif option_name == "wep" then
-							--@ nothing
-						else
-							uci:set("wireless","wifi0",option_name,v)
-						end
-					end
 				end
 			end
 		end
@@ -1304,6 +1270,7 @@ function check_sip_trunk_ref()
 		uci:commit("ivr")
 	end
 end
+
 --@ main function to run scripts
 function load_scripts(param)
 	local ret
@@ -1562,9 +1529,9 @@ function load_scripts(param)
 		check_dhcp_addrpool()
 	end
 
-    if param.dhcp or param.dns then
-    	exe("/etc/init.d/dnsmasq restart")
-    end
+	if param.dhcp or param.dns then
+		exe("/etc/init.d/dnsmasq restart")
+	end
 
 	if "off" == param.telnet_action or "on" == param.telnet_port then
 		exe("/etc/init.d/telnet stop")
