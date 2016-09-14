@@ -13,8 +13,6 @@ function index()
 	entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
 	entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
 	entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
-	--entry({"admin","network","wlan","wds_config"},call("action_wds"),_("WDS Config"),22)
-	--entry({"admin","network","wlan","wds_config","edit"},cbi("admin_network/wds_edit"),nil,23).leaf = true
 	entry({"admin","network","wps"},call("action_wps"))
 	
 	--@ LTE License
@@ -121,7 +119,7 @@ function firewall()
 				table.insert(content,tmp)
 			end
 		end
-	 end
+    end
 	if MAX_RULE == cnt then
 		addnewable = false
 	end
@@ -292,7 +290,6 @@ function action_wlan()
 	local g_isolate = uci:get("wireless",dev_name,"isolate")
 	local g_disabled = uci:get("wireless",dev_name,"disabled") or "0"
 	local g_wps = uci:get("wireless",dev_name,"wps") or "off"
-	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
 	
 	--@ service save
 	if luci.http.formvalue("save") then
@@ -303,7 +300,6 @@ function action_wlan()
 		g_isolate = luci.http.formvalue("isolate")
 		g_disabled = luci.http.formvalue("disabled")
 		g_wps = luci.http.formvalue("wps")
-		g_wds_mode = luci.http.formvalue("wdsmode")
 		
 		uci:set("wireless",dev_name,"channel",g_channel)
 		uci:set("wireless",dev_name,"htmode",g_bandwidth)
@@ -312,7 +308,6 @@ function action_wlan()
 		uci:set("wireless",dev_name,"isolate",g_isolate)
 		uci:set("wireless",dev_name,"disabled",g_disabled)
 		uci:set("wireless",dev_name,"wps",g_wps)
-		uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
 		
 		uci:save("wireless")
 	end
@@ -408,163 +403,6 @@ function action_wlan()
 		isolate = g_isolate,
 		disabled = g_disabled,
 		wps = g_wps,
-		wds_mode = g_wds_mode,
-		addnewable = addnewable,
-		})
-end
-
-function action_wds()
-	local MAX_EXTENSION = 4
-	local uci = require "luci.model.uci".cursor()
-	local ds = require "luci.dispatcher"
-	local i18n = require "luci.i18n"
-	local fs_server = require "luci.scripts.fs_server"
-	local fs = require "luci.fs"
-	local util = require "luci.util"
-	
-	local dev_name = ""
-	local ra_name = ""
-	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-		dev_name = "ra0"
-		ra_name = "ra"
-	else
-		dev_name = "radio0"
-		ra_name = "radio"
-	end
-
-	uci:check_cfg("wireless")
-
-	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
-	
-	--@ service 
-	if luci.http.formvalue("save") then
-		g_wds_mode = luci.http.formvalue("wdsmode")
-		--uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
-		uci:save("wireless")
-	end
-	
-	local del_target = luci.http.formvaluetable("Delete")
-	if del_target then
-		uci:delete_section(del_target)
-	end
-
-	if luci.http.formvalue("New") then
-		local created = uci:section("wireless","wifi-iface")
-		uci:save("wireless")
-		luci.http.redirect(ds.build_url("admin","network","wlan","wds_config","edit",created,"add"))
-		return
-	end
-	
-	--@ Enable/Disable
-	local status_target = luci.http.formvaluetable("Status")
-	if status_target and "table" == type(status_target) then
-		for k,v in pairs(status_target) do
-			local state,cfg,section = k:match("([A-Za-z]+)%.([a-zA-Z_]+)%.(%w+).x")
-			if cfg and section and state then
-				uci:set(cfg,section,"disabled",state == "Enabled" and "0" or "1")
-				uci:save(cfg)
-			end
-		end
-	end
-
-	local th = {"Index","Local SSID","Remote SSID","Encryption","Physical Mode","Status"}
-	local colgroup = {"5%","20%","20%","15%","15%","15%","10%"}
-	local content = {}
-	local edit = {}
-	local delchk = {}
-	local uci_cfg = {}
-	local status = {}
-	local message = {}
-	local addnewable = true
-	local cnt = 0
-
-	local tmp_cfg = uci:get_all("wireless") or {}
-	local wifi_list = fs_server.get_wifi_list()
-	
-	function change_encryption_view(param)
-		local ret_str = ""
-
-		if param == "aes" then
-			ret_str = "AES"
-		elseif parama== "psk" then
-			ret_str = "WPA+PSK"
-		elseif param == "psk2" then
-			ret_str = "WPA2+PSK"
-		elseif param == "none" then
-			ret_str = i18n.translate("NONE")
-		end
-		
-		return ret_str
-	end
-
-	function change_view(param)
-		local ret_str = param
-		
-		for k,v in pairs(wifi_list) do
-			if v.bssid == param then
-				ret_str = v.ssid
-				break
-			end
-		end
-
-		return ret_str
-	end
-	
-	local tmp_ssid_tb = {}
-	for k,v in pairs(tmp_cfg) do
-		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,ra_name) then
-			tmp_ssid_tb[v.ifname] = v.ssid
-		end
-	end
-
---[[
-	local tmp_wds_info = {}
-	local info = util.exec("cat /tmp/wdsinfo")
-	info = util.split(info,"\n")
-	for _,v in pairs(info) do
-		local wds_str,status = info:match("(WDS%d+).-%((%a+)%)")
-		if wds_str and status then
-			wds_str = wds_str:lower()
-			message[wds_str] = status
-		end
-	end
-]]--
-
-	for i=1,MAX_EXTENSION do
-		for k,v in pairs(tmp_cfg) do
-			if v.index and v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
-				if i == tonumber(v.index) then
-					cnt = cnt + 1
-					local tmp = {}
-					local ifname = v.ifname
-					tmp[1] = v.index
-					tmp[2] = tmp_ssid_tb[ra_name..ifname:match("wds(%d+)")]
-					tmp[3] = g_wds_mode == "lazy" and "" or (change_view(v.wdspeermac or ""))
-					tmp[4] = change_encryption_view(v.wdsencryptype or "")
-					tmp[5] = v.wdsphymode or ""
-					tmp[6] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
-					
-					edit[cnt] = ds.build_url("admin","network","wlan","wds_config","edit",k,"edit")
-					uci_cfg[cnt] = "wireless." .. k
-					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
-					table.insert(content,tmp)
-				end
-			end
-		end
-	end
-
-	if MAX_EXTENSION == cnt or g_wds_mode == "disable" then
-		addnewable = false
-	end
-	luci.template.render("admin_network/wds",{
-		colgroup = colgroup,
-		th = th,
-		content = content,
-		edit = edit,
-		delchk = delchk,
-		uci_cfg = uci_cfg,
-		status = status,
-		wds_mode = g_wds_mode,
 		addnewable = addnewable,
 		})
 end

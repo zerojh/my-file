@@ -1,0 +1,12 @@
+ra0       get_site_survey:
+Ch  SSID                             BSSID               Security               Siganl(%)W-Mode  ExtCH  NT WPS DPID
+1   domain_59022f                    f8:a0:3d:59:02:2f   NONE                   39       11b/g/n NONE   In  NO     
+1   dinstar_2G                       70:65:82:4a:36:82   WPA2PSK/TKIP           10       11b/g   NONE   In  NO     
+1   domain_590965                    f8:a0:3d:59:09:65   NONE                   55       11b/g/n NONE   In  NO     
+1   domain_590c10                    f8:a0:3d:59:0c:10   NONE                   39       11b/g/n NONE   In  NO     
+4   TP-LINK_4E392C                   74:ea:3a:4e:39:2c   WPA1PSKWPA2PSK/AES     50       11b/g/n ABOVE  In YES     
+6   UC100_James                      f8:a0:3d:53:24:26   WPA2PSK/AES            15       11b/g/n NONE   In  NO     
+8   dinstar_2G                       70:65:82:72:96:42   WPA2PSK/TKIP           29       11b/g   NONE   In  NO     
+11                                   f4:83:cd:3c:73:75   WPA1PSKWPA2PSK/TKIPAES 20       11b/g/n NONE   In  NO     
+13  dinstar_2G                       70:65:82:46:2e:82   WPA2PSK/TKIP           76       11b/g   NONE   In  NO     
+
