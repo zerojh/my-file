@@ -850,75 +850,68 @@ function wifi_list()
 end
 
 function get_wifi_list(param)
-	local uci = require "luci.model.uci".cursor()
-	local util = require "luci.util"
-	local fs = require "luci.fs"
-	local lasttime = os.time()
 	local ret_wifi_list = {}
+	local wifi_list_dir = "/tmp/wifi_list"
+	local fs = require "luci.fs"
 	local param = param
-	local profile_wifi = {}
 
-	uci:check_cfg("profile_wifi")
-
+	if not fs.access(wifi_list_dir) then
+		param = "refresh"
+	end
+	
 	if param and param == "refresh" then
-		profile_wifi = uci:get_all("profile_wifi") or {}
 		--@ refresh
-		if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-			--@ new driver
-			luci.util.exec("iwpriv ra0 set SiteSurvey=")
-			local ret_str = util.exec("iwpriv ra0 get_site_survey")
-			local tmp_tb = util.split(ret_str,"\n")
+		if fs.access(wifi_list_dir) then
+			luci.util.exec("rm "..wifi_list_dir)
+		end
+		luci.util.exec("touch "..wifi_list_dir)
+		local _file = io.open(wifi_list_dir,"w+")
 
+		if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+			luci.util.exec("iwpriv ra0 set SiteSurvey=")
+			local ret_str = luci.util.exec("iwpriv ra0 get_site_survey")
+			local tmp_tb = luci.util.split(ret_str,"\n")
+			local ch_reg="([0-9]+)"
+			local ss_reg="([a-zA-Z0-9%.%-%_/]+)"
+			local bss_reg="(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)"
+			local sec_reg="([a-zA-Z0-9%/]+)"
+			local sig_reg="([0-9]+)"
 			for _,v in pairs(tmp_tb or {}) do
 				if v and v:match("^[0-9]") then
-					local channel,ssid,bssid,encryption,signal
-					local exist_flag = true
+					local wifi_tb = {}
 
-					channel,ssid,bssid,encryption,signal = v:match("^([0-9]+)%s+([a-zA-Z0-9%.%-%_/]+)%s+(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)%s+([a-zA-Z0-9%/]+)%s+([0-9]+)%s*")
-					if channel then
-						exist_flag = false
-						bssid = string.upper(bssid)
-						signal = signal.."%"
-						for k,v in pairs(profile_wifi) do
-							if v.bssid and v.bssid == bssid then
-								exist_flag = true
-								uci:set("profile_wifi",k,"channel",channel)
-								uci:set("profile_wifi",k,"ssid",ssid)
-								uci:set("profile_wifi",k,"encryption",encryption)
-								uci:set("profile_wifi",k,"signal",signal)
-								uci:set("profile_wifi",k,"lasttime",lasttime)
-								break
-							end
-						end
-					end
-					if not exist_flag then
-						local section = uci:section("profile_wifi","wifi")
-						uci:set("profile_wifi",section,"ssid",ssid)
-						uci:set("profile_wifi",section,"channel",channel)
-						uci:set("profile_wifi",section,"bssid",bssid)
-						uci:set("profile_wifi",section,"encryption",encryption)
-						uci:set("profile_wifi",section,"signal",signal)
-						uci:set("profile_wifi",section,"lasttime",lasttime)
+					wifi_tb.channel,wifi_tb.ssid,wifi_tb.bssid,wifi_tb.security,wifi_tb.signal = v:match("^"..ch_reg.."%s+"..ss_reg.."%s+"..bss_reg.."%s+"..sec_reg.."%s+"..sig_reg.."%s*")
+					
+					if wifi_tb.channel then
+						wifi_tb.bssid = string.upper(wifi_tb.bssid)
+						wifi_tb.signal = wifi_tb.signal.."%"
+						table.insert(ret_wifi_list,wifi_tb)
+						_file:write(wifi_tb.channel..","..wifi_tb.ssid..","..wifi_tb.bssid..","..wifi_tb.security..","..wifi_tb.signal.."\n")
 					end
 				end
 			end
 		else
-			--@ old driver
+			--nothing
 		end
-		uci:commit("profile_wifi")
-	end
 
-	profile_wifi = uci:get_all("profile_wifi") or {}
-	for k,v in pairs(profile_wifi) do
-		if v.bssid then
-			if v.lasttime and (lasttime - v.lasttime) < 300 then
-				table.insert(ret_wifi_list,v)
-			else
-				uci:delete("profile_wifi",k)
-			end
+		if _file then
+			_file:close()
+		end
+	else
+		local _file = io.open(wifi_list_dir,"r")
+
+		for line in _file:lines() do
+			local tmp_tb = {}
+
+			tmp_tb.channel,tmp_tb.ssid,tmp_tb.bssid,tmp_tb.security,tmp_tb.signal = line:match("^([0-9]+),([a-zA-Z0-9%.%-%_/]+),([a-zA-Z0-9:]+),([a-zA-Z0-9%/]+),([0-9]+%%)")
+			
+			table.insert(ret_wifi_list,tmp_tb)
+		end
+		
+		if _file then
+			_file:close()
 		end
 	end
-	uci:commit("profile_wifi")
 	
 	return ret_wifi_list
 end

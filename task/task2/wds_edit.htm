@@ -36,7 +36,7 @@ text-align:left;
 		for (x in g_wifi_array) {
 			if (g_wifi_array[x].bssid == bssid_val) {
 				$('#channel').text(g_wifi_array[x].channel)
-				$('#signal').text(g_wifi_array[x].signal+'%')
+				$('#signal').text(g_wifi_array[x].signal)
 
 				$('#tr_wdskey').show()
 				if (g_wifi_array[x].security.indexOf('WPA2') >= 0) {

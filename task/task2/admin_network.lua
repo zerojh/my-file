@@ -13,8 +13,8 @@ function index()
 	entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
 	entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
 	entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
-	--entry({"admin","network","wlan","wds_config"},call("action_wds"),_("WDS Config"),22)
-	--entry({"admin","network","wlan","wds_config","edit"},cbi("admin_network/wds_edit"),nil,23).leaf = true
+	entry({"admin","network","wlan","wds_config"},call("action_wds"),_("WDS Config"),22)
+	entry({"admin","network","wlan","wds_config","edit"},cbi("admin_network/wds_edit"),nil,23).leaf = true
 	entry({"admin","network","wps"},call("action_wps"))
 	
 	--@ LTE License
@@ -437,12 +437,6 @@ function action_wds()
 	local g_wds_mode = uci:get("wireless",dev_name,"wdsmode") or "disable"
 	
 	--@ service 
-	if luci.http.formvalue("save") then
-		g_wds_mode = luci.http.formvalue("wdsmode")
-		--uci:set("wireless",dev_name,"wdsmode",g_wds_mode)
-		uci:save("wireless")
-	end
-	
 	local del_target = luci.http.formvaluetable("Delete")
 	if del_target then
 		uci:delete_section(del_target)
@@ -479,7 +473,7 @@ function action_wds()
 	local cnt = 0
 
 	local tmp_cfg = uci:get_all("wireless") or {}
-	local wifi_list = fs_server.get_wifi_list()
+	local wifi_list = fs_server.get_wifi_list("norefresh")
 	
 	function change_encryption_view(param)
 		local ret_str = ""
