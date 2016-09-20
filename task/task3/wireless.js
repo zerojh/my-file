@@ -1,12 +1,23 @@
 <%
-	local uci = require "luci.model.uci".cursor()
+	local util = require "luci.util"
 	local fs_server = require "luci.scripts.fs_server"
+	local fs = require "luci.fs"
 
 	if luci.http.formvalue("status") == "1" then
-		local wifi_list = fs_server.get_wifi_list("refresh") or {}
+		if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+			status =  util.exec("ifconfig | grep 'ra0'")
+		else
+			status =  util.exec("ifconfig | grep 'wlan0'")
+		end
 
-		luci.http.prepare_content("application/json")
-		luci.http.write_json(wifi_list)
+		if status ~= "" then
+			local wifi_list = fs_server.get_wifi_list("refresh") or {}
+
+			if wifi_list ~= {} then
+				luci.http.prepare_content("application/json")
+				luci.http.write_json(wifi_list)
+			end
+		end
 
 		return
 	end
@@ -88,8 +99,8 @@ function get_list()
 	XHR.get('<%=REQUEST_URI%>',{status:1},function(x,info)
 */
 	{
+		$("#content-id").empty()
 		if (info != null) {
-			$("#content-id").empty()
 			for (i=0; i<info.length; i++) {
 				var str = ""
 
@@ -112,6 +123,10 @@ function get_list()
 					})
 				}
 			}
+			$(".filter-btn").show()
+		} else {
+			$("#content-id").append($("<tr class=cbi-rowstyle-odd><td colspan='7' style='background:#9a9a9a'><%:Disabled%></td></tr>"))
+			$(".filter-btn").hide()
 		}
 	})
 }
@@ -142,7 +157,6 @@ $(document).ready(function(){
 		}
 	})
 	$("#content-id").append($('<tr class="loading-now"><td colspan="8"><img src="<%=resource%>/icons/loading.gif" alt="<%:Loading%>"/></td></tr>'))
-
 	get_list()
 })
 
@@ -153,15 +167,15 @@ table {table-layout:fixed;}
 </style>
 <div>
 <fieldset>
-	<legend><%:WIFI List%></legend>
+	<legend><%:Wireless AP List%></legend>
 	<table>
 		<colgroup>
 			<col style="width:10%;"/>
 			<col style="width:10%;"/>
-			<col style="width:25%;"/>
-			<col style="width:25%;"/>
+			<col style="width:20%;"/>
+			<col style="width:20%;"/>
+			<col style="width:20%;"/>
 			<col style="width:15%;"/>
-			<col style="width:10%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
 		<tr>
@@ -170,8 +184,8 @@ table {table-layout:fixed;}
 			<th><%:SSID%></th>
 			<th><%:BSSID%></th>
 			<th><%:encryption%></th>
-			<th style="text-align:right"><%:Signal%></th>
-			<th><div><button type="button" class="filter-btn" onclick="filter_result()"><%:Filter%></button></div></th>
+			<th style="padding-left:50px"><%:Signal%></th>
+			<th><div><button type="button" class="filter-btn" onclick="filter_result()" style="display:none"><%:Filter%></button></div></th>
 		</tr>
 		<tr id="filter-id" style="display: none;">
 			<td><input type="text" class="connfilter"/></td>
@@ -187,10 +201,10 @@ table {table-layout:fixed;}
 		<colgroup>
 			<col style="width:10%;"/>
 			<col style="width:10%;"/>
-			<col style="width:25%;"/>
-			<col style="width:25%;"/>
+			<col style="width:20%;"/>
+			<col style="width:20%;"/>
+			<col style="width:20%;"/>
 			<col style="width:15%;"/>
-			<col style="width:10%;"/>
 			<col style="width:5%;"/>
 		</colgroup>
 		<tbody id="content-id">

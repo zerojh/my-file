@@ -480,7 +480,7 @@ function action_wds()
 
 		if param == "aes" then
 			ret_str = "AES"
-		elseif parama== "psk" then
+		elseif param == "psk" then
 			ret_str = "WPA+PSK"
 		elseif param == "psk2" then
 			ret_str = "WPA2+PSK"
@@ -547,7 +547,7 @@ function action_wds()
 		end
 	end
 
-	if MAX_EXTENSION == cnt or g_wds_mode == "disable" then
+	if MAX_EXTENSION <= cnt or g_wds_mode == "disable" then
 		addnewable = false
 	end
 	luci.template.render("admin_network/wds",{

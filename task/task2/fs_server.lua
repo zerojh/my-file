@@ -771,84 +771,6 @@ function get_sms()
 	return msg_info
 end
 
-function wifi_list()
-	require "luci.sys"
-	local tmp = luci.sys.exec("iwlist wlan0 scanning")
-	local uci = require "luci.model.uci".cursor()
-	local wifi_list = {}
-	
-	uci:check_cfg("profile_wifi")
-	
-	local profile_wifi = uci:get_all("profile_wifi") or {}
-	local lasttime = os.time()
-
-	local start_pos,end_pos = string.find(tmp,"- Address:")
-	local end_pos = string.find(tmp,"- Address:",end_pos)
-	
-	while start_pos and end_pos do
-		local wifi_str = string.sub(tmp,start_pos,end_pos)
-		local tmp_str = wifi_str:match("ESSID:\"(.-)\"\n") or ""
-		local signal = wifi_str:match("Signal%s*level=([0-9%-]+)") or ""
-		local channel = wifi_str:match("Channel:([0-9]+)\n") or ""
-		local encryption = ""
-		if wifi_str:match("Encryption key:off") then
-			encryption = "none"
-		elseif wifi_str:match("IE: IEEE 802.11i/WPA2 Version 1") then
-			encryption = "wpa2+psk"
-		elseif wifi_str:match("IE: WPA Version 1") then
-			encryption = "wpa"
-		else
-			encryption = "wpa"
-		end
-		
-		if tmp_str and signal and channel and tmp_str ~= "" then
-			local exsit_flag = false
-			for k,v in pairs(profile_wifi) do
-				if v.ssid == tmp_str then
-					exsit_flag = true
-					uci:set("profile_wifi",k,"signal",signal)
-					uci:set("profile_wifi",k,"channel",channel)
-					uci:set("profile_wifi",k,"encryption",encryption)
-					uci:set("profile_wifi",k,"lasttime",lasttime)
-					break
-				end
-			end		
-
-			if not exsit_flag then
-				local new_wifi_section = uci:section("profile_wifi","wifi")
-				uci:set("profile_wifi",new_wifi_section,"ssid",tmp_str)
-				uci:set("profile_wifi",new_wifi_section,"signal",signal)
-				uci:set("profile_wifi",new_wifi_section,"channel",channel)	
-				uci:set("profile_wifi",new_wifi_section,"encryption",encryption)
-				uci:set("profile_wifi",new_wifi_section,"lasttime",lasttime)
-			end
-		end
-	
-		start_pos = end_pos
-		_,end_pos = string.find(tmp,"- Address:",start_pos)
-	end
-	
-	uci:commit("profile_wifi")
-
-	profile_wifi = uci:get_all("profile_wifi") or {}
-	
-	for k,v in pairs(profile_wifi) do
-		if v.ssid then
-			if v.lasttime and (lasttime - v.lasttime) < 604800 then
-				table.insert(wifi_list,v.ssid)
-			else
-				uci:delete("profile_wifi",k)
-			end
-		end
-	end
-	uci:commit("profile_wifi")
-	
-	table.insert(wifi_list,"user-define")
-	
-	return wifi_list
-	
-end
-
 function get_wifi_list(param)
 	local uci = require "luci.model.uci".cursor()
 	local util = require "luci.util"
@@ -865,45 +787,103 @@ function get_wifi_list(param)
 		--@ refresh
 		if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 			--@ new driver
-			luci.util.exec("iwpriv ra0 set SiteSurvey=")
-			local ret_str = util.exec("iwpriv ra0 get_site_survey")
-			local tmp_tb = util.split(ret_str,"\n")
+			local status =  util.exec("ifconfig | grep 'ra0'")
+			if status == "" then
+				return ret_wifi_list
+			else
+				luci.util.exec("iwpriv ra0 set SiteSurvey=")
+				local ret_str = util.exec("iwpriv ra0 get_site_survey")
+				local tmp_tb = util.split(ret_str,"\n")
 
-			for _,v in pairs(tmp_tb or {}) do
-				if v and v:match("^[0-9]") then
-					local channel,ssid,bssid,encryption,signal
-					local exist_flag = true
+				for _,v in pairs(tmp_tb or {}) do
+					if v and v:match("^[0-9]") then
+						local channel,ssid,bssid,encryption,signal
+						local exist_flag = true
 
-					channel,ssid,bssid,encryption,signal = v:match("^([0-9]+)%s+([a-zA-Z0-9%.%-%_/]+)%s+(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)%s+([a-zA-Z0-9%/]+)%s+([0-9]+)%s*")
-					if channel then
-						exist_flag = false
-						bssid = string.upper(bssid)
-						signal = signal.."%"
-						for k,v in pairs(profile_wifi) do
-							if v.bssid and v.bssid == bssid then
-								exist_flag = true
-								uci:set("profile_wifi",k,"channel",channel)
-								uci:set("profile_wifi",k,"ssid",ssid)
-								uci:set("profile_wifi",k,"encryption",encryption)
-								uci:set("profile_wifi",k,"signal",signal)
-								uci:set("profile_wifi",k,"lasttime",lasttime)
-								break
+						channel,ssid,bssid,encryption,signal = v:match("^([0-9]+)%s+([a-zA-Z0-9%.%-%_/]+)%s+(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)%s+([a-zA-Z0-9%/]+)%s+([0-9]+)%s*")
+						if channel then
+							exist_flag = false
+							bssid = string.upper(bssid)
+							signal = signal.."%"
+							for k,v in pairs(profile_wifi) do
+								if v.bssid and v.bssid == bssid then
+									exist_flag = true
+									uci:set("profile_wifi",k,"channel",channel)
+									uci:set("profile_wifi",k,"ssid",ssid)
+									uci:set("profile_wifi",k,"encryption",encryption)
+									uci:set("profile_wifi",k,"signal",signal)
+									uci:set("profile_wifi",k,"lasttime",lasttime)
+									break
+								end
 							end
 						end
-					end
-					if not exist_flag then
-						local section = uci:section("profile_wifi","wifi")
-						uci:set("profile_wifi",section,"ssid",ssid)
-						uci:set("profile_wifi",section,"channel",channel)
-						uci:set("profile_wifi",section,"bssid",bssid)
-						uci:set("profile_wifi",section,"encryption",encryption)
-						uci:set("profile_wifi",section,"signal",signal)
-						uci:set("profile_wifi",section,"lasttime",lasttime)
+						if not exist_flag then
+							local section = uci:section("profile_wifi","wifi")
+							uci:set("profile_wifi",section,"ssid",ssid)
+							uci:set("profile_wifi",section,"channel",channel)
+							uci:set("profile_wifi",section,"bssid",bssid)
+							uci:set("profile_wifi",section,"encryption",encryption)
+							uci:set("profile_wifi",section,"signal",signal)
+							uci:set("profile_wifi",section,"lasttime",lasttime)
+						end
 					end
 				end
 			end
 		else
 			--@ old driver
+			local status =  util.exec("ifconfig | grep 'wlan0'")
+			if status == "" then
+				return ret_wifi_list
+			else
+				local ret_str = util.exec("iwlist wlan0 scanning|sed '1d'|tr '\n' ','|tr -d ' '|sed 's/,Cell/\\nCell/g'")
+				local tmp_tb = luci.util.split(ret_str,"\n")
+
+				for k,v in pairs(tmp_tb or {}) do
+					if v and v:match("^Cell") then
+						local channel = v:match("Channel:(%d+),") or ""
+						local ssid = v:match("ESSID:\"(.-)\"") or ""
+						local bssid = v:match("Address:(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)") or ""
+						local signal = v:match("Signallevel=(%-%d+dBm)") or ""
+						local encryption = ""
+						local exist_flag = true
+
+						if v:match("Encryptionkey:off") then
+							encryption = "NONE"
+						elseif v:match("IE:IEEE802.11i/WPA2Version1") then
+							encryption = "WPA2PSK"
+						elseif v:match("IE:WPAVersion1") then
+							encryption = "WPA1PSK"
+						else
+							encryption = "WPA1PSK"
+						end
+
+						if channel ~= "" and ssid ~= "" and bssid ~= "" and signal ~= "" and encryption ~= "" then
+							exist_flag = false
+							bssid = string.upper(bssid)
+							for k,v in pairs(profile_wifi) do
+								if v.bssid and v.bssid == bssid then
+									exist_flag = true
+									uci:set("profile_wifi",k,"channel",channel)
+									uci:set("profile_wifi",k,"ssid",ssid)
+									uci:set("profile_wifi",k,"encryption",encryption)
+									uci:set("profile_wifi",k,"signal",signal)
+									uci:set("profile_wifi",k,"lasttime",lasttime)
+									break
+								end
+							end
+						end
+						if not exist_flag then
+							local section = uci:section("profile_wifi","wifi")
+							uci:set("profile_wifi",section,"ssid",ssid)
+							uci:set("profile_wifi",section,"channel",channel)
+							uci:set("profile_wifi",section,"bssid",bssid)
+							uci:set("profile_wifi",section,"encryption",encryption)
+							uci:set("profile_wifi",section,"signal",signal)
+							uci:set("profile_wifi",section,"lasttime",lasttime)
+						end
+					end
+				end
+			end
 		end
 		uci:commit("profile_wifi")
 	end

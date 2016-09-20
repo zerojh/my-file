@@ -8,7 +8,7 @@ function index()
 	entry({"admin","status","client_list"},call("client_list"),_("DHCP Client List"),4).leaf = true
 	entry({"admin", "status", "currentcall"}, template("admin_status/currentcall"), _("Current Call"), 5)
 	entry({"admin", "status", "cdr"}, call("action_cdrs"), _("CDRs"), 6)
-	entry({"admin", "status", "wireless"}, template("admin_status/wireless"),_("WIFI List"),7)
+	entry({"admin", "status", "wireless"}, template("admin_status/wireless"),_("Wireless AP List"),7)
 	entry({"admin", "status", "service"}, template("admin_status/service"),_("Service"),8)
 	entry({"admin", "status", "about"}, template("admin_status/about"),_("About"),9)
 	page = entry({"admin","status","getcdrs"},call("action_get_cdrs"),nil)

@@ -17,39 +17,6 @@ table {
 </style>
 <form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
 <div>
-	<fieldset class="cbi-section">
-		<% if title then %>
-		<legend><%=title%></legend>
-		<% end %>
-		<% if description and #description > 0 then -%>
-		<div class="cbi-section-descr"><%=description%></div>
-		<% end %>	
-		<!--wds mode-->
-		<div class="cbi-section-node">
-			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
-				<label style="margin-left:0px;"><%:WDS%></label>
-			</div>
-			<div class="cbi-value-field">
-				<select class="cbi-input-select" id="wdsmode" name="wdsmode" >
-					<option value="lazy" <%=("lazy" == wds_mode) and "selected" or ""%>><%:Lazy%></option>
-					<option value="bridge" <%=("bridge" == wds_mode) and "selected" or ""%>><%:Bridge%></option>
-					<option value="repeater" <%=("repeater" == wds_mode) and "selected" or ""%>><%:Repeater%></option>
-					<option value="disable" <%=("disable" == wds_mode) and "selected" or ""%>><%:Disable%></option>
-				</select>
-			</div>
-		</div>
-
-		<!--action button-->
-		<div class="cbi-section-node">
-			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
-				<label style="margin-left:0px;"><%: %></label>
-			</div>
-			<div class="cbi-page-actions">
-				<input class="cbi-button cbi-button-save" type="submit" style="width:100px;" name="save" id="save" value="<%:Save%>" />
-			</div>	
-		</div>
-	</fieldset>
-	
 	<fieldset>
 		<table class="cbi-section-table">
 		<% 
