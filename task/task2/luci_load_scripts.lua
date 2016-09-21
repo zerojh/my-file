@@ -1271,6 +1271,27 @@ function check_sip_trunk_ref()
 	end
 end
 
+function check_section_name(param)
+	if param then
+		if param == "wireless" then
+			local tmp_tb = uci:get_all("wireless")
+			for k,v in pairs(tmp_tb) do
+				if k:match("cfg") and v[".type"] == "wifi-iface" and v.ifname then
+					local ifname = v.ifname
+					local s_name
+					if ifname:match("ra") then
+						s_name = "wifi"..ifname:match("ra(%d+)")
+					elseif ifname:match("wds") then
+						s_name = v.ifname
+					end
+					exe("uci rename wireless."..k.."="..s_name)
+				end
+			end
+			uci:commit("wireless")
+		end
+	end
+end
+
 --@ main function to run scripts
 function load_scripts(param)
 	local ret
@@ -1312,6 +1333,10 @@ function load_scripts(param)
 
 	if param.static_route or param.network then
 		add_static_route()
+	end
+
+	if param.wireless then
+		check_section_name("wireless")
 	end
 
 	if param.network or param.restore or param.upgrade then

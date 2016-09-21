@@ -123,7 +123,7 @@ option:value("1",translate("Enable"))
 --@ wps only for ra0/radio0
 if this_section == "wifi0" then
 	--@ WPS button
-	if uci:get("wireless",dev_name,"wdsmode") ~= "bridge" then
+	if uci:get("wireless",dev_name,"disabled") == "0" and uci:get("wireless",dev_name,"wdsmode") ~= "bridge" then
 		option = s:option(DummyValue,"_wps_cfg",translate("WPS PIN Code"))
 		option.template = "admin_network/wps"
 	end
@@ -137,7 +137,6 @@ function option.parse(self,section,value)
 		local tmp_index = m:formvalue("cbid.wireless."..this_section..".index")
 
 		--@ set default option
-		--m.uci:set("wireless",this_section,".name","wifi"..(tonumber(tmp_index)-1))
 		m.uci:set("wireless",this_section,"device",dev_name)
 		m.uci:set("wireless",this_section,"ifname",if_prefix..(tonumber(tmp_index)-1))
 		m.uci:set("wireless",this_section,"mode","ap")

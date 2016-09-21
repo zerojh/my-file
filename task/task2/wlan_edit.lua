@@ -4,9 +4,7 @@
 local dsp = require "luci.dispatcher"
 local uci = require "luci.model.uci".cursor()
 local fs = require "luci.fs"
-
-local dev_name = ""
-local if_prefix
+local dev_name = "" local if_prefix
 if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
     dev_name = "ra0"
     if_prefix = "ra"
@@ -40,7 +38,6 @@ s.anonymous = true
 local profile = uci:get_all("wireless")
 if this_edit == "edit" then
 	index = s:option(DummyValue,"index",translate("Index"))
-
 else
 	index = s:option(ListValue,"index",translate("Index"))
 	for i=1,4 do
@@ -123,16 +120,14 @@ option.default = "0"
 option:value("0",translate("Disable"))
 option:value("1",translate("Enable"))
 
---[[
 --@ wps only for ra0/radio0
 if this_section == "wifi0" then
 	--@ WPS button
-	if uci:get("wireless",dev_name,"wdsmode") ~= "bridge" then
+	if uci:get("wireless",dev_name,"disabled") == "0" and uci:get("wireless",dev_name,"wdsmode") ~= "bridge" then
 		option = s:option(DummyValue,"_wps_cfg",translate("WPS PIN Code"))
 		option.template = "admin_network/wps"
 	end
 end
-]]--
 
 option = s:option(DummyValue,"tmp_no_useful",translate(""))
 function option.parse(self,section,value)

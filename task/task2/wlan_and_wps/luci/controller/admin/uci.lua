@@ -309,6 +309,7 @@ function action_apply()
 			apply_param.network = "on"
 		elseif "wireless" == r then
 			apply_param.network = "on"
+            apply_param.wireless = "on"
 		elseif "static_route" == r then
 			apply_param.static_route = "on"
 			apply_param.network = "on"
