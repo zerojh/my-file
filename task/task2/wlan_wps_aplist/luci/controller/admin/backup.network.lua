@@ -265,7 +265,7 @@ function action_wps()
 end
 
 function action_wlan()
-	local MAX_EXTENSION = 4
+	local MAX_EXTENSION = 1
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
@@ -347,12 +347,7 @@ function action_wlan()
 	local cnt = 0
 
 	local tmp_cfg = uci:get_all("wireless") or {}
-	local wds_tb = {}
-	for k,v in pairs(tmp_cfg) do
-		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
-			wds_tb[v.ifname] = 1
-		end
-	end
+	local wds_status = false
 	
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
@@ -370,14 +365,11 @@ function action_wlan()
 					
 					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k
-					if cnt ~= 1 then
-						local ssid_str = v.ifname
-						local wds_str = "wds"..ssid_str:match(ra_name.."(%d+)")
-						if wds_tb[wds_str] then
-							delchk[cnt] = "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false"
-						else
-							delchk[cnt] = "return true"
-						end
+					if cnt == 1 then
+						--@ wifi0
+						delchk[cnt] = wds_status == true and "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false" or "return true"
+					else
+						delchk[cnt] = "return true"
 					end
 					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
 					table.insert(content,tmp)

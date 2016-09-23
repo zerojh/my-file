@@ -2,6 +2,7 @@ module("luci.controller.admin.network", package.seeall)
 
 function index()
 	local uci = require("luci.model.uci").cursor()
+	local fs = require "luci.fs"
 	local page
 	page = node("admin","network")
 	page.target = firstchild()
@@ -10,10 +11,16 @@ function index()
 	page.index	= true
 	entry({"admin","network","network"}, cbi("admin_network/setting"), _("Setting"), 10).leaf = true
 	
-	entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
-	entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
-	entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
-	entry({"admin","network","wps"},call("action_wps"))
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		--@ new driver
+		entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
+		entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20).leaf = true
+		entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit_new"),nil,21).leaf = true
+		entry({"admin","network","wps"},call("action_wps"))
+	else
+		--@ old driver
+		entry({"admin", "network", "wlan"},cbi("admin_network/wlan_edit_old"),_("WLAN"),20).leaf = true
+	end
 	
 	--@ LTE License
 	if luci.version.license and luci.version.license.lte then
@@ -237,59 +244,42 @@ function action_wps()
 	local pin_code = luci.http.formvalue("pin_code")
 	local fs = require "luci.fs"
 
-	local dev_name = ""
-	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-		dev_name = "ra0"
-	else
-		dev_name = "radio0"
-	end
-
 	if not luci.http.formvalue("status") then
 		if action_type == "pin" then
 			--@ pin code set wps
-			luci.util.exec("iwpriv "..dev_name.." set WscPinCode="..pin_code)
-			luci.util.exec("iwpriv "..dev_name.." set WscMode=1")
-			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+			luci.util.exec("iwpriv ra0 set WscPinCode="..pin_code)
+			luci.util.exec("iwpriv ra0 set WscMode=1")
+			luci.util.exec("iwpriv ra0 set WscGetConf=1")
 		else
 			--@ pbc set wps
-			luci.util.exec("iwpriv "..dev_name.." set WscMode=2")
-			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+			luci.util.exec("iwpriv ra0 set WscMode=2")
+			luci.util.exec("iwpriv ra0 set WscGetConf=1")
 		end
-		luci.util.exec("iwpriv "..dev_name.." show WscPeerList && dmesg -c")		
+		luci.util.exec("iwpriv ra0 show WscPeerList")
 	end
 	
-	local ret_status = luci.util.exec("iwpriv "..dev_name.." show WscPeerList && dmesg -c"):match(dev_name.."%s*WscStatus:%s*([0-9]+)")
+	local ret_status = luci.util.exec("iwpriv ra0 show WscPeerList && dmesg | tail -n 10"):match("ra0%s*WscStatus:%s*([0-9]+)")
 	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ status = ret_status})
 end
 
+--# wlan config of new driver
 function action_wlan()
-	local MAX_EXTENSION = 4
+	local MAX_EXTENSION = 1
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
-	local fs = require "luci.fs"
-
-	local dev_name = ""
-	local ra_name = ""
-	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-		dev_name = "ra0"
-		ra_name = "ra"
-	else
-		dev_name = "radio0"
-		ra_name = "radio"
-	end
 
 	uci:check_cfg("wireless")
 
-	local g_channel = uci:get("wireless",dev_name,"channel")
-	local g_bandwidth = uci:get("wireless",dev_name,"htmode")
-	local g_hwmode = uci:get("wireless",dev_name,"hwmode") or "11bgn"
-	local g_txpower = uci:get("wireless",dev_name,"txpower") or "100"
-	local g_isolate = uci:get("wireless",dev_name,"isolate")
-	local g_disabled = uci:get("wireless",dev_name,"disabled") or "0"
-	local g_wps = uci:get("wireless",dev_name,"wps") or "off"
+	local g_channel = uci:get("wireless","ra0","channel")
+	local g_bandwidth = uci:get("wireless","ra0","htmode")
+	local g_hwmode = uci:get("wireless","ra0","hwmode") or "11bgn"
+	local g_txpower = uci:get("wireless","ra0","txpower") or "100"
+	local g_isolate = uci:get("wireless","ra0","isolate")
+	local g_disabled = uci:get("wireless","ra0","disabled") or "0"
+	local g_wps = uci:get("wireless","ra0","wps") or "off"
 	
 	--@ service save
 	if luci.http.formvalue("save") then
@@ -301,13 +291,13 @@ function action_wlan()
 		g_disabled = luci.http.formvalue("disabled")
 		g_wps = luci.http.formvalue("wps")
 		
-		uci:set("wireless",dev_name,"channel",g_channel)
-		uci:set("wireless",dev_name,"htmode",g_bandwidth)
-		uci:set("wireless",dev_name,"hwmode",g_hwmode)
-		uci:set("wireless",dev_name,"txpower",g_txpower)
-		uci:set("wireless",dev_name,"isolate",g_isolate)
-		uci:set("wireless",dev_name,"disabled",g_disabled)
-		uci:set("wireless",dev_name,"wps",g_wps)
+		uci:set("wireless","ra0","channel",g_channel)
+		uci:set("wireless","ra0","htmode",g_bandwidth)
+		uci:set("wireless","ra0","hwmode",g_hwmode)
+		uci:set("wireless","ra0","txpower",g_txpower)
+		uci:set("wireless","ra0","isolate",g_isolate)
+		uci:set("wireless","ra0","disabled",g_disabled)
+		uci:set("wireless","ra0","wps",g_wps)
 		
 		uci:save("wireless")
 	end
@@ -347,12 +337,7 @@ function action_wlan()
 	local cnt = 0
 
 	local tmp_cfg = uci:get_all("wireless") or {}
-	local wds_tb = {}
-	for k,v in pairs(tmp_cfg) do
-		if v['.type'] == "wifi-iface" and v.ifname and string.find(v.ifname,"wds") then
-			wds_tb[v.ifname] = 1
-		end
-	end
+	local wds_status = false
 	
 	for i=1,MAX_EXTENSION do
 		for k,v in pairs(tmp_cfg) do
@@ -370,21 +355,18 @@ function action_wlan()
 					
 					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k
-					if cnt ~= 1 then
-						local ssid_str = v.ifname
-						local wds_str = "wds"..ssid_str:match(ra_name.."(%d+)")
-						if wds_tb[wds_str] then
-							delchk[cnt] = "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false"
-						else
-							delchk[cnt] = "return true"
-						end
+					if cnt == 1 then
+						--@ wifi0
+						delchk[cnt] = wds_status == true and "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false" or "return true"
+					else
+						delchk[cnt] = "return true"
 					end
 					status[cnt] = v.disabled == "1" and "Disabled" or "Enabled"
 					table.insert(content,tmp)
 				end
 			end
 		end
-	 end
+	end
 	if MAX_EXTENSION == cnt then
 		addnewable = false
 	end
@@ -404,7 +386,7 @@ function action_wlan()
 		disabled = g_disabled,
 		wps = g_wps,
 		addnewable = addnewable,
-		})
+	})
 end
 
 function action_tcpdump()

@@ -5350,3 +5350,9 @@ msgstr "WLAN / 新建"
 
 msgid "WLAN Config"
 msgstr "WLAN 配置"
+
+msgid "Wireless AP List"
+msgstr "无线接入点列表"
+
+msgid "WPS PIN Code"
+msgstr "WPS PIN码"
