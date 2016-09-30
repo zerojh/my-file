@@ -772,7 +772,7 @@ function get_sms()
 end
 
 function get_wifi_list(param)
-	local uci = require "luci.model.uci".cursor()
+	local uci = require "luci.model.uci".cursor("/tmp/config")
 	local util = require "luci.util"
 	local fs = require "luci.fs"
 	local lasttime = os.time()

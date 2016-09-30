@@ -1,0 +1,227 @@
+<%-
+	local util = require "luci.util"
+	local uci = require "luci.model.uci".cursor()
+	local fs_server = require "luci.scripts.fs_server"
+	local fs = require "luci.fs"
+	local ds = require "luci.dispatcher"
+	local sta = {}
+	local wlan_status
+	local drv_type
+
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		drv_type = "new"
+	else
+		drv_type = "old"
+	end
+
+	if luci.http.formvalue("save") then
+		local sta_tb = luci.http.formvaluetable("sta")
+
+		for k,v in pairs(sta_tb) do
+			if k == "disabled" then
+				if drv_type == "new" then
+					uci:set("wireless","ra0","disabled",v)
+				else
+					uci:set("wireless","radio0","disabled",v)
+				end
+			else
+				uci:set("wireless","wifi0",k,v)
+			end
+		end
+		uci:save("wireless")
+
+		luci.http.redirect(REQUEST_URI)
+	elseif luci.http.formvalue("cancel") then
+		--luci.http.redirect(ds.build_url("admin","network","setting","wds_config"))
+	elseif luci.http.formvalue("status") == "1" and wlan_status ~= "" then
+--[[
+		local wifi_list = fs_server.get_wifi_list("refresh") or {}
+
+		if wifi_list ~= {} then
+			luci.http.prepare_content("application/json")
+			luci.http.write_json(wifi_list)
+		end
+
+		return
+]]--
+	else
+		local wireless_tb = uci:get_all("wireless")
+
+		if drv_type == "new" then
+			sta.disabled = wireless_tb.ra0.disabled
+			wlan_status =  util.exec("ifconfig | grep 'ra0'")
+		else
+			sta.disabled = wireless_tb.radio0.disabled
+			wlan_status =  util.exec("ifconfig | grep 'wlan0'")
+		end
+		sta.ssid = wireless_tb.wifi0.ssid
+		sta.encryption = wireless_tb.wifi0.encryption
+		sta.key = wireless_tb.wifi0.key
+	end
+-%>
+<%+header%>
+<style type="text/css">
+table td{
+text-align:left;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+<% if wlan_status and wlan_status ~= "" then
+%>
+
+var g_wifi_array
+
+function refresh_wifi_info()
+{
+	var bssid_val = document.getElementById(id).value
+
+	for (x in g_wifi_array) {
+		if (g_wifi_array[x].bssid == bssid_val) {
+
+			$('#tr_key').show()
+			if (g_wifi_array[x].encryption.indexOf('WPA2') >= 0) {
+				$('#encryption').val("psk2")
+			} else if (g_wifi_array[x].encryption.indexOf('WPA1') >= 0) {
+				$('#encryption').val("psk")
+			} else if (g_wifi_array[x].encryption.indexOf('AES') >= 0) {
+				$('#encryption').val("aes")
+			} else if (g_wifi_array[x].encryption.indexOf('NONE') >= 0) {
+				$('#encryption').val("none")
+				$('#tr_key').hide()
+			}
+
+			break
+		}
+	}
+}
+
+function check_encryption()
+{
+	var encryption = $("#encryption").val()
+	if (encryption == "none") {
+		$('#tr_key').hide()
+	} else {
+		$('#tr_key').show()
+	}
+}
+
+function check_password()
+{
+	var password = $("#passwd").val()
+
+	if (password != "") {
+		$("#password").attr("class","cbi-input-password")
+		return ture
+	} else {
+		$("#password").attr("class","cbi-input-invalid")
+		$("#password").focus()
+		return false
+	}
+}
+<% end
+%>
+
+function save_action()
+{
+<% if wlan_status and wlan_status ~= "" then
+%>
+	var encryption = $("#encryption").val()
+	
+	if (encryption != "none" && check_password("password")) {
+		return false
+	}
+<% end
+%>
+	return true
+}
+
+function refresh_wifi_list()
+{
+	$("#refresh_bt").val("<%:Refreshing...%>")
+	$("#refresh)bt").attr("disabled","disabled")
+	XHR.get("<%=REQUEST_URI%>",{ status: 1 }, function() {
+		$("#refresh_bt").val("<%:Refresh%>")
+	})
+}
+
+$(document).ready(function(){
+	refresh_wifi_list()
+	refresh_wifi_info("wds_wdspeermac")
+})
+</script>
+
+<form name="form1" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
+<fieldset class="cbi-section" style="margin-left:20px">
+	<table>
+		<!--status-->
+		<tr>
+			<td width="40%"><%:Status%></td>
+			<td>
+				<select class="cbi-input-select" id="disabled" name="sta.disabled">
+					<option value="0" <%= sta.disabled == "0" and "selected" or ""%> ><%:Enable%></option>
+					<option value="1" <%= sta.disabled == "1" and "selected" or ""%> ><%:Disable%></option>
+				</select>
+			</td>
+		</tr>
+
+<% if wlan_status and wlan_status ~= "" then
+%>
+		<!--ssid-->
+		<tr>
+			<td width="40%"><%:SSID%></td>
+			<td>
+				<select class="cbi-input-select" id="ssid_s" name="sta.ssid_s" onchange="refresh_wifi_info(this.id)">
+				</select>
+				<input type="button" class="cbi-button" id="refresh_bt" value="<%:Refresh%>" onclick="refresh_wifi_list()"></input>
+			</td>
+		</tr>
+		<tr id="tr_cus_bssid">
+			<td width="40%" style="margin-left:30px;"></td>
+			<td>
+				<input type="text" class="cbi-input-text"  name="sta.ssid_c" id="ssid_c" value="<%=ssid.bssid%>" onchange="check_mac(this.id)" ></input>
+			</td>
+		</tr>
+
+		<!--encryption-->
+		<tr>
+			<td width="40%" style="padding-left:30px"><%:Encryption%></td>
+			<td>
+				<select class="cbi-input-select" id="encryption" name="sta.encryption" onchange="check_encryption()">
+					<option value="psk" <%= sta.encryption == "psk" and "selected" or ""%> ><%:WPA+PSK%></option>
+					<option value="psk2" <%= sta.encryption == "psk2" and "selected" or ""%> ><%:WPA2+PSK%></option>
+					<option value="aes" <%= sta.encryption == "aes" and "selected" or ""%> ><%:AES%></option>
+					<option value="none" <%= sta.encryption == "none" and "selected" or ""%> ><%:NONE%></option>
+				</select>
+			</td>
+		</tr>
+
+		<!--password-->
+		<tr id="tr_password">
+			<td width="40%" style="padding-left:30px"><%:Password%></td>
+			<td>
+				<input type="password" class="cbi-input-password" name="sta.key" id="password" value="<%=sta.key%>" onchange="check_input(this.id)"></input>
+				<img src="<%=resource%>/cbi/hide.png" style="vertical-align:middle" title="<%:Reveal/hide password%>" onclick="var e = document.getElementById('key'); e.type = (e.type=='password') ? 'text' : 'password'; this.src = (e.type=='password') ? '<%=resource%>/cbi/hide.png' : '<%=resource%>/cbi/show.png';"/>
+			</td>
+		</tr>
+<% end
+%>
+		
+		<!--apply-->
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" />
+				<input class="cbi-button cbi-button-save" type="submit" name="save" value="<%:Save%>" onclick="return save_action();"/>
+				<input class="cbi-button" type="reset" value="<%:Reset%>" />
+			</td>
+		</tr>
+	</table>
+</fieldset>
+</form>
+<%+footer%>
