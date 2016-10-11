@@ -1,0 +1,254 @@
+<%+header%>
+<style type="text/css">
+table td.nopadding{
+	padding:0px 0px 0px 10px;
+}
+table td.paddingtight{
+	padding:0px 0px 0px 0px;
+}
+table td {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+table {
+	table-layout:fixed;
+}
+</style>
+<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
+<div>
+	<fieldset class="cbi-section">
+		<% if title then %>
+		<legend><%=title%></legend>
+		<% end %>
+		<% if description and #description > 0 then -%>
+			<div class="cbi-section-descr"><%=description%></div>
+		<% end %>	
+			<!--Disabled-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:WLAN Service%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="disabled" name="disabled" >
+						<option value="1" <%=("1" == disabled) and "selected" or ""%>><%:Disable%></option>
+						<option value="0" <%=("0" == disabled) and "selected" or ""%>><%:Enable%></option>
+					</select>
+				</div>			
+			</div>		
+			<!--channel-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:Channel%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="channel" name="channel" >
+						<option value="auto" <%=("auto" == channel) and "selected" or ""%>><%:AUTO%></option>
+						<% for i=1,11 do%>
+							<option value=<%=i%> <%= (channel and tonumber(channel) == tonumber(i)) and "selected" or "" %>><%=i%></option>
+						<% end %>
+					</select>
+				</div>			
+			</div>	
+			<!--txpower-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:TX POWER%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="txpower" name="txpower" >
+						<% for i=10,100,10 do %>
+							<option value=<%=i%> <%=(tonumber(i) == tonumber(txpower)) and "selected" or ""%>><%=i.."%"%></option>
+						<% end %>
+					</select>
+				</div>			
+			</div>				
+			<!--bandwidth-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:Band Width%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="bandwidth" name="bandwidth" >
+						<option value="HT20" <%=("HT20" == bandwidth) and "selected" or ""%>><%:20%></option>
+						<option value="HT40" <%=("HT40" == bandwidth) and "selected" or ""%>><%:40%></option>
+						<option value="HT20/HT40" <%=("HT20/HT40" == bandwidth) and "selected" or ""%>><%:Auto%></option>
+					</select>
+				</div>			
+			</div>	
+			<!--hwmode-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:Work Model%></label>
+				</div>
+				<div class="cbi-value-field">
+					<%
+						local hwmode_list = {"11bg","11b","11abg","11g","11abgn","11bgn","11agn"}
+						local str = "<select class='cbi-input-select' id='hwmode' name='hwmode'>"
+						
+						for k,v in ipairs(hwmode_list) do
+							if v == hwmode then
+								str = str.."<option selected value='"..v.."' >"..v.."</option>"
+							else
+								str = str.."<option value='"..v.."' >"..v.."</option>"
+							end
+						end
+						
+						str = str.."</select>"
+
+						write(str)
+					%>
+				</div>			
+			</div>				
+			<!--isolate-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:Isolation%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="isolate" name="isolate" >
+						<option value="1" <%=("1" == isolate) and "selected" or ""%>><%:Enable%></option>
+						<option value="0" <%=("0" == isolate) and "selected" or ""%>><%:Disable%></option>
+					</select>
+				</div>			
+			</div>
+			<!--wps-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%:WPS%></label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="wps" name="wps" >
+						<option value="on" <%=("on" == wps) and "selected" or ""%>><%:Enable%></option>
+						<option value="off" <%=("off" == wps) and "selected" or ""%>><%:Disable%></option>
+					</select>
+				</div>			
+			</div>
+			
+			<!--action button-->
+			<div class="cbi-section-node">
+				<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+					<label style="margin-left:0px;"><%: %></label>
+				</div>			
+				<div class="cbi-page-actions">
+					<input class="cbi-button cbi-button-save" type="submit" style="width:100px;" name="save" id="save" value="<%:Save%>" />
+				</div>	
+			</div>
+	</fieldset>
+	
+	<fieldset>
+		<table class="cbi-section-table">
+		<% 
+		if colgroup then
+			for k,v in ipairs(colgroup) do 
+		%>
+			<col style="width:<%=v%>">
+		<%	
+			end
+		end
+		%>
+			<tbody>
+			<% if th then %>
+				<tr>
+				<% for k,v in ipairs(th) do %>
+					<th><%=translate(v)%></th>
+				<% end %>
+				<% if edit or delchk then %>
+					<th></th>
+				<% end %>
+				</tr>
+			<% end %>
+			<%
+			if #content > 0 then
+				for k,v in ipairs(content) do
+					if 1 == k%2 then
+			%>
+						<tr class='cbi-rowstyle-odd'>
+				<%	else %>
+						<tr class='cbi-rowstyle-even'>
+				<%
+					end 
+					for i,j in ipairs(v) do
+						if "table" == type(j) then
+				%>
+						<td><table>
+						<%
+							local td_cnt = 0
+							local col = split_col
+							if #j < split_col then
+								col = #j
+							end
+							for x,y in ipairs(j) do
+								
+								if 0 == (td_cnt % col) then
+						%>
+									<tr>
+							<%	end %>
+
+								<td class="<%=classname or "nopadding"%>"><%=y%></td>
+							<%	
+								td_cnt = td_cnt + 1
+								if 0 == (td_cnt % col) then 
+							%>
+									</tr>
+						<% 
+								end
+							end
+							if 0 ~= (td_cnt % col) then
+						%>
+								<td colspan="<%=col-(td_cnt%col)%>>"></td>
+						<%
+							end
+						%>
+						</td></table>
+					<% else %>
+						<td><%=j%></td>
+				<%		
+						end
+					end
+					if edit then
+				%>
+					<td>
+					<!--edit-->
+					<a href="<%=edit[k]%>" title="<%=translate("Edit")%>"><img style='border:none' src='/luci-static/resources/cbi/edit.png'></a>
+					<!--enable/disable-->
+					<% if uci_cfg[k] and status and "Disabled" == status[k] then%>
+						<input type="image" value="Enabled" onclick="<%=delchk[k]%>" name="Status.Enabled.<%=uci_cfg[k]%>" alt="Enabled" title="<%=translate("The current is disabled, click enable")%>" src="/luci-static/resources/cbi/apply.png" />
+					<% elseif uci_cfg[k] and status and "Enabled" == status[k] then %>
+						<input type="image" value="Disabled" onclick="<%=delchk[k]%>" name="Status.Disabled.<%=uci_cfg[k]%>" alt="Disabled" title="<%=translate("The current is enabled, click disable")%>" src="/luci-static/resources/cbi/stop.png" />
+					<% end %>
+
+					<% if delchk and delchk[k] then %>
+						<!--remove-->
+						<input type="image" value="Delete" onclick="<%=delchk[k]%>" name="Delete.<%=uci_cfg[k]%>" alt="Delete" title="<%=translate("Delete")%>" src="/luci-static/resources/cbi/remove.png" />
+					<% end %>
+					
+					</td>
+					
+				<%	
+					end 
+				end
+				%>
+					</tr>
+			<% 
+			else
+				if edit and delchk then 
+			%>
+					<tr><td colspan="<%=#th+1%>"><%=translate("This section contains no values yet")%></td></tr>
+			<%	else %>
+					<tr><td colspan="<%=#th%>"><%=translate("This section contains no values yet")%></td></tr>
+			<%	
+				end 
+			end
+			%>
+			</tbody>
+		</table>
+		<% if addnewable then %>
+			<div>
+				<input class="cbi-button cbi-button-add" type="submit" value="<%:New%>" name="New" title="New">
+			</div>
+		<% end %>
+	</fieldset>
+</div>
+</form>
+<%+footer%>
