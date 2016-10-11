@@ -12,9 +12,9 @@ local xml_dir = "/etc/freeswitch/conf"
 local scripts_dir = "/usr/lib/lua/luci/scripts"
 
 function check_all_cfg()
-	local file_check_list = {"profile_time","profile_number","profile_manipl","profile_codec","fax","profile_sip",
-							 "profile_fxso","profile_mobile","provision","endpoint_siptrunk","endpoint_fxso",
-							 "endpoint_mobile","endpoint_ringgroup","route","feature_code"}
+	local file_check_list = {"network","static_route","firewall","profile_time","profile_number","profile_manipl","profile_codec","fax","profile_sip",
+							 "profile_fxso","profile_mobile","provision","endpoint_siptrunk","endpoint_fxso","callcontrol","xl2tpd","pptpc","openvpn",
+							 "endpoint_mobile","endpoint_ringgroup","route","feature_code","profile_smsroute","hosts"}
 	for k,v in pairs(file_check_list) do
 		uci:check_cfg(v)
 	end
@@ -79,7 +79,7 @@ function compare_xml_cfg(cfg,xml)
 		--@ just find file by name
 		for k,v in pairs(cfg_tb) do
 			if cfg == "route" then
-				if v.index and not fs.access(xml.."/r_"..(tonumber(v.index) < 10 and "0"..v.index or v.index)..".xml") then
+				if v.index and v.name and not fs.access(xml.."/r_"..(tonumber(v.index) < 10 and "0"..v.index or v.index)..".xml") then
 					return false
 				end
 			elseif cfg == "feature_code" then
@@ -195,7 +195,7 @@ function get_cdr_is_enable()
 end
 
 function add_param_name_value(parent_node,name,value)
-	if parent_node	and name  and value then
+	if parent_node  and name  and value then
 		param = mxml.newnode(parent_node,"param")
 		mxml.setattr(param,"name",name)
 		mxml.setattr(param,"value",value)
@@ -531,8 +531,15 @@ function freeswitch_reload(param)
 				con:api("sofia profile "..v.." start")
 			end
 		end
-		if param.sipextension then
-			exe("sleep 2")--wait profile init finish
+		
+		--wait all profile init complete
+		for k,v in ipairs(running_profile) do
+			local v_profile=con:api("sofia status profile "..v):getBody()
+			while v_profile:match("Invalid Profile") do
+				print("sleep")
+				os.execute("sleep 2")
+				v_profile=con:api("sofia status profile "..v):getBody()
+			end
 		end
 	end
 
@@ -557,7 +564,7 @@ function freeswitch_reload(param)
 		end
 		for k,v in ipairs(running_profile) do
 			local reg_info = con:api("sofia status profile "..v.." reg"):getBody()
-			if reg_info and not reg_info:match("returned: 0") then
+			if reg_info and (not reg_info:match("returned: 0")) and (not reg_info:match("Invalid Profile")) then
 				local start_index = string.find(reg_info,"=\n")
 				local end_index = string.find(reg_info,"\n\n",start_index+2)
 				local total_len = string.find(reg_info,"\n=",start_index)
@@ -605,11 +612,23 @@ function config_network()
 	--@ 
 	local profile_network_tb = uci:get_all("network_tmp","network") or {}
 	local network_model = uci:get("network_tmp","network","network_mode")
+	local is_newdrv = false
 	
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		is_newdrv = true
+	else
+		is_newdrv = false
+	end
+
 	if network_model then
 		if network_model == "route" then
 			uci:set("network","lan","ifname","eth0.1")
 			uci:set("network","lan","proto","static")
+			if is_newdrv then
+				uci:set("wireless","ra0","disabled","0")
+			else
+				uci:set("wireless","radio0","disabled","0")
+			end
 			uci:set("wireless","wifi0","network","lan")
 			uci:set("wireless","wifi0","mode","ap")
 			uci:set("wireless","wifi0","network","lan")
@@ -633,7 +652,7 @@ function config_network()
 			uci:set("network","lan","ifname","eth0.1 eth0.2")
 			uci:set("network","lan","metric",10)
 			uci:set("network","lan","hostname",uci:get("system","main","hostname") or "UC100")
-			if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+			if is_newdrv then
 				uci:set("wireless","ra0","disabled","1")
 			else
 				uci:set("wireless","radio0","disabled","1")
@@ -644,6 +663,12 @@ function config_network()
 			if uci:get_all("network","wan") then
 				uci:delete("network","wan")
 			end
+			if uci:get("network","lan","gateway") then
+				uci:delete("network","lan","gateway")
+			end
+			if uci:get("network","lan","dns") then
+				uci:delete("network","lan","dns")
+			end
 			--@ dhcp
 			uci:set("dhcp","lan","ignore","1")
 			uci:set("dhcp","wlan","ignore","1")
@@ -651,11 +676,22 @@ function config_network()
 			uci:set("network","lan","ifname","eth0.1 eth0.2")
 			--@ lan must be static
 			uci:set("network","lan","proto","static")
+			if is_newdrv then
+				uci:set("wireless","ra0","disabled","0")
+			else
+				uci:set("wireless","radio0","disabled","0")
+			end
 			uci:set("wireless","wifi0","network","wlan")
 			uci:set("wireless","wifi0","mode","sta")
 			uci:set("wireless","wifi0","network","wlan")
 			if uci:get_all("network","wan") then
 				uci:delete("network","wan")
+			end
+			if uci:get("network","lan","gateway") then
+				uci:delete("network","lan","gateway")
+			end
+			if uci:get("network","lan","dns") then
+				uci:delete("network","lan","dns")
 			end
 			--@ dhcp
 			uci:set("dhcp","dnsmasq","interface","wlan0")
@@ -675,6 +711,22 @@ function config_network()
 				elseif k:match("^wlan_") then
 					local option_name = k:match("^wlan_(.*)")
 					uci:set("network","wlan",option_name,v)		
+				elseif k:match("^wifi_") and not is_newdrv then
+					local option_name = k:match("^wifi_(.*)")
+					--@special ssid
+					if option_name:match("^ssid") then
+						uci:set("wireless","wifi0","ssid",v)
+					else
+						if option_name == "channel" then
+							uci:set("wireless","radio0",option_name,v)
+						elseif option_name == "disabled" then
+							uci:set("wireless","radio0","disabled",v)
+						elseif option_name == "wep" then
+							--@ nothing
+						else
+							uci:set("wireless","wifi0",option_name,v)
+						end
+					end
 				end
 			end
 		end
@@ -937,6 +989,10 @@ function config_firewall()
 			os.execute("echo  >/etc/firewall.user")
 		else
 			os.execute("echo 'iptables -D zone_lan_forward -m comment --comment \"forwarding lan -> wan\" -j zone_wan_dest_ACCEPT' >/etc/firewall.user")
+			os.execute("echo 'iptables -t nat -I prerouting_wan_rule -p udp --sport 1900 -j ACCEPT ' >>/etc/firewall.user")
+			os.execute("echo 'iptables -t nat -I prerouting_wan_rule -p udp --sport 1901 -j ACCEPT ' >>/etc/firewall.user")
+			os.execute("echo 'iptables -I zone_wan_input -p udp --sport 1900 -j ACCEPT ' >>/etc/firewall.user")
+			os.execute("echo 'iptables -I zone_wan_input -p udp --sport 1901 -j ACCEPT ' >>/etc/firewall.user")
 		end
 		
 		--@ For nat
@@ -1512,7 +1568,41 @@ function load_scripts(param)
 		end
 	end
 
-	if param.firewall or param.upgrade then
+	if param.xl2tpd or param.network then
+		check_xl2tpd_enabled()
+		if param.xl2tpd == "reload" then
+			exe("/etc/init.d/xl2tpd reload")
+		else
+			exe("/etc/init.d/xl2tpd restart")
+		end
+	end
+
+	if param.pptpc or param.network then
+		exe("/etc/init.d/pptpc restart")
+	end
+
+	if param.openvpn then
+		if fs.access("/tmp/my-vpn.conf.latest") then
+			uci:set("openvpn","sample_client","enabled","0")
+			uci:commit("openvpn")
+			local nopull=util.exec("cat /tmp/my-vpn.conf.latest | grep route-nopull")
+			if "" == nopull then
+				os.execute("echo route-nopull >>/tmp/my-vpn.conf.latest")
+			end
+			os.execute("echo route-metric 16 >>/tmp/my-vpn.conf.latest")
+			os.execute("echo route-up /etc/openvpn/client_route_up.sh >>/tmp/my-vpn.conf.latest")
+			os.execute("echo down /etc/openvpn/client_down.sh >>/tmp/my-vpn.conf.latest")
+			os.execute("echo up /etc/openvpn/client_up.sh >>/tmp/my-vpn.conf.latest")
+			os.execute("cp /tmp/my-vpn.conf.latest /etc/openvpn/my-vpn.conf && sync")
+		end
+		os.execute("sed -i '/redirect-gateway/d' /etc/openvpn/my-vpn.conf")
+		if "1" == uci:get("openvpn","custom_config","defaultroute") then
+			os.execute("echo redirect-gateway def1 >>/etc/openvpn/my-vpn.conf")
+		end
+		os.execute("/etc/init.d/openvpn restart")
+	end
+
+	if param.firewall or param.upgrade or param.pptpc or param.xl2tpd or param.openvpn then
 		applyed_list = add_to_list(applyed_list,"Firewall")
 		fs.writefile("/tmp/fs-apply-status","Applying="..applyed_list)
 		--@ check and set firewall
@@ -1589,33 +1679,6 @@ function load_scripts(param)
 
 	if param.freecwmp or param.network then
 		exe("/etc/init.d/freecwmp restart")
-	end
-
-	if param.xl2tpd or param.network then
-		check_xl2tpd_enabled()
-		if param.xl2tpd == "reload" then
-			exe("/etc/init.d/xl2tpd reload")
-		else
-			exe("/etc/init.d/xl2tpd restart")
-		end
-	end
-
-	if param.pptpc or param.network then
-		exe("/etc/init.d/pptpc restart")
-	end
-
-	if param.openvpn then
-		if fs.access("/tmp/my-vpn.conf.latest") then
-			uci:set("openvpn","sample_client","enabled","0")
-			uci:commit("openvpn")
-			os.execute("echo route-nopull >>/tmp/my-vpn.conf.latest")
-			os.execute("echo route-metric 16 >>/tmp/my-vpn.conf.latest")
-			os.execute("echo route-up /etc/openvpn/client_route_up.sh >>/tmp/my-vpn.conf.latest")
-			os.execute("echo down /etc/openvpn/client_down.sh >>/tmp/my-vpn.conf.latest")
-			os.execute("echo up /etc/openvpn/client_up.sh >>/tmp/my-vpn.conf.latest")
-			os.execute("cp /tmp/my-vpn.conf.latest /etc/openvpn/my-vpn.conf && sync")
-		end
-		os.execute("/etc/init.d/openvpn restart")
 	end
 
 	if param.upnpc or param.restore then

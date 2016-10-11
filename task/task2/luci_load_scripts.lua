@@ -644,6 +644,12 @@ function config_network()
 			if uci:get_all("network","wan") then
 				uci:delete("network","wan")
 			end
+			if uci:get("network","lan","gateway") then
+				uci:delete("network","lan","gateway")
+			end
+			if uci:get("network","lan","dns") then
+				uci:delete("network","lan","dns")
+			end
 			--@ dhcp
 			uci:set("dhcp","lan","ignore","1")
 			uci:set("dhcp","wlan","ignore","1")
@@ -656,6 +662,12 @@ function config_network()
 			uci:set("wireless","wifi0","network","wlan")
 			if uci:get_all("network","wan") then
 				uci:delete("network","wan")
+			end
+			if uci:get("network","lan","gateway") then
+				uci:delete("network","lan","gateway")
+			end
+			if uci:get("network","lan","dns") then
+				uci:delete("network","lan","dns")
 			end
 			--@ dhcp
 			uci:set("dhcp","dnsmasq","interface","wlan0")

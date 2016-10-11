@@ -6,18 +6,16 @@ function index()
 	local page
 	page = node("admin","network")
 	page.target = firstchild()
-	page.title	= _("Network")
-	page.order	= 40
-	page.index	= true
+	page.title = _("Network")
+	page.order = 40
+	page.index = true
 	entry({"admin","network","network"}, cbi("admin_network/setting"), _("Setting"), 10).leaf = true
 	
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 		entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
 		entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
-		entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_new_edit"),nil,21).leaf = true
+		entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
 		entry({"admin","network","wps"},call("action_wps"))
-	else
-		entry({"admin","network","wlan"},cbi("admin_network/wlan_old_edit"),_("WLAN"),20).leaf = true
 	end
 	
 	--@ LTE License
@@ -189,7 +187,7 @@ function port_map()
 				table.insert(content,tmp)
 			end
 		end
-	 end
+	end
 	if MAX_RULE == cnt then
 		addnewable = false
 	end
@@ -580,7 +578,7 @@ function static_route_list()
 	end
 
 	local th = {"Index","Name","Target IP","Netmask","Gateway","Interface","Status"}
-	local colgroup = {"8%","8%","20%","20%","20%","%7","7%","10%"}
+	local colgroup = {"8%","8%","18%","18%","18%","13%","7%","10%"}
 	local content = {}
 	local edit = {}
 	local delchk = {}
@@ -589,7 +587,7 @@ function static_route_list()
 	local addnewable = true
 	local cnt = 0
 	local network_route=uci:get_all("static_route")
-	local interface_name={["wan"]="WAN",["lan"]="LAN",["wan2"]="LTE",["openvpn"]="Openvpn",["ppp1701"]="L2TP",["ppp1723"]="PPTP"}
+	local interface_name={["wan"]="WAN",["lan"]="LAN",["wan2"]="LTE",["openvpn"]="OpenVPN",["ppp1701"]="L2TP",["ppp1723"]="PPTP"}
 		
 	for i=1,MAX_RULE do
 		for k,v in pairs(network_route) do
@@ -609,7 +607,7 @@ function static_route_list()
 				uci_cfg[cnt] = "static_route." .. k
 				table.insert(content,tmp)
 			end
-		end				
+		end
 	end
 	if MAX_RULE == cnt then
 		addnewable = false
@@ -659,7 +657,14 @@ function action_openvpn()
 		uci:save("openvpn")
 	end
 
+	local defaultroute = luci.http.formvalue("defaultroute")
+	if defaultroute then
+		uci:set("openvpn","custom_config","defaultroute",defaultroute)
+		uci:save("openvpn")
+	end
+
 	status = uci:get("openvpn","custom_config","enabled")
+	defaultroute = uci:get("openvpn","custom_config","defaultroute")
 
 	if luci.http.formvalue("key") then
 		local key = luci.http.formvalue("key")
@@ -669,15 +674,18 @@ function action_openvpn()
 			luci.template.render("admin_network/openvpn",{
 				result = "upload succ",
 				status = status,
+				defaultroute = defaultroute,
 			})
 		else
 			luci.template.render("admin_network/openvpn",{
 				status = uci:get("openvpn","custom_config","enabled"),
+				defaultroute = defaultroute,
 			})
 		end
 	else
 		luci.template.render("admin_network/openvpn",{
 			status = status,
+			defaultroute = defaultroute,
 		})
 	end
 end
