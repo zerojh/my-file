@@ -624,11 +624,6 @@ function config_network()
 		if network_model == "route" then
 			uci:set("network","lan","ifname","eth0.1")
 			uci:set("network","lan","proto","static")
-			if is_newdrv then
-				uci:set("wireless","ra0","disabled","0")
-			else
-				uci:set("wireless","radio0","disabled","0")
-			end
 			uci:set("wireless","wifi0","network","lan")
 			uci:set("wireless","wifi0","mode","ap")
 			uci:set("wireless","wifi0","network","lan")
@@ -642,6 +637,12 @@ function config_network()
 				
 				uci:create_section("network","interface","wan",{ifname="eth0.2",force_link="1"})
 				uci:set("network","wan","macaddr",mac_addr)
+			end
+			if uci:get("network","lan","gateway") then
+				uci:delete("network","lan","gateway")
+			end
+			if uci:get("network","lan","dns") then
+				uci:delete("network","lan","dns")
 			end
 			--@ dhcp
 			uci:set("dhcp","dnsmasq","interface","br-lan")
@@ -663,12 +664,6 @@ function config_network()
 			if uci:get_all("network","wan") then
 				uci:delete("network","wan")
 			end
-			if uci:get("network","lan","gateway") then
-				uci:delete("network","lan","gateway")
-			end
-			if uci:get("network","lan","dns") then
-				uci:delete("network","lan","dns")
-			end
 			--@ dhcp
 			uci:set("dhcp","lan","ignore","1")
 			uci:set("dhcp","wlan","ignore","1")
@@ -676,11 +671,6 @@ function config_network()
 			uci:set("network","lan","ifname","eth0.1 eth0.2")
 			--@ lan must be static
 			uci:set("network","lan","proto","static")
-			if is_newdrv then
-				uci:set("wireless","ra0","disabled","0")
-			else
-				uci:set("wireless","radio0","disabled","0")
-			end
 			uci:set("wireless","wifi0","network","wlan")
 			uci:set("wireless","wifi0","mode","sta")
 			uci:set("wireless","wifi0","network","wlan")
@@ -695,7 +685,7 @@ function config_network()
 			end
 			--@ dhcp
 			uci:set("dhcp","dnsmasq","interface","wlan0")
-			uci:set("dhcp","dnsmasq","local","/wlan/")		
+			uci:set("dhcp","dnsmasq","local","/wlan/")
 			uci:set("dhcp","lan","ignore","1")
 			uci:set("dhcp","wlan","ignore","0")
 		end
@@ -710,8 +700,8 @@ function config_network()
 					uci:set("network","lan",option_name,v)
 				elseif k:match("^wlan_") then
 					local option_name = k:match("^wlan_(.*)")
-					uci:set("network","wlan",option_name,v)		
-				elseif k:match("^wifi_") and not is_newdrv then
+					uci:set("network","wlan",option_name,v)
+				elseif not is_newdrv and k:match("^wifi_") then
 					local option_name = k:match("^wifi_(.*)")
 					--@special ssid
 					if option_name:match("^ssid") then

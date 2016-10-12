@@ -339,8 +339,10 @@ function action_wlan()
 		end
 	end
 
-	local th = {"Index","SSID","Encryption","Interface","Isolation","WMM","Status"}
-	local colgroup = {"5%","25%","15%","15%","10%","10%","10%","10%"}
+	--local th = {"Index","SSID","Encryption","Interface","Isolation","WMM","Status"}
+	--local colgroup = {"5%","25%","15%","15%","10%","10%","10%","10%"}
+	local th = {"Index","SSID","Encryption","Isolation","WMM","Status"}
+	local colgroup = {"5%","25%","20%","15%","15%","10%","10%"}
 	local content = {}
 	local edit = {}
 	local delchk = {}
@@ -361,16 +363,15 @@ function action_wlan()
 					tmp[1] = v.index
 					tmp[2] = v.ssid
 					tmp[3] = v.encryption == "none" and i18n.translate("NONE") or (v.encryption == "psk" and "WPA+PSK" or "WPA2+PSK")
-					tmp[4] = v.network == "lan" and "LAN" or v.network
-					tmp[5] = i18n.translate(v.isolate == "0" and "Disabled" or "Enabled")
-					tmp[6] = i18n.translate(v.wmm == "0" and "Off" or "On")
-					tmp[7] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
+					--tmp[4] = v.network == "lan" and "LAN" or v.network
+					tmp[4] = i18n.translate(v.isolate == "0" and "Disabled" or "Enabled")
+					tmp[5] = i18n.translate(v.wmm == "0" and "Off" or "On")
+					tmp[6] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
 					
 					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k
 					if cnt == 1 then
 						--@ wifi0
-						delchk[cnt] = wds_status == true and "alert('"..i18n.translatef("Can not disable/delete, it is being used in <%s> !",tostring(i18n.translate("WDS Config"))).."');return false" or "return true"
 					else
 						delchk[cnt] = "return true"
 					end

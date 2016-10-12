@@ -227,9 +227,9 @@ table {
 					<a href="<%=edit[k]%>" title="<%=translate("Edit")%>"><img style='border:none' src='/luci-static/resources/cbi/edit.png'></a>
 					<!--enable/disable-->
 					<% if uci_cfg[k] and status and "Disabled" == status[k] then%>
-						<input type="image" value="Enabled" onclick="<%=delchk[k]%>" name="Status.Enabled.<%=uci_cfg[k]%>" alt="Enabled" title="<%=translate("The current is disabled, click enable")%>" src="/luci-static/resources/cbi/apply.png" />
+						<input type="image" value="Enabled" onclick="<%=delchk[k]%>" name="Status.Enabled.<%=uci_cfg[k]%>" alt="Enabled" title="<%=translate("The status is disabled, click enable")%>" src="/luci-static/resources/cbi/apply.png" />
 					<% elseif uci_cfg[k] and status and "Enabled" == status[k] then %>
-						<input type="image" value="Disabled" onclick="<%=delchk[k]%>" name="Status.Disabled.<%=uci_cfg[k]%>" alt="Disabled" title="<%=translate("The current is enabled, click disable")%>" src="/luci-static/resources/cbi/stop.png" />
+						<input type="image" value="Disabled" onclick="<%=delchk[k]%>" name="Status.Disabled.<%=uci_cfg[k]%>" alt="Disabled" title="<%=translate("The status is enabled, click disable")%>" src="/luci-static/resources/cbi/stop.png" />
 					<% end %>
 
 					<% if delchk and delchk[k] then %>
