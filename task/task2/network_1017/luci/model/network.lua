@@ -1,5 +1,39 @@
 module("luci.model.network", package.seeall)
 
+local cidr2netmask={
+	"128.0.0.0",
+	"192.0.0.0",
+	"224.0.0.0",
+	"240.0.0.0",
+	"248.0.0.0",
+	"252.0.0.0",
+	"254.0.0.0",
+	"255.0.0.0",
+	"255.128.0.0",
+	"255.192.0.0",
+	"255.224.0.0",
+	"255.240.0.0",
+	"255.248.0.0",
+	"255.252.0.0",
+	"255.254.0.0",
+	"255.255.0.0",
+	"255.255.128.0",
+	"255.255.192.0",
+	"255.255.224.0",
+	"255.255.240.0",
+	"255.255.248.0",
+	"255.255.252.0",
+	"255.255.254.0",
+	"255.255.255.0",
+	"255.255.255.128",
+	"255.255.255.192",
+	"255.255.255.224",
+	"255.255.255.240",
+	"255.255.255.248",
+	"255.255.255.252",
+	"255.255.255.254",
+	"255.255.255.255",
+}
 function ubus_get_addr(iname)
 	require "ubus"
 	local conn = ubus.connect()
@@ -18,15 +52,8 @@ function ubus_get_addr(iname)
 					end
 					if addr['mask'] then
 						--@ mask
-						ret_mask = addr['mask'] or "0"
-						if ret_mask == 32 then
-							ret_mask = "255.255.255.255"
-						elseif ret_mask == 24 then
-							ret_mask = "255.255.255.0"
-						elseif ret_mask == 16 then
-							ret_mask = "255.255.0.0"
-						elseif ret_mask == 8 then
-							ret_mask = "255.0.0.0"
+						if addr['mask'] > 0 and addr['mask'] <=32 then
+							ret_mask=cidr2netmask[addr['mask']]
 						else
 							ret_mask = "0.0.0.0"
 						end
@@ -153,19 +180,25 @@ function get_netstat(wan,lan,wlan,lte)
 end
 
 function get_wifi_info()
+	local fs = require "luci.fs"
 	local utl = require "luci.util"
 
 	local wlan = {}
+	local raw_info = ""
 
-	local raw_info = utl.exec("iwinfo")
-
-	wlan.ssid = raw_info:match("ESSID:%s+%\"*([0-9a-zA-Z%-%.%_]+)\"*")
-
-	if "unknown" == wlan.ssid then
-		return nil
+	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+		raw_info = utl.exec("iwinfo ra0 info")
+	else
+		raw_info = utl.exec("iwinfo")
 	end
 
 	wlan.mac_addr = raw_info:match("Access Point:%s+([%w%:]+)")
+
+	if not wlan.mac_addr or (wlan.mac_addr and "00:00:00:00:00:00" == wlan.mac_addr) then
+		return nil
+	end
+
+	wlan.ssid = raw_info:match("ESSID:%s+%\"*([0-9a-zA-Z%-%.%_]+)\"*")
 	wlan.channel = raw_info:match("Channel:%s+(%d+)")
 	wlan.encrypt = raw_info:match("Encryption:%s+(.+)Type:")
 
@@ -323,39 +356,4 @@ function get_netinfo()
 	netstat = get_netstat(wan_info,lan_info,wlan_info,lte_info)
 
 	return wan_info,lte_info,lan_info,wlan_info,netstat,dhcp_info
-end
-
-function profile_network_init()
-	local uci = require "luci.model.uci".cursor()
-	
-	os.execute("touch /etc/config/network_tmp")
-	local lan_section = uci:get_all("network","lan")
-	local wan_section = uci:get_all("network","wan")
-	local option_tb = {}
-	
-	if lan_section then	
-		for k,v in pairs(lan_section) do
-			if k and v then
-				option_tb["lan_"..k] = v
-			end
-		end
-	end
-	
-	if wan_section then
-		for k,v in pairs(wan_section) do
-			if k and v then
-				option_tb["wan_"..k] = v
-			end
-		end
-		
-		option_tb["network_mode"] = "route"
-	end	
-
-	--@ delete some value
-	option_tb["lan_macaddr"] = nil
-	option_tb["lan_ifname"] = nil
-	option_tb["wan_macaddr"] = nil
-	option_tb["wan_ifname"] = nil
-	
-	uci:create_section("network_tmp","setting","network",option_tb)
 end

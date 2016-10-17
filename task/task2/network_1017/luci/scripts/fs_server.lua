@@ -780,7 +780,9 @@ function get_wifi_list(param)
 	local param = param
 	local profile_wifi = {}
 
-	uci:check_cfg("profile_wifi")
+	if not fs.access("/tmp/config/profile_wifi") then
+		os.execute("touch /tmp/config/profile_wifi")
+	end
 
 	if param and param == "refresh" then
 		profile_wifi = uci:get_all("profile_wifi") or {}

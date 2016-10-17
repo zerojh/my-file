@@ -11,6 +11,10 @@ m = Map("network",translate(""), translate(""))
 
 --@ WAN Config {------
 if network_mode == "route" then
+	if not uci:get("network","wan") then
+		m.uci:section("network","interface","wan")
+		uci:save("network")
+	end
 	s = m:section(NamedSection,"wan","interface")
 
 	option = s:option(DummyValue,"_wan",translate("WAN"))

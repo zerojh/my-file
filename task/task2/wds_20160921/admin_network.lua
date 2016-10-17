@@ -35,7 +35,7 @@ function index()
 	entry({"admin","network","ddns"},cbi("admin_network/ddns_config"), _("DDNS"), 110).leaf = true
 
 	entry({"admin","network","static_route"}, call("static_route_list"),_("Static Route"),120)
-	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,120).leaf = true	
+	entry({"admin","network","static_route","static_route"}, cbi("admin_network/static_route_edit"),nil,120).leaf = true
 	entry({"admin","network","diag_ping"}, call("diag_ping"), nil).leaf = true
 	entry({"admin","network","diag_nslookup"}, call("diag_nslookup"), nil).leaf = true
 	entry({"admin","network","diag_traceroute"}, call("diag_traceroute"), nil).leaf = true
