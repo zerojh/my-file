@@ -35,7 +35,7 @@
 		document.getElementById('pin').disabled = true
 		document.getElementById('pbc').disabled = true
 		$('#con_status').show()
-		$('#con_status').text('<%:Connecting...%>'+' ...... 1')
+		$('#con_status').text('<%:Connecting...%>'+'...... 1')
 		
 		XHR.get('<%=luci.dispatcher.build_url("admin", "network", "wps")%>',{action_type:bt_name,pin_code:pin_code},
 		function(x,info){
@@ -67,7 +67,7 @@
 					}
 					else
 					{
-						$('#con_status').text('<%:Connecting...%>'+' ...... '+timeuse)
+						$('#con_status').text('<%:Connecting...%>'+'...... '+timeuse)
 						break_flag = false
 					}
 				})

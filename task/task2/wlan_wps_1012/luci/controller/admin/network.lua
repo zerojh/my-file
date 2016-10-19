@@ -240,28 +240,21 @@ function action_wps()
 	local pin_code = luci.http.formvalue("pin_code")
 	local fs = require "luci.fs"
 
-	local dev_name = ""
-	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-		dev_name = "ra0"
-	else
-		dev_name = "radio0"
-	end
-
 	if not luci.http.formvalue("status") then
 		if action_type == "pin" then
 			--@ pin code set wps
-			luci.util.exec("iwpriv "..dev_name.." set WscPinCode="..pin_code)
-			luci.util.exec("iwpriv "..dev_name.." set WscMode=1")
-			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+			luci.util.exec("iwpriv ra0 set WscPinCode="..pin_code)
+			luci.util.exec("iwpriv ra0 set WscMode=1")
+			luci.util.exec("iwpriv ra0 set WscGetConf=1")
 		else
 			--@ pbc set wps
-			luci.util.exec("iwpriv "..dev_name.." set WscMode=2")
-			luci.util.exec("iwpriv "..dev_name.." set WscGetConf=1")
+			luci.util.exec("iwpriv ra0 set WscMode=2")
+			luci.util.exec("iwpriv ra0 set WscGetConf=1")
 		end
-		luci.util.exec("iwpriv "..dev_name.." show WscPeerList")		
+		luci.util.exec("iwpriv ra0 show WscPeerList")		
 	end
 	
-	local ret_status = luci.util.exec("iwpriv "..dev_name.." show WscPeerList"):match(dev_name.."%s*WscStatus:%s*([0-9]+)")
+	local ret_status = luci.util.exec("iwpriv ra0 show WscPeerList"):match("ra0%s*WscStatus:%s*([0-9]+)")
 	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ status = ret_status})

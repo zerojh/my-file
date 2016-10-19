@@ -389,7 +389,7 @@ function action_wlan()
 				end
 			end
 		end
-	 end
+	end
 	if MAX_EXTENSION == cnt then
 		addnewable = false
 	end
