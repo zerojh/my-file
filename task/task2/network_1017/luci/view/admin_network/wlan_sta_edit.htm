@@ -6,12 +6,12 @@
 	local ds = require "luci.dispatcher"
 	local sta = {}
 	local wlan_status
-	local drv_type
+	local is_newdrv
 
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
-		drv_type = "new"
+		is_newdrv = true
 	else
-		drv_type = "old"
+		is_newdrv = false
 	end
 
 	if luci.http.formvalue("save") then
@@ -19,7 +19,7 @@
 
 		for k,v in pairs(sta_tb) do
 			if k == "disabled" then
-				if drv_type == "new" then
+				if is_newdrv then
 					uci:set("wireless","ra0","disabled",v)
 				else
 					uci:set("wireless","radio0","disabled",v)
@@ -46,8 +46,9 @@
 ]]--
 	else
 		local wireless_tb = uci:get_all("wireless")
+		local wlan_tb = uci:get_all("network","wlan0")
 
-		if drv_type == "new" then
+		if is_newdrv then
 			sta.disabled = wireless_tb.ra0.disabled
 			wlan_status =  util.exec("ifconfig | grep 'ra0'")
 		else

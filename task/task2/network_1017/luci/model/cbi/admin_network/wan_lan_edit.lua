@@ -34,9 +34,9 @@ if network_mode == "route" then
 	option.rmempty = false
 	option:depends("proto","static")
 	function option.validate(self, value)
-		local proto = m:formvalue("cbid.network.wan.proto")
+		local wan_proto = m:formvalue("cbid.network.wan.proto")
 		
-		if  proto == "static" then
+		if  wan_proto == "static" then
 			return Value.validate(self, value)
 		else
 			m.uci:delete("network","wan","ipaddr")

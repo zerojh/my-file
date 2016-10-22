@@ -613,8 +613,13 @@ function config_network()
 	--@ 
 	--local profile_network_tb = uci:get_all("network_tmp","network") or {}
 	--local network_model = uci:get("network_tmp","network","network_mode")
-	local network_model = uci:get("network","globals","network_mode")
+	local changes_tb = uci:changes() or {}
+	local network_model
 	local is_newdrv = false
+	
+	if changes_tb.network and changes_tb.network.globals and changes_tb.network.globals.network_mode then
+		network_model = changes_tb.network.globals.network_mode
+	end
 	
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 		is_newdrv = true
@@ -655,11 +660,6 @@ function config_network()
 			uci:set("network","lan","ifname","eth0.1 eth0.2")
 			uci:set("network","lan","metric",10)
 			uci:set("network","lan","hostname",uci:get("system","main","hostname") or "UC100")
-			if is_newdrv then
-				uci:set("wireless","ra0","disabled","1")
-			else
-				uci:set("wireless","radio0","disabled","1")
-			end
 			uci:set("wireless","wifi0","network","lan")
 			uci:set("wireless","wifi0","mode","ap")
 			uci:set("wireless","wifi0","network","lan")

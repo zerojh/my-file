@@ -10,14 +10,15 @@ function index()
 	page.order  = 40
 	page.index  = true
 	entry({"admin","network","setting"}, alias("admin","network","setting","network_mode"), _("Setting"), 10)
-	entry({"admin","network","setting","network_mode"}, cbi("admin_network/network_mode"), _("Network Mode"), 10)
-	entry({"admin","network","setting","wan_lan"}, cbi("admin_network/wan_lan_edit"), _("WAN/LAN"), 11)
+	entry({"admin","network","setting","network_mode"}, cbi("admin_network/network_mode"), _("Network Mode"), 10).leaf = true
+	entry({"admin","network","setting","wan_lan"}, cbi("admin_network/wan_lan_edit"), _("WAN/LAN"), 11).leaf = true
 	
 	if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
 		--@ new driver
-		--entry({"admin", "network", "wlan"}, alias("admin","network","wlan","wlan_config"), _("WLAN"),20)
-		--entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20).leaf = true
-		--entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit_new"),nil,21).leaf = true
+		entry({"admin","network","setting","wlan"},call("action_wlan"),_("WLAN"),12)
+		entry({"admin","network","setting","wlan_ap"},call("action_wlan_ap"))
+		entry({"admin","network","setting","wlan_ap","edit"},cbi("admin_network/wlan_ap_new"),nil,13).leaf = true
+		entry({"admin","network","setting","wlan_sta"},cbi("admin_network/wlan_sta"))
 		--entry({"admin","network","wps"},call("action_wps"))
 	else
 		--@ old driver
@@ -266,8 +267,26 @@ function action_wps()
 	luci.http.write_json({ status = ret_status})
 end
 
---# wlan config of new driver
 function action_wlan()
+	local uci = require "luci.model.uci".cursor()
+	local ds = require "luci.dispatcher"
+
+	local network_mode = uci:get("network","globals","network_mode")
+	if not network_mode then
+		network_mode = "route"
+		uci:set("network","globals","network_mode",network_mode)
+		uci:save("network")
+	end
+
+	if network_mode ~= "client" then
+		luci.http.redirect(ds.build_url("admin","network","setting","wlan_ap"))
+	else
+		luci.http.redirect(ds.build_url("admin","network","setting","wlan_sta"))
+	end
+end
+
+--# wlan config of new driver
+function action_wlan_ap()
 	local MAX_EXTENSION = 1
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
@@ -312,7 +331,7 @@ function action_wlan()
 	if luci.http.formvalue("New") then
 		local created = uci:section("wireless","wifi-iface")
 		uci:save("wireless")
-		luci.http.redirect(ds.build_url("admin","network","wlan","wlan_config","edit",created,"add"))
+		luci.http.redirect(ds.build_url("admin","network","setting","wlan_ap","edit",created,"add"))
 		return
 	end
 	
@@ -355,7 +374,7 @@ function action_wlan()
 					tmp[6] = i18n.translate(v.wmm == "0" and "Off" or "On")
 					tmp[7] = i18n.translate(v.disabled == "1" and "Disabled" or "Enabled")
 					
-					edit[cnt] = ds.build_url("admin","network","wlan","wlan_config","edit",k,"edit")
+					edit[cnt] = ds.build_url("admin","network","setting","wlan_ap","edit",k,"edit")
 					uci_cfg[cnt] = "wireless." .. k
 					if cnt == 1 then
 						--@ wifi0
