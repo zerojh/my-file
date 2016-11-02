@@ -5,127 +5,36 @@ local dsp = require "luci.dispatcher"
 local uci = require "luci.model.uci".cursor()
 local fs = require "luci.fs"
 
-m = Map("network",translate("WLAN"))
-
-if not uci:get("network","wlan") then
-	m.uci:section("network","interface","wlan")
-	uci:save("network")
+dev_name = ""
+if fs.access("/lib/modules/3.14.18/rt2860v2_ap.ko") then
+	dev_name = "ra0"
+else
+	dev_name = "radio0"
 end
 
-s = m:section(NamedSection,"wlan","interface")
+m = Map("wireless",translate("WLAN"))
 
---####wlan proto#####----
-option = s:option(ListValue,"proto",translate("Protocol"))
-option:value("dhcp",translate("DHCP"))
-option:value("statuc",translate("Static address"))
-
---@ WLAN Static IP {
---####wlan static ip addr####----
-option = s:option(Value,"ipaddr",translate("IP Address"))
-option.datatype = "wlan_addr"
-option.rmempty = false
-option:depends("proto","static")
-function option.validate(self, value)
-	local proto = m:formvalue("cbid.network.wlan.proto")
-	
-	if  proto == "static" then
-		return Value.validate(self, value)
-	else
-		m.uci:delete("network","wlan","ipaddr")
-		return value or ""
-	end
-end
-
---####wlan static netmask####----
-option = s:option(Value,"netmask",translate("Netmask"))
-option.rmempty = false
-option:depends("proto","static")
-option.datatype = "netmask"
-option.default = "255.255.255.0"
-option:value("255.0.0.0","255.0.0.0")
-option:value("255.255.0.0","255.255.0.0")
-option:value("255.255.255.0","255.255.255.0")
-function option.validate(self,value)
-	local proto = m:formvalue("cbid.network.wlan.proto")
-
-	if proto == "static" then
-		return Value.validate(self,value)
-	else
-		m.uci:delete("network","wlan","netmask")
-		return value or ""
-	end
-end
-
---####wlan static gateway####----
-option = s:option(Value,"gateway",translate("Default Gateway"))
-option.margin = "30px"
-option.datatype = "wlan_gateway"
-option.rmempty = false
-option:depends("proto","static")
-
-function option.validate(self, value)
-	local proto = m:formvalue("cbid.network.wlan.proto")
-	
-	if proto == "static"  then
-		return Value.validate(self, value)
-	else
-		m.uci:delete("network","wlan","gateway")
-		return value or ""
-	end
-end
-
-m2 = Map("wireless",translate(""))
-
-s = m:section(NamedSection,"radio0","")
+s = m:section(NamedSection,dev_name,"")
 disabled = s:option(ListValue,"disabled",translate("WIFI Status"))
-disabled.margin = "30px"
 disabled:value("0",translate("On"))
 disabled:value("1",translate("Off"))
 
---@ wifi ap model
---# AP model wifi ssid
-option = s:option(Value,"wifi_ssid",translate("SSID"))
-option.margin = "30px"
-option.rmempty = false
-option.datatype = "ssid"
-option:depends({network_mode="route",wifi_disabled="0"})
-option:depends({network_mode="bridge",wifi_disabled="0"})
-function option.validate(self, value)
-	local tmp_mode = m:formvalue("cbid.network_tmp.network.network_mode")
-	local tmp_enabled = m:formvalue("cbid.network_tmp.network.wifi_disabled")
-	
-	if (tmp_mode == "route" or tmp_mode == "bridge") and tmp_enabled == "0" then
-		return Value.validate(self, value)
-	else
-		return value or ""
-	end
-end
-
---# AP model wifi channel
-option = s:option(ListValue,"wifi_channel",translate("Channel"))
-option.margin = "30px"
-option:depends({network_mode="route",wifi_disabled="0"})
-option:depends({network_mode="bridge",wifi_disabled="0"})
-option:value("auto",translate("auto"))
-for i=1,11 do
-	option:value(i,i)
-end
---@end
+option = s:option(ListValue,"ssid",translate("SSID"))
+option.template = "admin_network/wifi_list"
 
 --# wifi encryption
-option = s:option(ListValue,"wifi_encryption",translate("Encryption"))
+option = s:option(ListValue,"encryption",translate("Encryption"))
 option.margin = "30px"
 option.default = "psk2"
-option:depends("wifi_disabled","0")
+--option:depends("wifi_disabled","0")
 option:value("wep","WEP")
 option:value("psk","WPA+PSK")
 option:value("psk2","WPA2+PSK")
 option:value("none",translate("NONE"))
 
 --# wifi wep encryption
-option = s:option(ListValue,"wifi_wep",translate(" "))
-option.margin = "30px"
-option:depends("wifi_encryption","wep")
+option = s:option(ListValue,"wep",translate(" "))
+option:depends("encryption","wep")
 option:value("64bit","64bit")
 option:value("128bit","128bit")
 
@@ -215,4 +124,72 @@ function option.validate(self,value)
 	end
 end
 
-return m
+m2 = Map("network",translate(""))
+
+if not uci:get("network","wlan") then
+	m2.uci:section("network","interface","wlan")
+	uci:save("network")
+end
+
+s = m2:section(NamedSection,"wlan","interface")
+
+--####wlan proto#####----
+option = s:option(ListValue,"proto",translate("Protocol"))
+option:value("dhcp",translate("DHCP"))
+option:value("statuc",translate("Static address"))
+
+--@ WLAN Static IP {
+--####wlan static ip addr####----
+option = s:option(Value,"ipaddr",translate("IP Address"))
+option.datatype = "wlan_addr"
+option.rmempty = false
+option:depends("proto","static")
+function option.validate(self, value)
+	local proto = m2:formvalue("cbid.network.wlan.proto")
+	
+	if  proto == "static" then
+		return Value.validate(self, value)
+	else
+		m2.uci:delete("network","wlan","ipaddr")
+		return value or ""
+	end
+end
+
+--####wlan static netmask####----
+option = s:option(Value,"netmask",translate("Netmask"))
+option.rmempty = false
+option:depends("proto","static")
+option.datatype = "netmask"
+option.default = "255.255.255.0"
+option:value("255.0.0.0","255.0.0.0")
+option:value("255.255.0.0","255.255.0.0")
+option:value("255.255.255.0","255.255.255.0")
+function option.validate(self,value)
+	local proto = m2:formvalue("cbid.network.wlan.proto")
+
+	if proto == "static" then
+		return Value.validate(self,value)
+	else
+		m2.uci:delete("network","wlan","netmask")
+		return value or ""
+	end
+end
+
+--####wlan static gateway####----
+option = s:option(Value,"gateway",translate("Default Gateway"))
+option.datatype = "wlan_gateway"
+option.rmempty = false
+option:depends("proto","static")
+
+function option.validate(self, value)
+	local proto = m2:formvalue("cbid.network.wlan.proto")
+	
+	if proto == "static"  then
+		return Value.validate(self, value)
+	else
+		m2.uci:delete("network","wlan","gateway")
+		return value or ""
+	end
+end
+
+return m,m2

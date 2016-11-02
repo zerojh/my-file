@@ -18,7 +18,7 @@ function index()
 		entry({"admin","network","setting","wlan"},call("action_wlan"),_("WLAN"),12)
 		entry({"admin","network","setting","wlan_ap"},call("action_wlan_ap"))
 		entry({"admin","network","setting","wlan_ap","edit"},cbi("admin_network/wlan_ap_new"),nil,13).leaf = true
-		entry({"admin","network","setting","wlan_sta"},cbi("admin_network/wlan_sta"))
+		entry({"admin","network","setting","wlan_sta"},template("admin_network/wlan_sta")).leaf = true
 		--entry({"admin","network","wps"},call("action_wps"))
 	else
 		--@ old driver
