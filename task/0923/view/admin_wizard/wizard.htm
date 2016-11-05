@@ -1,0 +1,45 @@
+
+<%+header%>
+<style type="text/css">
+table td {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+table {table-layout:fixed;}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
+</style>
+<h2><a id="content" name="content"><%:Setup Wizard%></a></h2>
+<fieldset class="cbi-section">
+	<table>
+		<tr>
+			<td>
+			<div class="description">
+				<p class="line"><%:There are five ways to access the Internet. There are three wired methods: Dynamic IP, Static IP and PPPOE. There are two wire methods: "Dynamic IP" and "Static IP".%></p>
+				<br/>
+				<p class="line"><%:There are five ways to access the Internet. There are three wired methods: Dynamic IP, Static IP and PPPOE. There are two wire methods: "Dynamic IP" and "Static IP".%></p>
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
+			<td>
+				<input class="cbi-button" type="submit" name="exit" value="<%:Exit Wizard%>" />
+				<input class="cbi-button" type="submit" name="continue" value="<%:Continue%>" />
+			</td></form>
+		</tr>
+
+	</table>
+</fieldset>
+<%+footer%>

@@ -1,0 +1,152 @@
+<%+header%>
+
+<style type="text/css">
+table td{
+	text-align:left;
+}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script type="text/javascript"></script>
+
+<h2><a id="content" name="content"><%:Network Access%></a></h2>
+<fieldset><table>
+	<td>
+		<div class="description">
+			<p class="line" ><%:There are five ways to access the Internet. There are three wired methods: Dynamic IP, Static IP and PPPOE. There are two wire methods: "Dynamic IP" and "Static IP".%></p>
+			</br>
+			<p class="line" ><%:There are five ways to access the Internet. There are three wired methods: Dynamic IP, Static IP and PPPOE. There are two wire methods: "Dynamic IP" and "Static IP".%></p>
+		</div>
+	</td>
+</table></fieldset>
+<fieldset class="cbi-section">
+	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
+	<table>
+		<!--network mode-->
+		<tr>
+			<td width="40%"><%:Network Mode%></td>
+			<td><select class="cbi-input-select" id="net_mode" name="table.network_tmp.net_mode">
+					<option value="wan_dhcp"><%:Wired Dynamic IP%></option>"
+					<option value="wan_static"><%:Wired Static IP%></option>"
+					<option value="wan_pppoe"><%:PPPoE%></option>"
+					<option value="wlan_dhcp"><%:Wire Dynamic IP%></option>"
+					<option value="wlan_static"><%:Wire Static IP%></option>"
+			</select></td>
+		</tr>
+
+		<!--wan_static ipaddr-->
+		<tr>
+			<td width="40%"><%:IP Address%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_ipaddr" name="table.network_tmp.wan_ipaddr" value=""></input></td>
+		</tr>
+		<!--wan_static netmask-->
+		<tr>
+			<td width="40%"><%:Netmask%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_netmask" name="table.network_tmp.wan_netmask" value=""></input></td>
+		</tr>
+		<!--wan_static gateway-->
+		<tr>
+			<td width="40%"><%:Gateway%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_gateway" name="table.network_tmp.wan_gateway" value=""></input></td>
+		</tr>
+
+		<!--wan_pppoe username-->
+		<tr>
+			<td width="40%"><%:Username%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_username" name="table.network_tmp.wan_username" value=""></input></td>
+		</tr>
+		<!--wan_pppoe password-->
+		<tr>
+			<td width="40%"><%:Password%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_password" name="table.network_tmp.wan_password" value=""></input></td>
+		</tr>
+		<!--wan_pppoe service-->
+		<tr>
+			<td width="40%"><%:Server Name%></td>
+			<td ><input type="text" class="cbi-input-text" id="wan_service" name="table.network_tmp.wan_service" value=""></input></td>
+		</tr>
+
+		<!--wan dns-->
+		<tr>
+			<td width="40%"><%:Obtain DNS server address automatically%></td>
+			<td><input type="checkbox" class="cbi-input-checkbox" name="table.network_tmp.wan_peerdns" value="1" checked="checked"></td>
+		</tr>
+		<tr>
+			<td width="40%"><%:Use custom DNS server%></td>
+			<td><input type="text" class="cbi-input-text" id="wan_ddns1" name="table.network_tmp.wan_ddns1" value=""></input></td>
+		</tr>
+		<tr>
+			<td width="40%"></td>
+			<td><input type="text" class="cbi-input-text" id="wan_ddns2" name="table.network_tmp.wan_ddns2" value=""></input></td>
+		</tr>
+
+		<!--wifi list-->
+		<tr>
+			<td width="40%"><%:Access Point%></td>
+			<td><select class="cbi-input-select" id="wireless_ssid" name="table.wireless.ssid">
+					<option value="wlan_static" ><%:Wire Static IP%></option>"
+			</select></td>
+		</tr>
+		<!--password-->
+		<tr>
+			<td width="40%"><%:WiFi Password%></td>
+			<td><input type="text" class="cbi-input-text" id="wireless_key" name="table.wireless.key" value=""></input></td>
+		</tr>
+		<!--wlan_static ipaddr-->
+		<tr>
+			<td width="40%"><%:IP Address%></td>
+			<td><input type="text" class="cbi-input-text" id="wlan_ipaddr" name="table.network_tmp.wlan_ipaddr" value=""></input></td>
+		</tr>
+		<!--wlan_static netmask-->
+		<tr>
+			<td width="40%"><%:Netmask%></td>
+			<td><input type="text" class="cbi-input-text" id="wlan_netmask" name="table.network_tmp.wlan_netmask" value=""></input></td>
+		</tr>
+		<!--wlan_static gateway-->
+		<tr>
+			<td width="40%"><%:Gateway%></td>
+			<td><input type="text" class="cbi-input-text" id="wlan_gateway" name="table.network_tmp.wlan_gateway" value=""></input></td>
+		</tr>
+
+		<!--wlan dns-->
+		<tr>
+			<td width="40%"><%:Obtain DNS server address automatically%></td>
+			<td><input type="checkbox" class="cbi-input-checkbox" name="table.network_tmp.wlan_peerdns" value="1" checked="checked"></td>
+		</tr>
+		<tr>
+			<td width="40%"><%:Use custom DNS server%></td>
+			<td><input type="text" class="cbi-input-text" id="wlan_ddns1" name="table.network_tmp.wlan_ddns1" value=""></input></td>
+		</tr>
+		<tr>
+			<td width="40%"></td>
+			<td><input type="text" class="cbi-input-text" id="wlan_ddns2" name="table.network_tmp.wlan_ddns2" value=""></input></td>
+		</tr>
+
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<input class="cbi-button" type="submit" name="exit" value="<%:Exit Wizard%>"></input>
+				<input class="cbi-button" type="submit" name="continue" value="<%:Continue%>"></input>
+			</td>
+		</tr>
+
+	</table></form>
+</fieldset>
+
+<%+footer%>

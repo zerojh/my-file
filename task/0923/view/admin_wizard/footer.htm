@@ -1,0 +1,47 @@
+
+<script language=javascript type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script language="javascript" type="text/javascript">
+window.onbeforeunload = function() {
+	if(is_form_changed()) {
+		return "<%:One or more value has been changed, Do you really want to leave without save ?%>";
+	}
+}
+function is_form_changed() {
+	var t_save = $(".cbi-button-save");
+	if(t_save.length>0) {
+		var is_changed = false;
+		$("[id^='cbid.']").each(function() {
+			var _v = $(this).attr('_value');
+			if(typeof(_v) == 'undefined')   _v = '';
+			if(_v != $(this).val()) 
+				is_changed = true;
+		});
+		return is_changed;
+	}
+	return false;
+}
+$(document).ready(function(){
+	$("[id^='cbid.']").each(function() {
+		$(this).attr('_value', $(this).val());
+	});
+	$(".cbi-input-select").each(function(){
+		var val = $(this).val()
+		if($(this).find('option').length > 1 && val && val.indexOf("addnew_") >= 0)
+			$(this).get(0).selectedIndex -= 1
+	})
+});
+function cancel_bind(){window.onbeforeunload=null;}
+function save_action(){document.cbi.action=document.cbi.action+"?action=save";cancel_bind();}
+function cancel_action(){document.cbi.action=document.cbi.action+"?action=cancel";cancel_bind();}
+function insert_action(){document.cbi.action = document.cbi.action + "?action=insert";cancel_bind();}
+function select_click(id)
+{
+	var val = document.getElementById(id).value
+	if(val.indexOf("addnew_") >= 0)
+	{
+		$("#cbi\\.insert\\.new").val(val.replace("addnew_",""))
+		/*document.cbi.cbi_state='del-section';*/
+		$("#cbi\\.insert\\.new").click()
+	}
+}
+</script>
