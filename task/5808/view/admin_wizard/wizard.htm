@@ -1,0 +1,71 @@
+<%
+	local dsp = require "luci.dispatcher"
+
+	if luci.http.formvalue("exit") then
+		luci.http.redirect(dsp.build_url("admin","status","overview"))
+		return
+	elseif luci.http.formvalue("continue") then
+		local action = luci.http.formvalue("config")
+
+		if action then
+			luci.http.redirect(dsp.build_url("admin","wizard","2",action))
+			return
+		end
+	end
+-%>
+
+<%+header%>
+<style type="text/css">
+table td {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+table {table-layout:fixed;}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
+</style>
+<h2><a id="content" name="content">配置向导</a></h2>
+<fieldset>
+	<div class="description">
+		<p class="line">使用本配置向导，可以很轻松的完成设备常用配置．</p>
+		<br/>
+		<p class="line">如需进行全新配置，请选择“全新配置”，并点击“继续”，配置向导中将不会显示以往的配置结果．</p>
+		<p class="line">如需修改原有配置，请选择“修改配置”，并点击“继续”，配置向导中将继续显示以往的配置结果．</p>
+		<p class="line">如需退出向导，请点击“退出向导”，将返回到状态总览界面．</p>
+	</div>
+
+	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
+		<div class="cbi-section-node">
+			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+				<label style="margin-left:0px;">请选择配置方式</label>
+			</div>
+			<div class="cbi-value-field">
+				<select class="cbi-input-select" id="config" name="config" >
+					<option value="new">全新配置</option>
+					<option value="old">修改配置</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="cbi-section-node">
+			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
+				<label style="margin-left:0px;"></label>
+			</div>
+			<div class="cbi-page-actions">
+				<input class="cbi-button" type="submit" name="exit" value="退出向导" />
+				<input class="cbi-button" type="submit" name="continue" value="继续" />
+			</div>
+		</div>
+
+	</table>
+	</form>
+</fieldset>
+<%+footer%>

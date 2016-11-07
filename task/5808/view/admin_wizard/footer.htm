@@ -32,16 +32,13 @@ $(document).ready(function(){
 });
 function cancel_bind(){window.onbeforeunload=null;}
 function save_action(){document.cbi.action=document.cbi.action+"?action=save";cancel_bind();}
-function cancel_action(){document.cbi.action=document.cbi.action+"?action=cancel";cancel_bind();}
-function insert_action(){document.cbi.action = document.cbi.action + "?action=insert";cancel_bind();}
 function select_click(id)
 {
-	var val = document.getElementById(id).value
-	if(val.indexOf("addnew_") >= 0)
-	{
-		$("#cbi\\.insert\\.new").val(val.replace("addnew_",""))
-		/*document.cbi.cbi_state='del-section';*/
-		$("#cbi\\.insert\\.new").click()
-	}
 }
 </script>
+<div class="cbi-value cbi-value-last" style="text-align:center;">
+<input class="cbi-button cbi-button-save" type="submit" name="cbi.prev" value="后退" onclick="save_action();"/>
+<input class="cbi-button cbi-button-save" type="submit" name="cbi.next" value="继续" onclick="save_action();"/>
+<input class="cbi-button" type="reset" value="重置" onclick="cbi_d_update()"/>
+<script type="text/javascript">cbi_d_update();</script>
+</div>

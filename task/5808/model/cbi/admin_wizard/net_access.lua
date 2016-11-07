@@ -1,9 +1,17 @@
 local uci = require "luci.model.uci".cursor()
 local fs_server = require "luci.scripts.fs_server"
+local dsp = require "luci.dispatcher"
 
-m = Map("network_tmp",translate("First Stage: Internet Settings"))
+if luci.http.formvalue("cbi.prev") then
+	luci.http.redirect(dsp.build_url("admin","wizard","1"))
+elseif luci.http.formvalue("cbi.next") then
+	luci.http.redirect(dsp.build_url("admin","wizard","3"))
+end
+
+m = Map("network_tmp","第一阶段：上网设置")
 m:chain("network")
 m:chain("firewall")
+m.pageaction = false
 
 --@ first
 s = m:section(NamedSection,"network","setting")
@@ -22,13 +30,13 @@ for k,v in pairs(m.uci:get_all("firewall") or {}) do
 end
 
 --####access mode#####----
-option = s:option(ListValue,"access_mode",translate("Network Model"))
+option = s:option(ListValue,"access_mode","网络模式")
 option.rmempty = false
-option:value("wan_dhcp",translate("Wired Dynamic IP"))
-option:value("wan_static",translate("Wired Static IP"))
-option:value("wan_pppoe",translate("PPPoE"))
-option:value("wlan_dhcp",translate("Wire Dynamic IP"))
-option:value("wlan_static",translate("Wire Static IP"))
+option:value("wan_dhcp","有线动态IP")
+option:value("wan_static","有线静态IP")
+option:value("wan_pppoe","PPPoE")
+option:value("wlan_dhcp","无线动态IP")
+option:value("wlan_static","无线静态IP")
 
 function option.write(self, section, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode") or "wan_dhcp"
@@ -48,7 +56,7 @@ end
 
 --@ WAN Static IP {
 --####wan static ip addr####----
-option = s:option(Value,"wan_ipaddr",translate("IP Address"))
+option = s:option(Value,"wan_ipaddr","IP地址")
 option.datatype = "wan_addr"
 option.rmempty = false
 option:depends("access_mode","wan_static")
@@ -65,7 +73,7 @@ function option.validate(self, value)
 end
 
 --####wan static netmask####----
-option = s:option(Value,"wan_netmask",translate("Netmask"))
+option = s:option(Value,"wan_netmask","子网掩码")
 option.rmempty = false
 option:depends("access_mode","wan_static")
 option.datatype = "netmask"
@@ -86,7 +94,7 @@ function option.validate(self,value)
 end
 
 --####wan static gateway####----
-option = s:option(Value,"wan_gateway",translate("Default Gateway"))
+option = s:option(Value,"wan_gateway","默认网关")
 option.datatype = "wan_gateway"
 option.rmempty = false
 option:depends("access_mode","wan_static")
@@ -107,7 +115,7 @@ end
 
 --@ PPPOE {
 --####wan pppoe username####----
-option = s:option(Value,"wan_username",translate("Username"))
+option = s:option(Value,"wan_username","用户名")
 option.rmempty = false
 option:depends("access_mode","wan_pppoe")
 function option.validate(self, value)
@@ -123,7 +131,7 @@ function option.validate(self, value)
 end
 
 --####wan pppoe password####----
-option = s:option(Value,"wan_password",translate("Password"))
+option = s:option(Value,"wan_password","密码")
 option.password = true
 option.rmempty = false
 option:depends("access_mode","wan_pppoe")
@@ -140,7 +148,7 @@ function option.validate(self,value)
 end
 
 --####wan pppoe service####----
-option = s:option(Value,"wan_service",translate("Server Name"))
+option = s:option(Value,"wan_service","服务器名称")
 option:depends("access_mode","wan_pppoe")
 function option.validate(self,value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
@@ -156,14 +164,14 @@ end
 --@ } END PPPOE
 
 --####wan auto dns####----
-option = s:option(Flag,"wan_peerdns",translate("Obtain DNS server address automatically"))
+option = s:option(Flag,"wan_peerdns","自动获取DNS服务器地址")
 option.rmempty = false
 option:depends("access_mode","wan_dhcp")
 option:depends("access_mode","wan_pppoe")
 option.default = option.enabled
 
 --####wan static dns####----
-option = s:option(DynamicList, "wan_dns",translate("Use custom DNS server"))
+option = s:option(DynamicList,"wan_dns","使用自定义的DNS服务器")
 option.datatype = "abc_ip4addr"
 option.cast     = "string"
 option.addremove = false
@@ -189,7 +197,7 @@ end
 
 --@ } END WAN Config-----
 
-option = s:option(Value,"wifi_ssid",translate("SSID"))
+option = s:option(Value,"wifi_ssid","SSID")
 option.rmempty = false
 option.datatype = "uni_ssid"
 option:depends("access_mode","wlan_dhcp")
@@ -226,7 +234,7 @@ function option.write(self,section,name)
 	end
 end
 
-option = s:option(Value,"wifi_key",translate("Password"))
+option = s:option(Value,"wifi_key","密码")
 option.rmempty = false
 option.datatype = "wifi_password"
 option.password = true
@@ -258,7 +266,7 @@ function option.write(self,section,name)
 	end
 end
 
-option = s:option(Value,"wlan_ipaddr","IP Address")
+option = s:option(Value,"wlan_ipaddr","IP地址")
 option.rmempty = false
 option.datatype = "wlan_addr"
 option:depends("access_mode","wlan_static")
@@ -274,7 +282,7 @@ function option.validate(self, value)
 	end
 end
 
-option = s:option(Value,"wlan_netmask",translate("Netmask"))
+option = s:option(Value,"wlan_netmask","子网掩码")
 option.rmempty = false
 option:depends("access_mode","wlan_static")
 option.datatype = "netmask"
@@ -294,7 +302,7 @@ function option.validate(self,value)
 	end
 end
 
-option = s:option(Value,"wlan_gateway",translate("Default Gateway"))
+option = s:option(Value,"wlan_gateway","默认网关")
 option.datatype = "wlan_gateway"
 option.rmempty = false
 option:depends("access_mode","wlan_static")
@@ -311,13 +319,13 @@ function option.validate(self, value)
 	end
 end
 
-option = s:option(Flag,"wlan_peerdns",translate("Obtain DNS server address automatically"))
+option = s:option(Flag,"wlan_peerdns","自动获取DNS服务器地址")
 option.rmempty = false
 option:depends("access_mode","wlan_dhcp")
 option:depends("access_mode","wlan_pppoe")
 option.default = option.enabled
 
-option = s:option(DynamicList, "wlan_dns",translate("Use custom DNS server"))
+option = s:option(DynamicList, "wlan_dns","使用自定义的DNS服务器")
 option.datatype = "abc_ip4addr"
 option.cast     = "string"
 option.addremove = false
@@ -340,5 +348,8 @@ function option.parse(self, section, value)
 		m.uci:delete("network","wlan","dns")
 	end
 end
+
+option = s:option(DummyValue,"_footer")
+option.template = "admin_wizard/footer"
 
 return m
