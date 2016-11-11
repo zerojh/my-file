@@ -1,7 +1,27 @@
 <%+header%>
 <style type="text/css">
 table td{text-align:left;}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
 </style>
+<fieldset>
+	<div class="description">
+		<p class="line">此处可选择是否启动VPN客户端，启动VPN可以实现通话数据加密．</p>
+		<br/>
+		<p class="line">本设备支持＂PPTP＂、＂L2TP＂、＂OpenVPN＂三种客户端连接方式＂．</p>
+	</div>
+</fieldset>
 <%
 	local fs=require "nixio.fs"
 	if not fs.access("/etc/openvpn/my-vpn.conf") then

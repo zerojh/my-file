@@ -1,0 +1,60 @@
+<%+header%>
+
+<style type="text/css">
+table td {
+	line-height: 25px;
+}
+
+.text-left {
+	text-align:left;
+}
+
+.text-right {
+	text-align:right;
+}
+
+.input-tip {
+  color:#b94a48;
+  float:left;
+}
+</style>
+
+<h2><a id="detect" name="detect">第一阶段：检测网络</a></h2>
+<fieldset class="cbi-section">
+	<table>
+		<colgroup>
+			<col style="width:35%;"/>
+			<col style="width:25%;"/>
+			<col style="width:40%;"/>
+		</colgroup>
+		<tr>
+			<td class="text-left">检查设备IP地址</td>
+			<td class="text-right">检查设备IP地址</td>
+			<td class="text-left input-tip">检检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址检查设备IP地址</td>
+		</tr>
+		<tr>
+			<td class="text-left">检查网关</td>
+			<td class="text-right">检查网关</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="text-left">检查DNS服务器</td>
+			<td class="text-right">检查DNS服务器</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="text-left">尝试连接百度</td>
+			<td class="text-right">尝试连接百度</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" />
+				<input class="cbi-button cbi-button-save" type="submit" name="save" value="<%:Save%>" onclick="return save_action();"/>
+			</td>
+			<td></td>
+		</tr>
+	</table>
+</fieldset>
+<%+footer%>

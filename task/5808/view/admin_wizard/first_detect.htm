@@ -1,0 +1,191 @@
+<%
+	local dsp = require "luci.dispatcher"
+
+	if luci.http.formvalue("save") then
+		luci.http.redirect(dsp.build_url("admin","status","overview"))
+		return
+	elseif luci.http.formvalue("cancel") then
+		luci.http.redirect(dsp.build_url("admin","wizard","2"))
+		return
+	end
+%>
+
+<%+header%>
+<style type="text/css">
+table td {
+	line-height: 25px;
+}
+.list {
+	width: 60% ;
+	float: left;
+	clear: both;
+}
+.tip {
+	color: #b94a48;
+	text-align: left;
+	word-break: break-all;
+	line-height: 1;
+	padding-top: 10px;
+	padding-left: 10px;
+	float: left;
+	width: 40%;
+}
+.action {
+	margin-bottom: 18px;
+	padding-top: 15px;
+	text-align: center;
+	clear: both;
+}
+#loading {
+	text-align: center;
+}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
+</style>
+<script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script>
+var num = 0
+var array = new Array("ipaddr","gateway","dns","baidu")
+
+function translate_cause(str)
+{
+	var ret = "可能由以下原因造成:<br/>"
+	if (str.match(/Access Mode=([^,]*),Error=(.*)/)) {
+		var mode = RegExp.$1
+		var err = RegExp.$2
+		if (err.indexOf('ipaddr') >= 0) {
+			if (mode.indexOf('wired_dhcp') >= 0) {
+				ret += '1.网线松动或断裂<br/>'
+				ret += '2.网关DHCP未开启<br/>'
+				ret += '3.网关设备硬件问题'
+			} else if (mode.indexOf('wired_pppoe') >= 0) {
+				ret += '1.网线松动或断裂<br/>'
+				ret += '2.pppoe连接密码有误'
+			} else if (mode.indexOf('wire_dhcp') >= 0) {
+				ret += '1.无线连接失败'
+			} else {
+				ret += '未知原因'
+			}
+		} else if (err.indexOf('gateway') >= 0) {
+			if (mode.indexOf('wired_static') >= 0) {
+				ret += '1.网线松动或断裂<br/>'
+				ret += '2.网关地址填写有误<br/>'
+				ret += '3.网关设备硬件问题'
+			} else if (mode.indexOf('wire_static') >= 0) {
+				ret += '1.无线连接失败'
+			} else {
+				ret += '未知错误'
+			}
+		} else if (err.indexOf('dns') >= 0) {
+			ret += '1.网关无法连接外部网络<br/>'
+			ret += '2.DNS服务器地址填写错误<br/>'
+			ret += '3.DNS服务器不可用'
+		} else if (err.indexOf('baidu') >= 0) {
+			ret += "1.DNS服务器域名解析错误"
+		} else {
+			 ret += "未知原因"
+		}
+	} else {
+		ret += "未知原因"
+	}
+	return ret
+}
+function get_status()
+{
+	var apply_xhr = new XHR();
+
+	/* first detect trigger */
+	apply_xhr.get('<%=luci.dispatcher.build_url("admin","wizard","9")%>',{action:"start"},function(x) {
+	});
+
+	checkfinish = function() {
+		apply_xhr.get('<%=luci.dispatcher.build_url("admin","wizard","8")%>',{action:array[num]},function(x) {
+			var s = document.getElementById(array[num])
+			var b = document.getElementById("baidu")
+			var p = document.getElementById("prev")
+			var n = document.getElementById("next")
+			var t = document.getElementById("tip")
+
+			if (x.responseText.indexOf('Finish') >= 0 ) {
+				b.innerHTML = '<img style="width:13%;" src="/luci-static/resources/icons/correct.png"/>'
+				p.disabled = ''
+				n.disabled = ''
+			} else if (x.responseText.indexOf('Error') >= 0) {
+				s.innerHTML = '<img style="width:13%;" src="/luci-static/resources/icons/error.png"/>'
+				t.innerHTML = translate_cause(x.responseText)
+				p.disabled = ''
+			} else {
+				if (x.responseText.indexOf('OK') >= 0 && x.responseText.indexOf(array[num]) >= 0) {
+					s.innerHTML = '<img style="width:13%;" src="/luci-static/resources/icons/correct.png"/>'
+					num += 1
+					s = document.getElementById(array[num])
+					s.innerHTML = '<img style="width:13%;" src="/luci-static/resources/icons/loading.gif"/>'
+				} else {
+					s.innerHTML = '<img style="width:13%;" src="/luci-static/resources/icons/loading.gif"/>'
+				}
+				window.setTimeout(checkfinish, 1000);
+			}
+		})
+	}
+	window.setTimeout(checkfinish, 1000);
+}
+window.onbeforeunload = function () {
+	 return true
+}
+$(document).ready(function() {
+	get_status()
+})
+</script>
+
+<h2><a id="detect" name="detect">第一阶段：检测网络</a></h2>
+<fieldset>
+	<div class="description">
+		<p class="line">正在检测网络，请稍等...</p>
+		<br/>
+		<p class="line" style="color:#b94a48;">请勿进行其它操作！</p>
+	</div>
+	<br/>
+	<div>
+		<div class="list">
+			<table>
+				<tr>
+					<td style="text-align:left">检查设备IP地址</td>
+					<td style="text-align:right" id="ipaddr"><img style="width:13%;" src="/luci-static/resources/icons/loading.gif"/></td>
+				</tr>
+				<tr>
+					<td style="text-align:left">检查网关</td>
+					<td style="text-align:right" id="gateway"></td>
+				</tr>
+				<tr>
+					<td style="text-align:left">检查DNS服务器</td>
+					<td style="text-align:right" id="dns"></td>
+				</tr>
+				<tr>
+					<td style="text-align:left">尝试连接百度</td>
+					<td style="text-align:right" id="baidu"></td>
+				</tr>
+			</table>
+		</div>
+		<div class="tip" id="tip">
+		</div>
+	</div>
+</fieldset>
+<div class="action">
+	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
+			<input class="cbi-button" id="prev" type="submit" name="cancel" value="<%:Cancel%>" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
+			<input class="cbi-button cbi-button-save" id="next" type="submit" name="save" value="<%:Save%>" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
+	</form>
+</div>
+<%+footer%>

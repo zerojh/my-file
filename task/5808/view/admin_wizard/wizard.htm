@@ -42,30 +42,30 @@ table {table-layout:fixed;}
 		<p class="line">如需退出向导，请点击“退出向导”，将返回到状态总览界面．</p>
 	</div>
 
-	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >
+	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
 		<div class="cbi-section-node">
-			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
-				<label style="margin-left:0px;">请选择配置方式</label>
+			<div class="cbi-value">
+				<div class="cbi-value-title">
+					<label style="margin-left:0px;">请选择配置方式</label>
+				</div>
+				<div class="cbi-value-field">
+					<select class="cbi-input-select" id="config" name="config">
+						<option value="new">全新配置</option>
+						<option value="old">修改配置</option>
+					</select>
+				</div>
 			</div>
-			<div class="cbi-value-field">
-				<select class="cbi-input-select" id="config" name="config" >
-					<option value="new">全新配置</option>
-					<option value="old">修改配置</option>
-				</select>
+
+			<div class="cbi-value cbi-value-last">
+				<div class="cbi-value-title">
+					<label style="margin-left:0px;"></label>
+				</div>
+				<div class="cbi-page-actions">
+					<input class="cbi-button" type="submit" name="exit" value="退出向导" />
+					<input class="cbi-button" type="submit" name="continue" value="继续" />
+				</div>
 			</div>
 		</div>
-
-		<div class="cbi-section-node">
-			<div class="cbi-value cbi-value-last"><div class="cbi-value-title">
-				<label style="margin-left:0px;"></label>
-			</div>
-			<div class="cbi-page-actions">
-				<input class="cbi-button" type="submit" name="exit" value="退出向导" />
-				<input class="cbi-button" type="submit" name="continue" value="继续" />
-			</div>
-		</div>
-
-	</table>
 	</form>
 </fieldset>
 <%+footer%>

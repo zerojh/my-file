@@ -1,4 +1,5 @@
 local uci = require "luci.model.uci".cursor()
+local dsp = require "luci.dispatcher"
 
 local service_url_tbl = 
 {
@@ -13,23 +14,33 @@ local service_url_tbl =
 	"oray.com",
 }
 
-m = Map("ddns",translate("DDNS"))
+m = Map("ddns","动态域名服务")
+m.pageaction = false
+
+if luci.http.formvalue("cbi.cancel") then
+	m.redirect = dsp.build_url("admin","wizard","3")
+elseif luci.http.formvalue("cbi.save") then
+	m.redirect = dsp.build_url("admin","wizard","5")
+end
+
 s = m:section(NamedSection,"myddns_ipv4","service",translate(""))
-m.currsection = s
 s.addremove = false
 s.anonymous = true
 
 --#### Description #####----
-option = s:option(DummyValue,"_desciption")
-option.template = "admin_wizard/desc_ddns"
+option = s:option(DummyValue,"_description")
+option.template = "admin_wizard/description"
+option.data = {}
+table.insert(option.data,"此处可选择是否启动动态域名服务．")
+table.insert(option.data,"如果启用动态域名服务，可以实现网页输入字段如＂www.xxx.com＂登入本设备网页．")
 
 --#### Enable #####----
-option = s:option(ListValue ,"enabled" ,translate("Enable DDNS Service"))
+option = s:option(ListValue,"enabled","启动动态域名服务")
 option:value("0" , translate("Disable"))
 option:value("1" , translate("Enable"))
 
 --#### Service #####----
-option = s:option(ListValue , "service_name_list" , translate("Service Providers List"))
+option = s:option(ListValue,"service_name_list","服务商列表")
 option:depends("enabled" , "1")
 for k,v in ipairs(service_url_tbl) do
 	option:value(v,translate(v))
@@ -43,7 +54,7 @@ function option.write(self,section,value)
 	m.uci:save("ddns")
 end
 
-option = s:option(Value, "domain", translate("Domain"))
+option = s:option(Value,"domain","域名")
 option:depends("enabled" , "1")
 option.rmempty = false
 option.datatype = "domain"
@@ -57,7 +68,7 @@ function option.validate(self,value)
 	end
 end
 
-option = s:option(Value , "username" , translate("Username"))
+option = s:option(Value,"username","用户名")
 option:depends("enabled" , "1")
 option.rmempty = false
 option.datatype = "notempty"
@@ -71,7 +82,7 @@ function option.validate(self,value)
 	end
 end
 
-option = s:option(Value , "password" , translate("Password"))
+option = s:option(Value,"password","密码")
 option:depends("enabled" , "1")
 option.rmempty = false
 option.password = true
@@ -95,5 +106,8 @@ function option.write(self,section,value)
 	m.uci:set("ddns","myddns_ipv4","password",value or "")
 
 end
+
+option = s:option(DummyValue,"_footer")
+option.template = "admin_wizard/footer"
 
 return m
