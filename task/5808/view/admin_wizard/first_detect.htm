@@ -1,19 +1,35 @@
 <%
 	local dsp = require "luci.dispatcher"
+	local exe = require "os".execute
 
 	if luci.http.formvalue("save") then
 		luci.http.redirect(dsp.build_url("admin","status","overview"))
 		return
 	elseif luci.http.formvalue("cancel") then
-		luci.http.redirect(dsp.build_url("admin","wizard","2"))
+		luci.http.redirect(dsp.build_url("admin","wizard","network"))
 		return
 	end
+
+	exe("rm /tmp/detect_status")
 %>
 
 <%+header%>
 <style type="text/css">
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
 table td {
-	line-height: 25px;
+	line-height: 32px;
 }
 .list {
 	width: 60% ;
@@ -36,22 +52,6 @@ table td {
 	text-align: center;
 	clear: both;
 }
-#loading {
-	text-align: center;
-}
-.description {
-	border: 1px solid;
-	padding: 15px 30px;
-}
-.line {
-	white-space: normal;
-	text-align: left;
-	text-indent: 2em;
-	margin-bottom: 0;
-	margin-left: 0;
-	line-height: 16px;
-	font-size: 14px;
-}
 </style>
 <script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="<%=resource_cbi_js%>"></script>
@@ -62,7 +62,7 @@ var array = new Array("ipaddr","gateway","dns","baidu")
 function translate_cause(str)
 {
 	var ret = "可能由以下原因造成:<br/>"
-	if (str.match(/Access Mode=([^,]*),Error=(.*)/)) {
+	if (str.match(/Access Mode=([^;]*); Error=([^;]*);/)) {
 		var mode = RegExp.$1
 		var err = RegExp.$2
 		if (err.indexOf('ipaddr') >= 0) {
@@ -154,7 +154,7 @@ $(document).ready(function() {
 	<div class="description">
 		<p class="line">正在检测网络，请稍等...</p>
 		<br/>
-		<p class="line" style="color:#b94a48;">请勿进行其它操作！</p>
+		<p class="line" style="color:#b94a48;">检测期间，请勿进行其它操作！</p>
 	</div>
 	<br/>
 	<div>
@@ -184,8 +184,8 @@ $(document).ready(function() {
 </fieldset>
 <div class="action">
 	<form name="form" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data">
-			<input class="cbi-button" id="prev" type="submit" name="cancel" value="<%:Cancel%>" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
-			<input class="cbi-button cbi-button-save" id="next" type="submit" name="save" value="<%:Save%>" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
+			<input class="cbi-button" id="prev" type="submit" name="cancel" value="后退" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
+			<input class="cbi-button cbi-button-save" id="next" type="submit" name="save" value="继续" disabled="disabled" onclick="window.onbeforeunload=null;return true;"/>
 	</form>
 </div>
 <%+footer%>

@@ -4,7 +4,6 @@
 	local wireless_tb = fs_server.get_wifi_list() or {}
 	local ssid_list = {}
 	local current_ssid = self:cfgvalue(sectin) or ""
-	local encryption = uci:get("wireless","wifi0","encryption") or "psk2"
 %>
 
 <%+cbi/valueheader%>
@@ -34,8 +33,6 @@
 			ret = "psk2"
 		else if (encryption.indexOf('WPA1') >= 0)
 			ret = "psk"
-		else if (encryption.indexOf('AES') >= 0)
-			ret = "aes"
 		else if (encryption.indexOf('NONE') >= 0)
 			ret = "none"
 		else
@@ -46,8 +43,9 @@
 
 	function refresh_wifi()
 	{
+		$("#btn-ssid").val("刷新中...")
 		$("#btn-ssid").attr("disabled","disabled")
-		XHR.get('<%=luci.dispatcher.build_url("admin","wizard","7")%>',{action:"refresh"},function(x, info) {
+		XHR.get('<%=luci.dispatcher.build_url("admin","wizard","wifilist")%>',{action:"refresh"},function(x, info) {
 			if (info != null) {
 				var id
 				g_ssid_list = new Object()
@@ -73,6 +71,7 @@
 					$("#cbi\\.combobox\\.cbid\\.network_tmp\\.network\\.wifi_ssid").bind("change", check_ssid)
 					check_ssid()
 				}
+				$("#btn-ssid").val("刷新列表")
 				$("#btn-ssid").removeAttr("disabled")
 			}
 		})
@@ -82,7 +81,7 @@
 	{
 		var ssid_id = document.getElementById('cbi.combobox.cbid.network_tmp.network.wifi_ssid')
 		var sig_id = document.getElementById('signal')
-		var enc_id = document.getElementById('encryption')
+		var enc_id = document.getElementById('cbid.network_tmp.network.wifi_encryption')
 		if (!ssid_id)
 			ssid_id = document.getElementById('cbid.network_tmp.network.wifi_ssid')
 
@@ -95,7 +94,7 @@
 			} else {
 				encryption = change_encryption_view(encryption)
 			}
-			$("#encryption").val(encryption)
+			$("#cbid\\.network_tmp\\.network\\.wifi_encryption").val(encryption)
 
 			if (!signal) {
 				signal = 0
@@ -117,8 +116,9 @@
 				sig_id.src = "/luci-static/resources/signal0.png"
 		} else {
 			sig_id.src = "/luci-static/resources/signal0.png"
-			$("#encryption").val(encryption)
+			$("#cbid\\.network_tmp\\.network\\.wifi_encryption").val(encryption)
 		}
+		cbi_d_update("cbid.network_tmp.network.wifi_encryption")
 	}
 
 	if (g_ssid_number > 0){
@@ -137,5 +137,4 @@
 <% end -%>
 </div>
 <div><input type="button" class="cbi-button" id="btn-ssid" style="padding:5px 10px;margin:10px 0 -7px 0;" value="刷新列表" onclick="refresh_wifi();" /></div>
-<div style="display:none;"><input type="text" id="encryption" name="cbid.network_tmp.network.encryption" value="<%=encryption%>"/></div>
 <%+cbi/valuefooter%>

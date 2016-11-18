@@ -1,5 +1,12 @@
 <%
+	local uci = require "luci.model.uci".cursor("/tmp/config")
 	local dsp = require "luci.dispatcher"
+	local fs = require "nixio.fs"
+	local util = require "luci.util"
+
+	if not fs.access("/tmp/config/wizard") then
+		util.exec("touch /tmp/config/wizard")
+	end
 
 	if luci.http.formvalue("exit") then
 		luci.http.redirect(dsp.build_url("admin","status","overview"))
@@ -8,7 +15,33 @@
 		local action = luci.http.formvalue("config")
 
 		if action then
-			luci.http.redirect(dsp.build_url("admin","wizard","2",action))
+			if not uci:get("wizard","globals") then
+				uci:section("wizard","globals","globals")
+			end
+
+			if action == "new" then
+				uci:set("wizard","globals","network","0")
+				uci:set("wizard","globals","siptrunk","0")
+				uci:set("wizard","globals","ddns","0")
+				uci:set("wizard","globals","l2tp","0")
+				uci:set("wizard","globals","pptp","0")
+				uci:set("wizard","globals","openvpn","0")
+				uci:set("wizard","globals","sim","0")
+				uci:set("wizard","globals","ap","0")
+			else
+				uci:set("wizard","globals","network","1")
+				uci:set("wizard","globals","siptrunk","1")
+				uci:set("wizard","globals","ddns","1")
+				uci:set("wizard","globals","l2tp","1")
+				uci:set("wizard","globals","pptp","1")
+				uci:set("wizard","globals","openvpn","1")
+				uci:set("wizard","globals","sim","1")
+				uci:set("wizard","globals","ap","1")
+			end
+			uci:save("wizard")
+			uci:commit("wizard")
+
+			luci.http.redirect(dsp.build_url("admin","wizard","network"))
 			return
 		end
 	end
@@ -61,8 +94,8 @@ table {table-layout:fixed;}
 					<label style="margin-left:0px;"></label>
 				</div>
 				<div class="cbi-page-actions">
-					<input class="cbi-button" type="submit" name="exit" value="退出向导" />
-					<input class="cbi-button" type="submit" name="continue" value="继续" />
+					<input class="cbi-button" type="submit" name="exit" style="width:80px;" value="退出向导" />
+					<input class="cbi-button" type="submit" name="continue" style="width:80px;" value="继续" />
 				</div>
 			</div>
 		</div>
