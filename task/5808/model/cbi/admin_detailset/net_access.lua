@@ -1,7 +1,5 @@
 local uci = require "luci.model.uci".cursor()
-local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 local dsp = require "luci.dispatcher"
-local flag = uci_tmp:get("wizard","globals","network") or "1"
 local fs = require "nixio.fs"
 local fs_server = require "luci.scripts.fs_server"
 
@@ -10,33 +8,13 @@ if not fs.access("/etc/config/network_tmp") then
 	require "luci.model.network".profile_network_init()
 end
 
-m = Map("network_tmp","上网设置")
+m = Map("network_tmp","配置 / 上网设置")
 m:chain("network")
 m:chain("firewall")
 m:chain("wireless")
-m.pageaction = false
-
-if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","wizard")
-elseif luci.http.formvalue("cbi.save") then
-	flag = "1"
-	uci_tmp:set("wizard","globals","network","1")
-	uci_tmp:save("wizard")
-	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","wizard","siptrunk")
-end
 
 --@ first
 s = m:section(NamedSection,"network","setting")
-
---#### Description #####----
-option = s:option(DummyValue,"_description")
-option.template = "admin_wizard/description"
-option.data = {}
-table.insert(option.data,"本设备提供五种上网方式．")
-table.insert(option.data,"")
-table.insert(option.data,"有线上网方式有＂动态IP＂、＂静态IP＂和＂PPPOE＂．")
-table.insert(option.data,"无线上网方式有＂动态IP＂和＂静态IP＂．")
 
 local section_firewall
 
@@ -55,13 +33,6 @@ option:value("wan_static","有线静态IP")
 option:value("wan_pppoe","PPPoE")
 option:value("wlan_dhcp","无线动态IP")
 option:value("wlan_static","无线静态IP")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.write(self, section, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode") or "wan_dhcp"
 
@@ -89,13 +60,6 @@ option.margin = "30px"
 option.datatype = "wan_addr"
 option.rmempty = false
 option:depends("access_mode","wan_static")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 	
@@ -118,13 +82,6 @@ option.default = "255.255.255.0"
 option:value("255.0.0.0","255.0.0.0")
 option:value("255.255.0.0","255.255.0.0")
 option:value("255.255.255.0","255.255.255.0")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self,value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 
@@ -143,13 +100,6 @@ option.margin = "30px"
 option.datatype = "wan_gateway"
 option.rmempty = false
 option:depends("access_mode","wan_static")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 	
@@ -170,13 +120,6 @@ option = s:option(Value,"wan_username","用户名")
 option.margin = "30px"
 option.rmempty = false
 option:depends("access_mode","wan_pppoe")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 
@@ -195,13 +138,6 @@ option.margin = "30px"
 option.password = true
 option.rmempty = false
 option:depends("access_mode","wan_pppoe")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self,value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 
@@ -218,13 +154,6 @@ end
 option = s:option(Value,"wan_service","服务器名称")
 option.margin = "30px"
 option:depends("access_mode","wan_pppoe")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self,value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 
@@ -245,13 +174,6 @@ option.rmempty = false
 option:depends("access_mode","wan_dhcp")
 option:depends("access_mode","wan_pppoe")
 option.default = option.enabled
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 
 --####wan static dns####----
 option = s:option(DynamicList,"wan_dns","使用自定义的DNS服务器")
@@ -265,11 +187,7 @@ option:depends({access_mode="wan_pppoe",wan_peerdns=""})
 option:depends("access_mode","wan_static")
 
 function option.cfgvalue(self, section)
-	if flag == "1" then
-		return m.uci:get("network_tmp","network","wan_dns")
-	else
-		return ""
-	end
+	return m.uci:get("network_tmp","network","wan_dns")
 end
 function option.parse(self, section, value)
 	local value = m:formvalue("cbid.network_tmp.network.wan_dns")
@@ -282,21 +200,46 @@ function option.parse(self, section, value)
 	end
 end
 
+--####wan protect####--
+option = s:option(Flag,"rebind_protection","禁用DNS私网地址(RFC2918)响应")
+option:depends("access_mode","wan_dhcp")
+option:depends("access_mode","wan_static")
+option:depends("access_mode","wan_pppoe")
+option.margin = "30px"
+
+function option.cfgvalue(...)
+	return m.uci:get("dhcp", "dnsmasq", "rebind_protection") or "0"
+end
+
+function option.parse(self, section, value)
+	local access_mode = m:formvalue("cbid.network_tmp.network.access_mode")
+	local value = m:formvalue("cbid.network_tmp.network.rebind_protection")
+
+	if access_mode == "wan_dhcp" or access_mode == "wan_static" or access_mode == "wan_pppoe" then
+		m.uci:set("dhcp", "dnsmasq", "rebind_protection", value or "0")
+		m.uci:save("dhcp")
+	end
+end
+
+--####wan mtu####----
+option = s:option(Value,"wan_mtu","MTU")
+option.margin = "30px"
+option.placeholder = "1500"
+option.datatype    = "range(576,1500)"
+option:depends("access_mode","wan_dhcp")
+option:depends("access_mode","wan_static")
+option:depends("access_mode","wan_pppoe")
 --@ } END WAN Config-----
 
 option = s:option(Value,"wifi_ssid","可接入WIFI列表")
 option.margin = "30px"
 option.rmempty = false
 option.datatype = "uni_ssid"
-option.template = "admin_wizard/ssid"
+option.template = "admin_detailset/ssid"
 option:depends("access_mode","wlan_dhcp")
 option:depends("access_mode","wlan_static")
 function option.cfgvalue(self, section)
-	if flag == "1" then
-		return m.uci:get("wireless","wifi0","ssid")
-	else
-		return nil
-	end
+	return m.uci:get("wireless","wifi0","ssid")
 end
 function option.validate(self, value)
 	if value then
@@ -317,11 +260,7 @@ option:value("none","无")
 option:depends("access_mode","wlan_dhcp")
 option:depends("access_mode","wlan_static")
 function option.cfgvalue(self, section)
-	if flag == "1" then
-		return m.uci:get("wireless","wifi0","encryption")
-	else
-		return nil
-	end
+	return m.uci:get("wireless","wifi0","encryption")
 end
 function option.write(self,section,value)
 	return m.uci:set("wireless","wifi0","encryption",value or "psk2")
@@ -335,13 +274,9 @@ option.password = true
 option:depends({access_mode="wlan_dhcp",wifi_encryption="psk2"})
 option:depends({access_mode="wlan_static",wifi_encryption="psk2"})
 function option.cfgvalue(self, section)
-	if flag == "1" then
-		local encrypt = m.uci:get("wireless","wifi0","encryption") or "psk2"
-		if encryption ~= "none" then
-			return m.uci:get("wireless","wifi0","key")
-		else
-			return nil
-		end
+	local encrypt = m.uci:get("wireless","wifi0","encryption") or "psk2"
+	if encryption ~= "none" then
+		return m.uci:get("wireless","wifi0","key")
 	else
 		return nil
 	end
@@ -369,13 +304,6 @@ option.margin = "30px"
 option.rmempty = false
 option.datatype = "ip4addr"
 option:depends("access_mode","wlan_static")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 	
@@ -397,13 +325,6 @@ option.default = "255.255.255.0"
 option:value("255.0.0.0","255.0.0.0")
 option:value("255.255.0.0","255.255.0.0")
 option:value("255.255.255.0","255.255.255.0")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self,value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 
@@ -421,13 +342,6 @@ option.margin = "30px"
 option.datatype = "wlan_gateway"
 option.rmempty = false
 option:depends("access_mode","wlan_static")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 function option.validate(self, value)
 	local tmp = m:formvalue("cbid.network_tmp.network.access_mode")
 	
@@ -446,13 +360,6 @@ option.rmempty = false
 option:depends("access_mode","wlan_dhcp")
 option:depends("access_mode","wlan_pppoe")
 option.default = option.enabled
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 
 option = s:option(DynamicList, "wlan_dns","使用自定义的DNS服务器")
 option.margin = "30px"
@@ -464,11 +371,7 @@ option:depends({access_mode="wlan_dhcp",wlan_peerdns=""})
 option:depends({access_mode="wlan_pppoe",wlan_peerdns=""})
 option:depends("access_mode","wlan_static")
 function option.cfgvalue(self, section)
-	if flag == "1" then
-		return m.uci:get("network_tmp","network","wlan_dns")
-	else
-		return nil
-	end
+	return m.uci:get("network_tmp","network","wlan_dns")
 end
 function option.parse(self, section, value)
 	local value = m:formvalue("cbid.network_tmp.network.wlan_dns")
@@ -490,13 +393,6 @@ option.margin = "30px"
 option.rmempty = false
 option.datatype = "lan_addr"
 option.default = "192.168.11.1"
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 
 --####lan netmask####----
 option = s:option(Value,"lan_netmask","内网子网掩码")
@@ -507,17 +403,12 @@ option.default = "255.255.255.0"
 option:value("255.0.0.0","255.0.0.0")
 option:value("255.255.0.0","255.255.0.0")
 option:value("255.255.255.0","255.255.255.0")
-function option.cfgvalue(self, section)
-	if flag == "1" then
-		return AbstractValue.cfgvalue(self, section)
-	else
-		return nil
-	end
-end
 
+--####lan mtu####----
+option = s:option(Value,"lan_mtu","MTU")
+option.margin = "30px"
+option.placeholder = "1500"
+option.datatype    = "range(576,1500)"
 --@ } END LAN
-
-option = s:option(DummyValue,"_footer")
-option.template = "admin_wizard/footer"
 
 return m

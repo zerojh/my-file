@@ -11,7 +11,7 @@ m = Map("pptpc","PPTP客户端")
 m.pageaction = false
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","4")
+	m.redirect = dsp.build_url("admin","wizard","ddns")
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","pptp","1")
@@ -65,13 +65,6 @@ function option.cfgvalue(self, section)
 		return AbstractValue.cfgvalue(self, section)
 	else
 		return nil
-	end
-end
-function option.validate(self, value)
-	if value then
-		return Value.validate(self,value)
-	else
-		return ""
 	end
 end
 

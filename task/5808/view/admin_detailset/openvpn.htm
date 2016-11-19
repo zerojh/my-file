@@ -1,0 +1,68 @@
+<%+header%>
+<style type="text/css">
+table td{text-align:left;}
+</style>
+<%
+	local fs=require "nixio.fs"
+	if not fs.access("/etc/openvpn/my-vpn.conf") then
+%>
+	<div class='container'><div class='alert-message info'><%:Certificate is not uploaded yet !%></div></div>
+<% else %>
+	<div class='container'><div class='alert-message info'><%:Certificate has been uploaded !%></div></div>
+<%
+	end
+%>
+<% if result and "" ~= result then %>
+	<div class='container container-msg' id='alert-msgbox'>
+	<% if string.find(result,"succ") then %>
+		<div class='alert-message success'>
+		<h4><%:Certificate Upload Succ !%></h4>
+	<% end %>
+	</div>
+<% end %>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<fieldset class="cbi-section">
+	<form method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" onsubmit="return true;">
+		<table>
+			<tr>
+				<td width="30%"><%:Status%></td>
+				<td width="40%">
+					<select id="status" name="status" style="width:100px;">
+					<option value="0" <%=("0" == status) and "selected" or ""%>><%:Disable%></option>
+					<option value="1" <%=("1" == status) and "selected" or ""%>><%:Enable%></option>
+					</select>
+				</td>
+				<td width="30%">
+				</td>
+			</tr>
+			<tr>
+				<td width="30%"><%:Default Route%></td>
+				<td width="40%">
+					<select id="defaultroute" name="defaultroute" style="width:100px;">
+					<option value="0" <%=("0" == defaultroute) and "selected" or ""%>><%:Disable%></option>
+					<option value="1" <%=("1" == defaultroute) and "selected" or ""%>><%:Enable%></option>
+					</select>
+				</td>
+				<td width="30%">
+				</td>
+			</tr>
+			<tr>
+				<td><%:Certificate%></td>
+				<td><input type="file" name="key" id="key"/></td>
+				<td>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td style="text-align:center;">
+					<div class="cbi-page-actions" style="width:200px;">
+					<input class="cbi-button cbi-button-save" type="submit" name="save" id="save" value="<%:Save%>" />
+					<input class="cbi-button" type="reset" value="<%:Reset%>"/>
+					</div>
+				</td>
+				<td></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<%+footer%>

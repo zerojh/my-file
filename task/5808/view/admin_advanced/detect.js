@@ -248,7 +248,7 @@ function detect()
 	change_description();
 
 	checkfinish = function() {
-		XHR.get('<%=luci.dispatcher.build_url("admin","wizard","status")%>',{action:"status"},function(x) {
+		XHR.get('<%=luci.dispatcher.build_url("admin","advanced","detectstatus")%>',{action:"status"},function(x) {
 			var element = g_detecting_mod[g_num];
 			var regex = new RegExp(element + ':([^;]*);');
 			var stop = false;
@@ -313,7 +313,7 @@ $(document).ready(function () {
 	}
 })
 </script>
-<h2><a id="content" name="content">检测</a></h2>
+<h2><a id="content" name="content">高级 / 检测</a></h2>
 <fieldset>
 	<div class="description" id="description">
 	</div>

@@ -29,7 +29,7 @@ elseif luci.http.formvalue("cbi.save") then
 	m.redirect = dsp.build_url("admin","wizard","pptp")
 end
 
-s = m:section(NamedSection,"myddns_ipv4","service",translate(""))
+s = m:section(NamedSection,"myddns_ipv4","service","")
 s.addremove = false
 s.anonymous = true
 
@@ -42,8 +42,8 @@ table.insert(option.data,"如果启用动态域名服务，可以实现网页输
 
 --#### Enable #####----
 option = s:option(ListValue,"enabled","启动动态域名服务")
-option:value("0" , translate("Disable"))
-option:value("1" , translate("Enable"))
+option:value("0" , "禁用")
+option:value("1" , "启用")
 function option.cfgvalue(self, section)
 	if flag == "1" then
 		return AbstractValue.cfgvalue(self, section)
