@@ -4,22 +4,23 @@ local fs_server = require "luci.scripts.fs_server"
 local util = require "luci.util"
 
 function index()
-	local page
-	page = node("admin","detailset")
-	page.target = firstchild()
-	page.title = ("配置")
-	page.order = 110
-	page.index = true
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
+		local uci = require "luci.model.uci".cursor()
 
-	entry({"admin","detailset","network"},cbi("admin_detailset/net_access"),"上网设置",10).leaf = true
-	entry({"admin","detailset","wifilist"},call("action_get_wireless"))
-	entry({"admin","detailset","siptrunk"},cbi("admin_detailset/siptrunk"),"通讯调度平台",20).leaf = true
-	entry({"admin","detailset","ddns"},cbi("admin_detailset/ddns"),"动态域名服务",30).leaf = true
-	entry({"admin","detailset","vpn"}, alias("admin","detailset","vpn","pptp"),"VPN客户端",40)
-	entry({"admin","detailset","vpn","pptp"},cbi("admin_detailset/pptp_client"),"PPTP",40).leaf = true
-	entry({"admin","detailset","vpn","l2tp"},cbi("admin_detailset/l2tp_client"),"L2TP",41).leaf = true
-	entry({"admin","detailset","vpn","openvpn"},call("action_openvpn"),"OpenVPN",42).leaf = true
-	--entry({"admin","detailset","sim"},cbi("admin_detailset/sim"),"SIM",43).leaf = true
+		entry({"admin","detailset"},firstchild(),"配置",83).index = true
+		entry({"admin","detailset","network"},cbi("admin_detailset/net_access"),"上网设置",10).leaf = true
+		entry({"admin","detailset","wifilist"},call("action_get_wireless"))
+		entry({"admin","detailset","siptrunk"},cbi("admin_detailset/siptrunk"),"通讯调度平台",20).leaf = true
+		entry({"admin","detailset","sim"},cbi("admin_detailset/sim"),"SIM卡",30).leaf = true
+		if uci:get("wireless","wifi0","mode") ~= "sta" then
+			entry({"admin","detailset","ap"},cbi("admin_detailset/wlan_ap"),"无线热点",40).leaf = true
+		end
+		entry({"admin","detailset","ddns"},cbi("admin_detailset/ddns"),"动态域名服务",50).leaf = true
+		entry({"admin","detailset","vpn"}, alias("admin","detailset","vpn","pptp"),"VPN客户端",60)
+		entry({"admin","detailset","vpn","pptp"},cbi("admin_detailset/pptp_client"),"PPTP",60).leaf = true
+		entry({"admin","detailset","vpn","l2tp"},cbi("admin_detailset/l2tp_client"),"L2TP",61).leaf = true
+		entry({"admin","detailset","vpn","openvpn"},call("action_openvpn"),"OpenVPN",62).leaf = true
+	end
 end
 
 function action_get_wireless()

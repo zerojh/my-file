@@ -5,16 +5,12 @@ local fs = require "nixio.fs"
 local exe = require "os".execute
 
 function index()
-	local page
-	page = node("admin","advanced")
-	page.target = firstchild()
-	page.title = ("高级")
-	page.order = 120
-	page.index = true
-
-	entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",10).leaf = true
-	entry({"admin","advanced","detectstatus"},call("detect_status"))
-	entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",20).leaf = true
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
+		entry({"admin","advanced"},firstchild(),"高级",84).index = true
+		entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",10).leaf = true
+		entry({"admin","advanced","detectstatus"},call("detect_status"))
+		entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",20).leaf = true
+	end
 end
 
 function detect_status()
@@ -31,26 +27,35 @@ end
 function start_diagnostics(string)
 	local ubus_get_addr = require "luci.model.network".ubus_get_addr
 	local uci = require "luci.model.uci".cursor()
-	local access_mode = uci:get("network_tmp","network","access_mode") or "wired_static"
-	local wan_ipaddr,wan_netmask,wan_gateway,wan_dns =  ubus_get_addr("wan")
-	local wan_dns_tb = util.split(wan_dns," ") or {}
+	local access_mode = uci:get("network_tmp","network","access_mode") or "wired_dhcp"
 	local write_str = "access_mode:"..access_mode.."; "
 	local request_str = string
+	local ipaddr,netmask,gateway,dns = ubus_get_addr("wan")
+	local dns_tb = util.split(dns," ") or {}
+
+	exe("rm /tmp/detect_status")
 
 	if request_str:match("(%%ipaddr%%)") then
 		write_str = write_str.."ipaddr:"
 		fs.writefile("/tmp/detect_status",write_str)
 
-		if wan_ipaddr and wan_ipaddr ~= "" and wan_ipaddr ~= "0.0.0.0" then
-			local result = util.exec("ping -c 5 -W 1 2>&1 "..wan_ipaddr.." | grep 'loss'")
-			result = result:match("(%d+)%%")
-			if result and result ~= "" and result ~= "100" then
-				write_str = write_str.."success; "
-				fs.writefile("/tmp/detect_status",write_str)
-			else
+		if ipaddr and ipaddr ~= "" and ipaddr ~= "0.0.0.0" then
+			local num = 0
+			while num < 3 do
+				local result = util.exec("ping -c 5 -W 1 2>&1 "..ipaddr.." | grep 'loss'")
+				result = result:match("(%d+)%%")
+				if result and result ~= "" and result ~= "100" then
+					break
+				end
+				num = num + 1
+			end
+			if num == 3 then
 				write_str = write_str.."fail; "
 				fs.writefile("/tmp/detect_status",write_str)
 				return
+			else
+				write_str = write_str.."success; "
+				fs.writefile("/tmp/detect_status",write_str)
 			end
 		else
 			write_str = write_str.."fail; "
@@ -63,16 +68,24 @@ function start_diagnostics(string)
 		write_str = write_str.."gateway:"
 		fs.writefile("/tmp/detect_status",write_str)
 
-		if wan_gateway and wan_gateway ~= "" and wan_gateway ~= "0.0.0.0" then
-			local result = util.exec("ping -c 5 -W 1 2>&1 "..wan_gateway.." | grep 'loss'")
-			result = result:match("(%d+)%%")
-			if result and result ~= "" and result ~= "100" then
-				write_str = write_str.."success; "
-				fs.writefile("/tmp/detect_status",write_str)
-			else
+		if gateway and gateway ~= "" and gateway ~= "0.0.0.0" then
+			local num = 0
+
+			while num < 3 do
+				local result = util.exec("ping -c 5 -W 1 2>&1 "..gateway.." | grep 'loss'")
+				result = result:match("(%d+)%%")
+				if result and result ~= "" and result ~= "100" then
+					break
+				end
+				num = num + 1
+			end
+			if num == 3 then
 				write_str = write_str.."fail; "
 				fs.writefile("/tmp/detect_status",write_str)
 				return
+			else
+				write_str = write_str.."success; "
+				fs.writefile("/tmp/detect_status",write_str)
 			end
 		else
 			write_str = write_str.."fail; "
@@ -85,9 +98,9 @@ function start_diagnostics(string)
 		write_str = write_str.."dns:"
 		fs.writefile("/tmp/detect_status",write_str)
 
-		if wan_dns_tb and next(wan_dns_tb) then
+		if dns_tb and next(dns_tb) then
 			local loop_num = 0
-			for k,v in pairs(wan_dns_tb) do
+			for k,v in pairs(dns_tb) do
 				if v and v ~= "" then
 					local result = util.exec("ping -c 5 -W 1 2>&1 "..v.." | grep 'loss'")
 					result = result:match("(%d+)%%")
@@ -99,7 +112,7 @@ function start_diagnostics(string)
 				end
 				loop_num = loop_num + 1
 			end
-			if loop_num == #wan_dns_tb then
+			if loop_num == #dns_tb then
 				write_str = write_str.."fail; "
 				fs.writefile("/tmp/detect_status",write_str)
 				return
@@ -112,18 +125,25 @@ function start_diagnostics(string)
 	end
 
 	if request_str:match("(%%baidu%%)") then
+		local num = 0
+
 		write_str = write_str.."baidu:"
 		fs.writefile("/tmp/detect_status",write_str)
-
-		local result = util.exec("ping -c 5 -W 1 2>&1 www.baidu.com | grep 'loss'")
-		result = result:match("(%d+)%%")
-		if result and result ~= "" and result ~= "100" then
-			write_str = write_str.."success; "
-			fs.writefile("/tmp/detect_status",write_str)
-		else
+		while num < 3 do
+			local result = util.exec("ping -c 5 -W 1 2>&1 www.baidu.com | grep 'loss'")
+			result = result:match("(%d+)%%")
+			if result and result ~= "" and result ~= "100" then
+				break
+			end
+			num = num + 1
+		end
+		if num == 3 then
 			write_str = write_str.."fail; "
 			fs.writefile("/tmp/detect_status",write_str)
 			return
+		else
+			write_str = write_str.."success; "
+			fs.writefile("/tmp/detect_status",write_str)
 		end
 	end
 
@@ -142,37 +162,98 @@ function start_diagnostics(string)
 			end
 		end
 		if status and status == "Enabled" then
-			local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/Address/p;/^State/p' | tr '\n' '#'")
-			local ipaddr = str:match("Address%s+(%d+%.%d+%.%d+%.%d+)")
-			local trunk_status = str:match("State%s+([%u_]+)")
-			local ping_result = util.exec("ping -c 5 -W 1 2>&1 "..ipaddr.." | grep 'loss'")
-			local loss_num = ping_result:match("(%d+)%%")
-
-			if loss_num and loss_num ~= "" and loss_num ~= "100" then
-				local num = 0
+			local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/Address/p' | tr '\n' '#'")
+			local trunk_ipaddr = str:match("Address%s+(%d+%.%d+%.%d+%.%d+)")
+			local num = 0
+			local continue = true
+			
+			while num < 3 do
+				local result = util.exec("ping -c 5 -W 1 2>&1 "..trunk_ipaddr.." | grep 'loss'")
+				result = result:match("(%d+)%%")
+				if result and result ~= "" and result ~= "100" then
+					break
+				end
+				num = num + 1
+			end
+			if num == 3 then
+				write_str = write_str.."fail; siptrunk-register:"
+				continue = false
+			else
 				write_str = write_str.."success; siptrunk-register:"
+				continue = true
+			end
+			
+			if continue then
 				fs.writefile("/tmp/detect_status",write_str)
+				num = 0
 
-				while num < 5 do
+				while num < 10 do
+					str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/^State/p' | tr '\n' '#'")
+					trunk_status = str:match("State%s+([%u_]+)")
 					if trunk_status == "REGED" then
 						break
-					else
-						num = num + 1
-						if num ~= 5 then
-							str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/Address/p;/^State/p' | tr '\n' '#'")
-							trunk_status = str:match("State%s+([%u_]+)")
-							exe("sleep 1")
-						end
 					end
+					num = num + 1
+					exe("sleep 1")
 				end
-				if num == 5 then
+				if num == 10 then
 					write_str = write_str.."fail; "
 				else
 					write_str = write_str.."success; "
 				end
 			else
-				write_str = write_str.."fail; siptrunk-register:fail; "
+				write_str = write_str.."fail; "
 			end
+		else
+			write_str = write_str.."fail; siptrunk-register:fail; "
+		end
+		fs.writefile("/tmp/detect_status",write_str)
+	end
+
+	if request_str:match("(%%sim%%)") then
+		write_str = write_str.."sim:"
+		fs.writefile("/tmp/detect_status",write_str)
+
+		local tmp_tb = uci:get_all("endpoint_mobile") or {}
+		local status
+		if next(tmp_tb) then
+			for k,v in pairs(tmp_tb) do
+				if v.slot_type and v.slot_type == "1-GSM" then
+					status = v.status
+				end
+			end
+		end
+		if status and status == "Enabled" then
+			local num = 0
+			local chan_ready = ""
+			local simpin_state = ""
+			local not_registered = ""
+			while num < 5 do
+				local tmp_str = util.exec("fs_cli -x 'gsm dump 1' | sed -n '/^chan_ready/p;/simpin_state/p;/^not_registered/p' | tr '\n' '#'")
+				chan_ready = tmp_str:match("chan_ready = ([^#]+)#") or ""
+				simpin_state = tmp_str:match("simpin_state = ([^#]+)#") or ""
+				not_registered = tmp_str:match("not_registered = (%d+)") or ""
+				if chan_ready == "1" and simpin_state == "SIMPIN_READY" and not_registered == "0" then
+					break
+				end
+				num = num + 1
+				exe("sleep 1")
+			end
+			if chan_ready ~= "1" then
+				write_str = write_str.."fail,no_device; "
+			else
+				if simpin_state ~= "SIMPIN_READY" then
+					write_str = write_str.."fail,no_card; "
+				else
+					if not_registered ~= "0" then
+						write_str = write_str.."fail,not_registered; "
+					else
+						write_str = write_str.."success; "
+					end
+				end
+			end
+		else
+			write_str = write_str.."fail,disabled; "
 		end
 		fs.writefile("/tmp/detect_status",write_str)
 	end
@@ -182,25 +263,27 @@ function start_diagnostics(string)
 		fs.writefile("/tmp/detect_status",write_str)
 
 		if uci:get("ddns","myddns_ipv4","enabled") == "1" then
-			local num = 0
-			while num < 5 do
-				local result = util.exec("tail /tmp/log/ddns/myddns_ipv4.log")
-				if string.find(result,"DDNS Provider answered") then
-					local answer = result:match("DDNS Provider answered %[(.+)%]") or ""
-					if "good" == answer or "nochg" == answer or answer:match("good %d+%.%d+%.%d+%.%d+") or answer:match("nochg %d+%.%d+%.%d+%.%d+") then
+			local ddns_addr = uci:get("ddns","myddns_ipv4","domain")
+			if ddns_addr then
+				local num = 0
+				while num < 3 do
+					local result = util.exec("ping -c 5 -W 1 2>&1 "..ipaddr.." | grep 'loss'")
+					result = result:match("(%d+)%%")
+					if result and result ~= "" and result ~= "100" then
 						break
 					end
+					num = num + 1
 				end
-				num = num + 1
-				if num ~= 5 then
-					result = util.exec("tail /tmp/log/ddns/myddns_ipv4.log")
+				if num == 3 then
+					write_str = write_str.."fail; "
+				else
+					write_str = write_str.."success; "
 				end
-			end
-			if num == 5 then
-				write_str = write_str.."fail; "
 			else
-				write_str = write_str.."success; "
+				write_str = write_str.."fail; "
 			end
+		else
+			write_str = write_str.."fail; "
 		end
 		fs.writefile("/tmp/detect_status",write_str)
 	end
@@ -273,13 +356,6 @@ function start_diagnostics(string)
 			fs.writefile("/tmp/detect_status",write_str)
 		end
 		fs.writefile("/tmp/detect_status",write_str)
-	end
-
-	if request_str:match("(%%sim%%)") then
-		write_str = write_str.."sim:"
-		write_str = write_str.."success; "
-		fs.writefile("/tmp/detect_status",write_str)
-		exe("sleep 3")
 	end
 end
 

@@ -1,0 +1,150 @@
+<%+header%>
+
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript">
+var refresh_interval = 3
+var rx = <%=net_info.rx%>
+var tx = <%=net_info.tx%>
+
+function refresh_net_stat(net_info)
+{
+	var rx_bytes_persec = Math.round((net_info.rx - rx) / refresh_interval);
+	var tx_bytes_persec = Math.round((net_info.tx - tx) / refresh_interval);
+	var rx_str = "";
+	var tx_str = "";
+	rx = net_info.rx;
+	tx = net_info.tx;
+
+	if (rx_bytes_persec < 1024)
+		rx_str += String.format('%d B',rx_bytes_persec);
+	else if (rx_bytes_persec >= 1024 && rx_bytes_persec <= 1024*1024)
+		rx_str += String.format('%.2f KB',rx_bytes_persec/1024);
+	else
+		rx_str += String.format('%.2f MB',rx_bytes_persec/(1024*1024));
+
+	if (tx_bytes_persec < 1024)
+		tx_str += String.format('%d B',tx_bytes_persec);
+	else if (tx_bytes_persec >= 1024 && tx_bytes_persec <= 1024*1024)
+		tx_str += String.format('%.2f KB',tx_bytes_persec/1024);
+	else
+		tx_str += String.format('%.2f MB',tx_bytes_persec/(1024*1024));
+
+	document.getElementById("net.rtx").innerHTML = rx_str + " / " + tx_str
+	document.getElementById("net.access_mode").innerHTML = net_info.access_mode;
+	document.getElementById("net.ipaddr").innerHTML = net_info.ipaddr;
+	document.getElementById("net.netmask").innerHTML = net_info.netmask;
+	document.getElementById("net.gateway").innerHTML = net_info.gateway;
+}
+
+function refresh_siptrunk_stat(siptrunk_info)
+{
+	var status_id = document.getElementById("siptrunk.status");
+	var num_id = document.getElementById("siptrunk.number");
+	if (!siptrunk_info.register)
+		status_id.innerHTML = "已禁用";
+	else if (siptrunk_info.register.indexOf("REGED") >= 0)
+		status_id.innerHTML = "注册成功";
+	else
+		status_id.innerHTML = "注册失败";
+	document.getElementById("siptrunk.number").innerHTML = siptrunk_info.number;
+}
+
+function refresh_ddns_stat(ddns_info)
+{
+	document.getElementById("ddns.status").innerHTML = ddns_info.status
+	document.getElementById("ddns.domain").innerHTML = ddns_info.domain
+}
+
+function refresh_vpn_stat(vpn_info)
+{
+	if (vpn_info.l2tp_e != "1" )
+		document.getElementById("vpn.l2tp").innerHTML = "未连接";
+	else if (!vpn_info.l2tp_s)
+		document.getElementById("vpn.l2tp").innerHTML = "连接失败";
+	else
+		document.getElementById("vpn.l2tp").innerHTML = "连接成功";
+
+	if (vpn_info.pptp_e != "1" )
+		document.getElementById("vpn.pptp").innerHTML = "未连接";
+	else if (!vpn_info.pptp_s)
+		document.getElementById("vpn.pptp").innerHTML = "连接失败";
+	else
+		document.getElementById("vpn.pptp").innerHTML = "连接成功";
+
+	if (vpn_info.openvpn_e != "1" )
+		document.getElementById("vpn.openvpn").innerHTML = "未连接";
+	else if (!vpn_info.openvpn_s)
+		document.getElementById("vpn.openvpn").innerHTML = "连接失败";
+	else
+		document.getElementById("vpn.openvpn").innerHTML = "连接成功"
+}
+
+function refresh_sim_stat(sim_info)
+{
+}
+
+XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
+	refresh_net_stat(info.net_info)
+	refresh_siptrunk_stat(info.siptrunk_info)
+	refresh_ddns_stat(info.ddns_info)
+	refresh_vpn_stat(info.vpn_info)
+})
+</script>
+
+
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:240px;">
+<fieldset class="cbi-section" style="border-buttom:;">
+	<legend>网络连接情况</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">接入方式</td><td id="net.access_mode"><%=net_info.access_mode%></td></tr>
+		<tr><td>IP地址</td><td id="net.ipaddr"><%=net_info.ipaddr%></td></tr>
+		<tr><td>子网掩码</td><td id="net.netmask"><%=net_info.netmask%></td></tr>
+		<tr><td>网关</td><td id="net.gateway"><%=net_info.gateway%></td></tr>
+		<tr><td>DNS服务器</td><td id="net.dns"><%=net_info.dns%></td></tr>
+		<tr><td>接收/发送速率(每秒)</td><td id="net.rtx">0 / 0</td></tr>
+		<tr><td>WIFI信号强度</td><td id="wifi">-</td></tr>
+	</table>
+</fieldset>
+</div>
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:240px;">
+<fieldset class="cbi-section" style="border-buttom:;">
+	<legend>通讯调度平台</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">状态</td><td id="siptrunk.status"></td></tr>
+		<tr><td>终端号码</td><td id="siptrunk.number"><%=siptrunk_info.number%></td></tr>
+	</table>
+</fieldset>
+</div>
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:135px;">
+<fieldset class="cbi-section" style="border-buttom:;">
+	<legend>动态域名服务</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">状态</td><td id="ddns.status">-</td></tr>
+		<tr><td>域名</td><td id="ddns.domain"><%=ddns_info.domain%></td></tr>
+	</table>
+</fieldset>
+</div>
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:135px;">
+<fieldset class="cbi-section" style="border-buttom:;">
+	<legend>VPN客户端</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">L2TP</td><td id="vpn.l2tp">-</td></tr>
+		<tr><td>PPTP</td><td id="vpn.pptp">-</td></tr>
+		<tr><td>OpenVPN</td><td id="vpn.openvpn">-</td></tr>
+	</table>
+</fieldset>
+</div>
+<div style="position:relative;left:10px;top:4px;width:480px;float:left;height:190px;">
+<fieldset class="cbi-section" style="border-buttom:;">
+	<legend>SIM卡</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">状态</td><td id="sim.status">-</td></tr>
+		<tr><td>号码</td><td id="sim.number">-</td></tr>
+		<tr><td>运营商</td><td id="sim.operator">-</td></tr>
+		<tr><td>网络类型</td><td id="sim.type">-</td></tr>
+		<tr><td>信号强度</td><td id="sim.signal">-</td></tr>
+	</table>
+</fieldset>
+</div>
+
+<%+footer%>

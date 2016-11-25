@@ -31,7 +31,7 @@ elseif luci.http.formvalue("cbi.save") then
 	uci_tmp:set("wizard","globals","siptrunk","1")
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","wizard","ddns")
+	m.redirect = dsp.build_url("admin","wizard","sim")
 end
 
 s = m:section(NamedSection,currsection,"sip")

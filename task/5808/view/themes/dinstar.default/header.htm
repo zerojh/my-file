@@ -1,0 +1,252 @@
+<%
+	local fs = require "nixio.fs"
+	local sys  = require "luci.sys"
+	local http = require "luci.http"
+	local disp = require "luci.dispatcher"
+	
+	local hostname = sys.hostname()
+
+	local request  = disp.context.path
+	local request2 = disp.context.request
+
+	local category = request[1]
+	local cattree  = category and disp.node(category)
+
+	local leaf = request2[#request2]
+
+	local tree = disp.node()
+	local node = disp.context.dispatched
+
+	local categories = disp.node_childs(tree)
+
+	local c = tree
+	local i, r
+
+	-- tag all nodes leading to this page
+	for i, r in ipairs(request) do
+		if c.nodes and c.nodes[r] then
+			c = c.nodes[r]
+			c._menu_selected = true
+		end
+	end
+	
+	-- send as HTML5
+	http.prepare_content("text/html")
+
+	local function nodeurl(prefix, name, query)
+		local url = controller .. prefix .. name .. "/"
+		if query then
+			url = url .. http.build_querystring(query)
+		end
+		return pcdata(url)
+	end
+
+	local function subtree(prefix, node, parent,level)
+		if not level then
+			level = 1
+		end
+		local childs = disp.node_childs(node)
+		local str=""
+		if #childs > 0 then
+
+			if level > 2 then
+				if parent then
+					str=str.."<h2><a id='content' name='content'>"..translate(parent.title).." / "..translate(node.title).."</a></h2>"
+				end
+				str=str.."<ul class='tabs'>"
+			end
+
+			local selected_node
+			local selected_name
+			local i, v
+
+			for i, v in ipairs(childs) do
+				local nnode = node.nodes[v]
+				if nnode._menu_selected then
+					selected_node = nnode
+					selected_name = v
+				end
+				if level > 2 then
+					str=str.."<li class='"..((nnode._menu_selected or (node.leaf and v == leaf)) and "active" or "unactive").."'>"
+					str=str.."<a href='"..nodeurl(prefix, v, nnode.query).."'>"..striptags(translate(nnode.title)).."</a></li>"
+				end
+			end
+
+			if level > 2 then
+				str=str.."</ul>"
+			end
+
+			if selected_node then
+				str=str..subtree(prefix .. selected_name .. "/", selected_node,node,level + 1)
+			end
+		end
+		return str
+	end
+-%>
+<!DOCTYPE html>
+<html lang="<%=luci.i18n.context.lang%>">
+<head><meta charset="utf-8">
+<title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. translate(node.title) or '')) %></title>
+<meta name="viewport" content="width=device-width">
+<meta name="renderer" content="webkit">
+<!--[if lt IE 9]><script src="<%=media%>/html5.js"></script><![endif]-->
+<link rel="stylesheet" href="<%=media%>/cascade-1.0.min.css">
+</head>
+<body><header><div class="fill"><div class="container">
+<!--<a class="brand" href="#"><%=hostname%></a>-->
+<a class="brand" href='<%=pcdata(luci.dispatcher.build_url('admin/status/overview'))%>'><%=hostname%></a><ul class='nav'>
+<%
+local function submenu(prefix, node)
+	local s=""
+	local childs = disp.node_childs(node)
+	if #childs > 0 then
+			s=s.."<ul class='dropdown-menu'>"
+		for i, r in ipairs(childs) do
+			local nnode = node.nodes[r]
+			local href  = controller .. prefix .. r ..(nnode.query and http.build_querystring(nnode.query) or "")
+				s=s.."<li><a href='"..pcdata(href).."'>"..pcdata(striptags(translate(nnode.title))).."</a></li>"
+		end
+		s=s.."</ul>"
+	end
+	return s
+end
+childs = disp.node_childs(cattree)
+if #childs > 0 then
+	for i, r in ipairs(childs) do
+		local nnode = cattree.nodes[r]
+		local href  = controller .. "/" .. category .. "/" .. r ..(nnode.query and http.build_querystring(k.query) or "")
+		local grandchildren = disp.node_childs(nnode)
+		local str=""
+		if #grandchildren > 0 then
+			str=str.."<li class='dropdown'><a class='menu'>"..pcdata(striptags(translate(nnode.title))).."</a>"
+			str=str..submenu("/" .. category .. "/" .. r .. "/", nnode).."</li>"
+		else
+			str=str.."<li><a href='"..pcdata(href).."'>"..pcdata(striptags(translate(nnode.title))).."</a></li>"
+		end
+		write(str)
+	end
+end
+%>
+</ul>
+<div class="pull-right"><span id="xhr_poll_status" style="display:none" onclick="XHR.running() ? XHR.halt() : XHR.run()">
+<span class="label success" id="xhr_poll_status_on"><%:Auto Refresh%> <%:on%></span><span class="label" id="xhr_poll_status_off" style="display:none"><%:Auto Refresh%> <%:off%></span>
+</span></div></div></div></header>
+<%
+if tree.nodes[category] and tree.nodes[category].ucidata then
+		local ucichanges = 0
+		for i, j in pairs(require("luci.model.uci").cursor():changes()) do
+			for k, l in pairs(j) do
+				-- delete
+				if l['.type'] and l['.type'] == "" then
+					ucichanges = ucichanges + 1;
+				-- add
+				elseif l['.type'] and l['.type'] ~= "" then	
+					for m, n in pairs(l) do
+						if m ~= ".type" then
+							ucichanges = ucichanges + 1;
+						end
+					end
+				-- modify
+				else
+					for m, n in pairs(l) do
+						ucichanges = ucichanges + 1;
+					end
+				end
+			end
+		end
+	if ucichanges > 0 and not http.getenv("REQUEST_URI"):match("/uci/saveapply") and not http.getenv("REQUEST_URI"):match("/uci/revert") then
+		local str=""
+		str=str.."<div class='container'><div class='alert-message warning'>"
+		str=str.."<a href='"..controller.."/"..category.."/uci/changes'>"..translate("Unapplyed Changes")..":"..ucichanges.."</a>&nbsp;"
+		if not fs.access("/tmp/upgrading_flag") then
+			str=str.."<a class='label notice' href='"..controller.."/admin/uci/saveapply'>>>"..translate("Apply").."...</a>&nbsp;<a class='label notice' href='"..controller.."/admin/uci/revert'>>>"..translate("Revert").."...</a></div></div>"
+		else
+			str=str.."<a class='label notice' href='"..controller.."/admin/uci/revert'>>>"..translate("Revert").."...</a></div></div>"
+		end
+		write(str)
+	end
+end
+if #childs > 0 then
+require "ini"
+ini = INI.load("/etc/provision/control.conf")
+local sys_upgrade_flag=fs.access("/etc/upgrade_flag")
+local sys_upgrading_flag=fs.access("/etc/upgrading_flag")
+local gsm_upgrading_flag=fs.access("/etc/gsm_1_upgrading")
+local gsm_upgradefail_flag=fs.access("/etc/gsm_1_upgradefail") or (fs.access("/etc/gsm_1_upgrading") and not fs.access("/tmp/gsm_upgrading"))
+local firmware_md5_valid_flag=(ini and ini.firmware and (#ini.firmware.md5 ~= 32 or (not ini.firmware.md5:match("^[a-fA-F0-9]+$"))))
+if ((sys_upgrade_flag or firmware_md5_valid_flag) and (not sys_upgrading_flag)) or gsm_upgradefail_flag then
+	local str=""
+	local tips=""
+	if sys_upgrade_flag or firmware_md5_valid_flag then
+		tips=translate("System upgrade fail last time, please upgrade again !").."<br>"
+	end
+	if gsm_upgradefail_flag then
+		tips=tips..translate("GSM Module upgrade fail last time, please upgrade again !").."<br>"
+	end
+	str=str.."<div class='container'><div class='alert-message error'><h4>"..translate("Upgrade Required !").."</h4>"
+	str=str..tips.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/backup_upgrade')).."'>>>"..translate("Go to system upgrade...").."</a></div></div>"
+	write(str)
+end
+if sys_upgrading_flag then
+	write("<div class='container'><div class='alert-message info'><h4>"..translate("System Upgrading !").."</h4>"..translate("Please don't reboot system and refresh later !").."<br></div></div>")
+end
+if gsm_upgrading_flag then
+	write("<div class='container'><div class='alert-message info'><h4>"..translate("GSM Module Upgrading !").."</h4>"..translate("Please don't reboot system and refresh later !").."<br></div></div>")
+end
+if fs.access("/tmp/upgraded_fail_flag") then
+	write("<div class='container'><div class='alert-message error'><h4>"..translate("Upgrade Firmware Fail !").."</h4>"..translate("Please check the file is correct !").."<br></div></div>")
+end
+local ret,msg = require "luci.scripts.fs_server".get_fs_status()
+if not ret and msg then
+	if msg:match("stoped") and tonumber(luci.sys.uptime()) > 180 then
+		write("<div class='container'><div class='alert-message error'>"..translate("Switch Core Service stoped !").."</div></div>")
+	else
+		write("<div class='container'><div class='alert-message info'>"..translate("Switch Core Service is initializing, please wait for a moment !").."</div></div>")
+	end
+end
+if luci.version.license and luci.version.license.invalid then
+	local str=""
+	local info={}
+	str=str.."<div class='container'><div class='alert-message error'><h4>"..translate("License Invalid !").."</h4>"
+	for k,v in ipairs(luci.version.license.invalid_info) do
+		table.insert(info,tostring(translate(v)))
+	end
+	str=str..translate("Invalid license info").." : "..table.concat(info," / ").."<br>"
+	str=str..translate("Please take a photo of the label on the device box and then send it together with hardware ID to technical support.").."</div></div>"
+	write(str)
+end
+local reboot_info = fs.readfile("/tmp/require_reboot")
+if reboot_info then
+	local str=""
+	str=str.."<div class='container'><div class='alert-message info'><h4>"..translate("Reboot Required !").."</h4>"
+	if reboot_info:match("hostname") then
+		str=str..translate("Hostname changes need to take effect after reboot !").."<br>"
+	end
+	if reboot_info:match("network") then
+		str=str..translate("Network changes need to take effect after reboot !").."<br>"
+	end
+	if reboot_info:match("wireless") then
+		str=str..translate("Wireless Work Mode changes need to take effect after reboot !").."<br>"
+	end
+	if reboot_info:match("rtp") then
+		str=str..translate("RTP Port changes need to take effect after reboot !").."<br>"
+	end
+	if reboot_info:match("upgrade") then
+		str=str..translate("System upgrade succ !").." "..translate("Please reboot to take effect !").."<br>"
+	end
+	if reboot_info:match("restore") then
+		str=str..translate("Restore config data succ !").." "..translate("Please reboot to take effect !").."<br>"
+	end
+	str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/reboot')).."'>>>"..translate("Go to reboot...").."</a></div></div>"
+	write(str)
+end
+if luci.sys.user.checkpasswd("admin","admin") then
+	local str=""
+	str=str.."<div class='container'><div class='alert-message warning'><h4>"..translate("Default password not change !").."</h4>"
+	str=str..translate("This device is still the default password. Please change the defaut password to protect the web interface !").."<br>"
+	str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/security')).."'>>>"..translate("Go to password configuration...").."</a></div></div>"
+	write(str)
+end
+end%>
+<div id="maincontent" class="container container-maincontent"><noscript><div class="alert-message error"><strong><%:Java Script required!%></strong><br /><%:You must enable Java Script in your browser or Web Configure will not work properly.%></div></noscript>
+<% if category then write(subtree("/" .. category .. "/",cattree,node)) end %>

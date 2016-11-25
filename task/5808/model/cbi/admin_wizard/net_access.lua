@@ -17,7 +17,7 @@ m:chain("wireless")
 m.pageaction = false
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","wizard")
+	m.redirect = dsp.build_url("admin","wizard")
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","network","1")
@@ -63,21 +63,19 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.write(self, section, value)
-	local tmp = m:formvalue("cbid.network_tmp.network.access_mode") or "wan_dhcp"
-
-	if tmp == "wan_dhcp" or tmp == "wan_static" or tmp == "wan_pppoe"then
+	if value == "wan_dhcp" or value == "wan_static" or value == "wan_pppoe" then
 		m.uci:set("network_tmp","network","network_mode","route")
-		m.uci:set("network_tmp","network","wan_proto",string.sub(tmp,5))
+		m.uci:set("network_tmp","network","wan_proto",string.sub(value,5))
 		m.uci:set("wireless","wifi0","mode","ap")
 		m.uci:set("firewall",section_firewall,"enabled","1")
-	elseif tmp == "wlan_dhcp" or tmp == "wlan_static" then
+	elseif value == "wlan_dhcp" or value == "wlan_static" then
 		m.uci:set("network_tmp","network","network_mode","client")
-		m.uci:set("network_tmp","network","wlan_proto",string.sub(tmp,6))
+		m.uci:set("network_tmp","network","wlan_proto",string.sub(value,6))
 		m.uci:set("wireless","wifi0","mode","sta")
 		m.uci:set("firewall",section_firewall,"enabled","0")
 	end
 
-	m.uci:set("network_tmp","network","access_mode",tmp)
+	m.uci:set("network_tmp","network","access_mode",value)
 end
 
 option = s:option(DummyValue,"_external","外网配置")

@@ -22,15 +22,31 @@ end
 
 option = s:option(ListValue,"defaultroute","默认路由")
 option:depends("enabled","1")
+option.rmempty = false
 option:value("0",translate("Disable"))
 option:value("1",translate("Enable"))
 option.default = "0"
+function option.validate(self, value)
+	if value then
+		return Value.validate(self,value)
+	else
+		return ""
+	end
+end
 
 option = s:option(ListValue,"mppe","数据加密")
 option:depends("enabled","1")
+option.rmempty = false
 option:value("0",translate("Disable"))
 option:value("1",translate("Enable"))
 option.default = "1"
+function option.validate(self, value)
+	if value then
+		return Value.validate(self,value)
+	else
+		return ""
+	end
+end
 
 option = s:option(Value,"server","服务器地址")
 option:depends("enabled","1")
@@ -44,10 +60,10 @@ function option.validate(self, value)
 	end
 end
 
-name = s:option(Value,"username","用户名")
+option = s:option(Value,"username","用户名")
 option:depends("enabled","1")
-name.rmempty = false
-name.datatype = "notempty"
+option.rmempty = false
+option.datatype = "notempty"
 function option.validate(self, value)
 	if value then
 		return Value.validate(self,value)

@@ -18,12 +18,12 @@
 
 	<div class="description">
 		<%  for k,v in ipairs(self.data) do
-				if v ~= "" then %>
+				if v ~= "" then -%>
 					<p class="line" ><%=v%></p>
-		<%		else %>
+		<%		else -%>
 					</br>
-		<%		end %>
-		<%  end %>
+		<%-		end -%>
+		<%-  end %>
 	</div>
 </div>
 <% end %>

@@ -67,6 +67,13 @@ function option.cfgvalue(self, section)
 		return nil
 	end
 end
+function option.validate(self, value)
+	if value then
+		return Value.validate(self,value)
+	else
+		return ""
+	end
+end
 
 --#### server #####----
 option = s:option(Value,"server","服务器地址")

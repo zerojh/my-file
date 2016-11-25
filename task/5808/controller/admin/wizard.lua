@@ -5,14 +5,21 @@ local util = require "luci.util"
 local ds = require "luci.dispatcher"
 
 function index()
-	entry({"admin","wizard"},template("admin_wizard/wizard"),"配置向导",100).leaf = true
-	entry({"admin","wizard","wifilist"},call("action_get_wireless"))
-	entry({"admin","wizard","network"},cbi("admin_wizard/net_access")).leaf = true
-	entry({"admin","wizard","siptrunk"},cbi("admin_wizard/siptrunk")).leaf = true
-	entry({"admin","wizard","ddns"},cbi("admin_wizard/ddns")).leaf = true
-	entry({"admin","wizard","pptp"},cbi("admin_wizard/pptp_client")).leaf = true
-	entry({"admin","wizard","l2tp"},cbi("admin_wizard/l2tp_client")).leaf = true
-	entry({"admin","wizard","openvpn"},call("action_openvpn")).leaf = true
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
+		local uci = require "luci.model.uci".cursor()
+		entry({"admin","wizard"},template("admin_wizard/wizard"),"配置向导",82)
+		entry({"admin","wizard","wifilist"},call("action_get_wireless"))
+		entry({"admin","wizard","network"},cbi("admin_wizard/net_access")).leaf = true
+		entry({"admin","wizard","siptrunk"},cbi("admin_wizard/siptrunk")).leaf = true
+		entry({"admin","wizard","sim"},cbi("admin_wizard/sim")).leaf = true
+		if uci:get("wireless","wifi0","mode") ~= "sta" then
+			entry({"admin","wizard","ap"},cbi("admin_wizard/wlan_ap")).leaf = true
+		end
+		entry({"admin","wizard","ddns"},cbi("admin_wizard/ddns")).leaf = true
+		entry({"admin","wizard","pptp"},cbi("admin_wizard/pptp_client")).leaf = true
+		entry({"admin","wizard","l2tp"},cbi("admin_wizard/l2tp_client")).leaf = true
+		entry({"admin","wizard","openvpn"},call("action_openvpn")).leaf = true
+	end
 end
 
 function action_get_wireless()
@@ -75,7 +82,7 @@ function action_openvpn()
 		uci_tmp:save("wizard")
 		uci_tmp:commit("wizard")
 
-		luci.http.redirect(ds.build_url("admin","status","overview"))
+		luci.http.redirect(ds.build_url("admin","status1","overview"))
 		return
 	elseif luci.http.formvalue("cancel") then
 		luci.http.redirect(ds.build_url("admin","wizard","l2tp"))

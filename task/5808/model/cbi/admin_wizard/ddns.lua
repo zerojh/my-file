@@ -16,11 +16,29 @@ local service_url_tbl =
 	"oray.com",
 }
 
+local ip_url_tbl =
+{
+	"http://checkip.dyndns.com",
+	"http://ip.changeip.com",
+	"http://checkip.dns.he.net",
+	"http://checkip.dyndns.it",
+	"http://myip.dnsomatic.com",
+	"http://www.3322.net/dyndns/getip",
+	"http://www.myip.ch",
+	"http://checkip.twodns.de",
+	"http://ddns.oray.com/checkip",
+	"http://city.ip138.com/ip2city.asp"
+}
+
 m = Map("ddns","动态域名服务")
 m.pageaction = false
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","siptrunk")
+	if uci:get("wireless","wifi0","mode") ~= "sta" then
+		m.redirect = dsp.build_url("admin","wizard","ap")
+	else
+		m.redirect = dsp.build_url("admin","wizard","ddns")
+	end
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","ddns","1")
@@ -54,6 +72,7 @@ end
 
 --#### Service #####----
 option = s:option(ListValue,"service_name_list","服务商列表")
+option.rmempty = false
 option:depends("enabled" , "1")
 for k,v in ipairs(service_url_tbl) do
 	option:value(v,translate(v))
@@ -63,6 +82,13 @@ function option.cfgvalue(self, section)
 		return AbstractValue.cfgvalue(self, section)
 	else
 		return nil
+	end
+end
+function option.validate(self,value)
+	if value then
+		return AbstractValue.validate(self, value)
+	else
+		return ""
 	end
 end
 function option.write(self,section,value)
@@ -85,7 +111,6 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self,value)
-	local value = m:formvalue("cbid.ddns.myddns_ipv4.domain")
 	if value then
 		return AbstractValue.validate(self, value)
 	else
@@ -105,7 +130,6 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self,value)
-	local value = m:formvalue("cbid.ddns.myddns_ipv4.username")
 	if value then
 		return AbstractValue.validate(self, value)
 	else
@@ -140,7 +164,40 @@ function option.validate(self,value)
 end
 function option.write(self,section,value)
 	m.uci:set("ddns","myddns_ipv4","password",value or "")
+end
 
+option = s:option(ListValue , "ip_source" , "IP来源")
+option.rmempty = false
+option:depends("enabled" , "1")
+option:value("web" , "外部地址")
+option:value("network" , "设备地址")
+function option.cfgvalue(self, section)
+	if flag == "1" then
+		return AbstractValue.cfgvalue(self, section)
+	else
+		return nil
+	end
+end
+function option.validate(self,value)
+	return value or ""
+end
+
+option = s:option(Value , "ip_url" , "IP检查地址")
+option:depends("ip_source" , "web")
+option.default = "http://checkip.dyndns.com"
+option.rmempty = false
+for k,v in ipairs(ip_url_tbl) do
+	option:value(v,translate(v))
+end
+function option.cfgvalue(self, section)
+	if flag == "1" then
+		return AbstractValue.cfgvalue(self, section)
+	else
+		return nil
+	end
+end
+function option.validate(self,value)
+	return value or ""
 end
 
 option = s:option(DummyValue,"_footer")
