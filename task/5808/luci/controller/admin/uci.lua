@@ -301,10 +301,11 @@ function action_apply()
 				apply_param.dns = "on"
 			end
 			
-			if tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask then
+			if uci:get("wireless","wifi0","mode") ~= "sta" and (tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask) then
 				os.execute("echo network >>/tmp/require_reboot")
+			else
+				apply_param.network_restart = "on"
 			end
-			
 		elseif "network" == r then
 			apply_param.network = "on"
 		elseif "wireless" == r then
@@ -312,6 +313,9 @@ function action_apply()
 			apply_param.wireless = "on"
 			if tbl.wifi0.mode then
 				os.execute("echo wireless >>/tmp/require_reboot")
+			end
+			if tbl.wifi0.mode or uci:get("wireless","wifi0","mode") == "sta" then
+				apply_param.network_restart = "on"
 			end
 		elseif "static_route" == r then
 			apply_param.static_route = "on"

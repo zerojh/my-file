@@ -1,6 +1,10 @@
 local dsp = require "luci.dispatcher"
 local uci = require "luci.model.uci".cursor()
 
+if uci:get("wireless","wifi0","mode") == "sta" then
+	luci.http.redirect(dsp.build_url("admin","status1","overview"))
+end
+
 m = Map("wireless","配置 / 无线热点")
 
 s = m:section(NamedSection,"wifi0")

@@ -67,7 +67,7 @@
 					id.parentNode.removeChild(id);
 
 				if (g_ssid_number > 0){
-					cbi_combobox_init('<%=cbid%>', g_ssid_list, '<%-: -- Please choose -- -%>', '<%-: -- custom -- -%>');
+					cbi_combobox_init('<%=cbid%>', g_ssid_list, '', '<%-: -- Please choose -- -%>', '<%-: -- custom -- -%>');
 					$("#cbi\\.combobox\\.cbid\\.network_tmp\\.network\\.wifi_ssid").bind("change", check_ssid)
 					check_ssid()
 				}
@@ -122,7 +122,7 @@
 	}
 
 	if (g_ssid_number > 0){
-		cbi_combobox_init('<%=cbid%>', g_ssid_list, '<%-: -- Please choose -- -%>', '<%-: -- custom -- -%>');
+		cbi_combobox_init('<%=cbid%>', g_ssid_list, '', '<%-: -- Please choose -- -%>', '<%-: -- custom -- -%>');
 	}
 
 	$("#cbi\\.combobox\\.cbid\\.network_tmp\\.network\\.wifi_ssid").bind("change", check_ssid)

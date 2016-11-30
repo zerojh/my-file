@@ -818,7 +818,10 @@ function get_wifi_list(param)
 						local channel,ssid,bssid,encryption,signal
 						local exist_flag = true
 
-						channel,ssid,bssid,encryption,signal = v:match("^([0-9]+)%s+([^%s]+)%s+(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)%s+([a-zA-Z0-9%/]+)%s+([0-9]+)%s*")
+						channel,ssid,bssid,encryption,signal = v:match("^([0-9]+)%s+(.+)%s+(%w%w:%w%w:%w%w:%w%w:%w%w:%w%w)%s+([a-zA-Z0-9%/]+)%s+([0-9]+)%s*")
+						if ssid then
+							ssid = ssid:match("^%s*([^%s]+.+[^%s]+)%s*$")
+						end
 						if channel and ssid and string.len(ssid) > 0 and string.len(ssid) < 32 then
 							exist_flag = false
 							bssid = string.upper(bssid)

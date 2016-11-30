@@ -35,8 +35,8 @@ function action_overview()
 	if section and uci:get("endpoint_siptrunk",section,"status") == "Enabled" then
 		local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/^Username/p;/^State/p' | tr '\n' '#'")
 		siptrunk_info.register = str:match("State%s+([%u_]+)") or ""
+		siptrunk_info.number = str:match("Username%s+(%d+)") or "-"
 	end
-	siptrunk_info.number = str:match("Username%s+(%d+)") or "-"
 
 	local ddns_info = {}
 	ddns_info.e = uci:get("ddns","myddns_ipv4","enabled")
@@ -78,17 +78,15 @@ function action_overview()
 	if next(tmp_tb) then
 		for k,v in pairs(tmp_tb) do
 			if v.slot == "1-GSM" then
-				if "Disabled" == v.status then
-					sim_info.status = "disabled"
+				local tmp_str = util.exec("fs_cli -x 'gsm dump 1' | sed -n '/simpin_state/p;/^not_registered/p' | tr '\n' '#'")
+				local simpin_state = tmp_str:match("simpin_state = ([^#]+)#")
+				local not_register = tmp_str:match("not_registered = (%d+)")
+				if simpin_state ~= "SIMPIN_READY" then
+					sim_info.status = "no_card"
+				elseif not_register ~= "0" then
+					sim_info.status = "not_registered"
 				else
-					local tmp_str = util.exec("fs_cli -x 'gsm dump 1' | sed -n '/simpin_state/p;/^not_registered/p' | tr '\n' '#'")
-					local simpin_state = tmp_str:match("simpin_state = ([^#]+)#")
-					local not_register = tmp_str:match("not_registered = (%d+)")
-					if simpin_state == "SIMPIN_READY" and not_register == "0" then
-						sim_info.status = "registered"
-					else
-						sim_info.status = "not_registered"
-					end
+					sim_info.status = "registered"
 				end
 			end
 		end
