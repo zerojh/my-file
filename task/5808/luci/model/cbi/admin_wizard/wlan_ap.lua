@@ -4,7 +4,7 @@ local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 local flag = uci_tmp:get("wizard","globals","ap") or "1"
 
 if uci:get("wireless","wifi0","mode") == "sta" then
-	luci.http.redirect(dsp.build_url("admin","status1","overview"))
+	luci.http.redirect(dsp.build_url("admin","affair","overview"))
 end
 
 m = Map("wireless","无线热点")
@@ -32,6 +32,7 @@ table.insert(option.data,"")
 --#### Disabled ####----
 option = s:option(ListValue,"disabled","启用热点")
 option.rmempty = false
+option.default = "0"
 option:value("1",translate("Disable"))
 option:value("0",translate("Enable"))
 function option.cfgvalue(self, section)

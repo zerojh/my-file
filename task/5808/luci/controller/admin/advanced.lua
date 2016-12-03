@@ -5,11 +5,12 @@ local fs = require "nixio.fs"
 local exe = require "os".execute
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","advanced"},firstchild(),"高级",84).index = true
 		entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",10).leaf = true
 		entry({"admin","advanced","detectstatus"},call("detect_status"))
-		entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",20).leaf = true
+		--entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",20).leaf = true
+		entry({"admin","advanced","reboot"},call("action_reboot"),"重启",20).leaf = true
 	end
 end
 
@@ -218,8 +219,9 @@ function start_diagnostics(string)
 		local status
 		if next(tmp_tb) then
 			for k,v in pairs(tmp_tb) do
-				if v.slot_type and v.slot_type == "1-GSM" then
+				if v.slot_type and (v.slot_type == "1-GSM" or v.slot_type == "1-LTE") then
 					status = v.status
+					break
 				end
 			end
 		end
@@ -661,4 +663,10 @@ function action_backup_restore()
 			fs_avail = fs_avail
 		})
 	end
+end
+
+function action_reboot()
+	local dsp = require "luci.dispatcher"
+	luci.http.redirect(dsp.build_url("admin","system","reboot"))
+	return
 end

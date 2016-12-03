@@ -1,7 +1,7 @@
 module("luci.controller.admin.extension",package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local page
 		page = node("admin","extension")
 		page.target = firstchild()

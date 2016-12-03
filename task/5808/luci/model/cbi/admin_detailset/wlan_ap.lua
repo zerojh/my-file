@@ -2,7 +2,7 @@ local dsp = require "luci.dispatcher"
 local uci = require "luci.model.uci".cursor()
 
 if uci:get("wireless","wifi0","mode") == "sta" then
-	luci.http.redirect(dsp.build_url("admin","status1","overview"))
+	luci.http.redirect(dsp.build_url("admin","affair","overview"))
 end
 
 m = Map("wireless","配置 / 无线热点")
@@ -12,6 +12,7 @@ s = m:section(NamedSection,"wifi0")
 --#### Disabled ####--
 option = s:option(ListValue,"disabled","启用热点")
 option.rmempty = false
+option.default = "0"
 option:value("1",translate("Disable"))
 option:value("0",translate("Enable"))
 function option.validate(self, value)

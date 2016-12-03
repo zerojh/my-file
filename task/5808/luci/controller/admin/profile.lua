@@ -1,7 +1,7 @@
 module("luci.controller.admin.profile",package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local page
 		page = node("admin","profile")
 		page.target = firstchild()
@@ -26,12 +26,16 @@ function index()
 		entry({"admin","profile","codec","codec"},cbi("admin_profile/codec_edit"),nil,4).leaf = true
 		entry({"admin","profile","number"},call("number"),"Number",6)
 		entry({"admin","profile","number","number"},call("number_edit"),nil,6).leaf = true
-		entry({"admin","profile","time"},call("time"),"Time",7)
-		entry({"admin","profile","time","time"},cbi("admin_profile/time_edit"),nil,7).leaf = true
-		entry({"admin","profile","manipl"},call("manipulation"),"Manipulation",8)
-		entry({"admin","profile","manipl","manipl"},cbi("admin_profile/manipulation_edit"),nil,8).leaf = true
-		entry({"admin","profile","dialplan"},call("dialplan"),"Dialplan",9)
-		entry({"admin","profile","dialplan","dialplan"},cbi("admin_profile/dialplan_edit"),nil,9).leaf = true
+		if luci.version.license and luci.version.license.gsm then
+			entry({"admin","profile","numberlearning"},call("number_learning"),"Number Learning",7)
+			entry({"admin","profile","numberlearning","numberlearning"},call("number_learning_edit"),nil,7).leaf = true
+		end
+		entry({"admin","profile","time"},call("time"),"Time",8)
+		entry({"admin","profile","time","time"},cbi("admin_profile/time_edit"),nil,8).leaf = true
+		entry({"admin","profile","manipl"},call("manipulation"),"Manipulation",9)
+		entry({"admin","profile","manipl","manipl"},cbi("admin_profile/manipulation_edit"),nil,9).leaf = true
+		entry({"admin","profile","dialplan"},call("dialplan"),"Dialplan",10)
+		entry({"admin","profile","dialplan","dialplan"},cbi("admin_profile/dialplan_edit"),nil,10).leaf = true
 	end
 end
 
@@ -444,6 +448,167 @@ function number_edit(...)
 		caller_prefix_value=caller_prefix_value,
 		called_prefix_length_value=called_prefix_length_value,
 		called_prefix_value=called_prefix_value,
+		})
+end
+
+function number_learning()
+	local MAX_NUM_PROFILE = 32
+	local uci = require "luci.model.uci".cursor()
+	local ds = require "luci.dispatcher"
+	local i18n = require "luci.i18n"
+
+	uci:check_cfg("profile_numberlearning")
+	uci:check_cfg("endpoint_mobile")
+
+	local del_target = luci.http.formvaluetable("Delete")
+	if next(del_target) then
+		uci:delete_section(del_target,"endpoint_mobile.numberlearning_profile")
+	end
+
+	if luci.http.formvalue("New") then
+		local created = uci:section("profile_numberlearning","rule")
+		uci:save("profile_numberlearning")
+		luci.http.redirect(ds.build_url("admin","profile","numberlearning","numberlearning",created,"add"))
+		return
+	end
+
+	--local th = {"Index","Name","Caller/Length/Property/Area/Carrier","Called/Length/Property/Area/Carrier"}
+	local th = {"Index","Name","Type","Destination Number","Send Text","Check SMS From Number","Keywords"}
+	local colgroup = {"7%","10%","10%","19%","10%","19","16%","9%"}
+	local content = {}
+	local edit = {}
+	local delchk = {}
+	local uci_cfg = {}
+	local addnewable = true
+	local cnt = 0
+	local number = uci:get_all("profile_numberlearning")
+	for i=1,MAX_NUM_PROFILE do
+		for k,v in pairs(number) do
+			if v.index and v.name and i == tonumber(v.index) then
+				cnt = cnt + 1
+				local td = {}
+				td[1] = v.index
+				td[2] = v.name
+				td[3] = v.type == "sms" and i18n.translate("SMS") or i18n.translate("Unknown")
+				td[4] = v.dest_number or ""
+				td[5] = v.send_text or ""
+				td[6] = v.from_number or ""
+				td[7] = v.keywords or ""
+				edit[cnt] = ds.build_url("admin","profile","numberlearning","numberlearning",k,"edit")
+				delchk[cnt] = uci:check_cfg_deps("profile_numberlearning",k,"endpoint_mobile.numberlearning_profile")
+				uci_cfg[cnt] = "profile_numberlearning." .. k
+				table.insert(content,td)
+				break
+			elseif not v.index or not v.name then
+				uci:delete("profile_numberlearning",k)
+				--uci:save("profile_number")
+			end
+		end
+	end
+	if MAX_NUM_PROFILE == cnt then
+		addnewable = false
+	end
+	luci.template.render("cbi/configlist",{
+		title = i18n.translate("Profile / Number Learning"),
+		colgroup = colgroup,
+		th = th,
+		content = content,
+		edit = edit,
+		delchk = delchk,
+		uci_cfg = uci_cfg,
+		addnewable = addnewable,
+		})
+end
+
+function number_learning_edit(...)
+	local fs = require "luci.fs"
+	local uci = require "luci.model.uci".cursor()
+	local ds = require "luci.dispatcher"
+	local i18n = require "luci.i18n"
+	local util = require "luci.util"
+	local redirect
+	local section=arg[1]
+	local add_or_edit=arg[2]
+	local next_redirect=arg[3]
+	local title="Profile / Number Learning / New"
+	local available_id_list={}
+	local idx_value=1
+	local name_value=""
+	local type_value=""
+	local destination_number_value=""
+	local send_text_value=""
+	local from_number_value=""
+	local keywords_value=""
+
+	if luci.http.formvalue("save") and section then
+		local value_t=luci.http.formvaluetable("profile_numberlearning."..section)
+		for k,v in pairs(value_t) do
+			uci:set("profile_numberlearning",section,k,v)
+		end
+		uci:save("profile_numberlearning")
+		redirect=true
+	elseif luci.http.formvalue("cancel") and section then
+		if "add" == add_or_edit then
+			uci:revert("profile_numberlearning",section)
+			uci:save("profile_numberlearning")
+		end
+		redirect=true
+	end
+
+	if redirect then
+		if next_redirect then
+			local mod,submod,cfg,action = next_redirect:match("(%w+)-(%w+)-(%w+)-(%w+)")
+			luci.http.redirect(ds.build_url("admin",mod,submod,submod,cfg,action))
+		else
+			luci.http.redirect(ds.build_url("admin","profile","numberlearning"))
+		end
+		return
+	end
+
+	if section then
+		local profile_number=uci:get_all("profile_numberlearning")
+		for i=1,32 do
+			table.insert(available_id_list,i)
+		end
+		for k,v in pairs(profile_number) do
+			if v.index then
+				available_id_list[tonumber(v.index)]=0
+			end
+			if k == section then
+				idx_value=v.index
+				name_value=v.name
+				type_value=v.type
+				destination_number_value=v.dest_number
+				send_text_value=v.send_text
+				from_number_value=v.from_number
+				keywords_value=v.keywords
+				if "edit" == add_or_edit then
+					title="Profile / Number Learning / Edit"
+					available_id_list={}
+					break
+				end
+			end
+		end
+	end
+
+	luci.template.render("admin_profile/number_learning_edit",{
+		need_redirect_back=next_redirect,
+		title = i18n.translate(title),
+		available_id_list=available_id_list,
+		idx_id="profile_numberlearning."..section..".index",
+		name_id="profile_numberlearning."..section..".name",
+		type_id="profile_numberlearning."..section..".type",
+		destination_number_id="profile_numberlearning."..section..".dest_number",
+		send_text_id="profile_numberlearning."..section..".send_text",
+		from_number_id="profile_numberlearning."..section..".from_number",
+		keywords_id="profile_numberlearning."..section..".keywords",
+		idx_value=idx_value,
+		name_value=name_value,
+		type_value=type_value,
+		destination_number_value=destination_number_value,
+		send_text_value=send_text_value,
+		from_number_value=from_number_value,
+		keywords_value=keywords_value,
 		})
 end
 

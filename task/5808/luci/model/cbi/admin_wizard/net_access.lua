@@ -5,10 +5,6 @@ local flag = uci_tmp:get("wizard","globals","network") or "1"
 local fs = require "nixio.fs"
 local fs_server = require "luci.scripts.fs_server"
 
-if luci.http.formvalue("cbi.save") then
-	m.redirect = dsp.build_url(REQUEST_URI)
-end
-
 --@ init network_tmp from network,wireless
 if not fs.access("/etc/config/network_tmp") then
 	require "luci.model.network".profile_network_init()
@@ -19,6 +15,10 @@ m:chain("network")
 m:chain("firewall")
 m:chain("wireless")
 m.pageaction = false
+
+if luci.http.formvalue("cbi.save") then
+	m.redirect = dsp.build_url(REQUEST_URI)
+end
 
 if luci.http.formvalue("cbi.cancel") then
 	m.redirect = dsp.build_url("admin","wizard")

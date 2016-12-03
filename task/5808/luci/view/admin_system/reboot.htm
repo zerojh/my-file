@@ -1,0 +1,14 @@
+<%+header%>
+<%
+local c = require("luci.model.uci").cursor():changes()
+if c and next(c) then
+%>
+<div class='container container-msg'>
+	<div class="alert-message warning"><%:Warning: There are unsaved changes that will be lost while rebooting!%><br>
+	<a href='<%=pcdata(luci.dispatcher.build_url('admin/uci/changes'))%>'>>><%:Go to save&apply...%></a></div>
+</div>
+<% end %>
+
+<h2><a id="content" name="content">高级 / 重启</a></h2>
+<p><input class="cbi-button" style="width:100px;text-align:center;margin-left:10px;" onclick="window.location.href='<%=controller%>/admin/system/reboot?reboot=1'" value="<%:Perform reboot%>"/></p>
+<%+footer%>

@@ -258,9 +258,17 @@ end
 --#控件特性:文本框
 --************************************************************   
 ipsource = s:option(ListValue , "ip_source" , translate("IP Source"))
+ipsource.rmempty = false
 ipsource:depends("enabled" , "1")
 ipsource:value("web" , translate("External Address"))
 ipsource:value("network" , translate("Device Address"))
+function ipsource.validate(self, value)
+	if value then
+		return AbstractValue.validate(self, value)
+	else
+		return ""
+	end
+end
 
 
 ipurl = s:option(Value , "ip_url" , translate("IP Check URL"))

@@ -1,0 +1,8 @@
+config 'oem' 'general'
+	option 'lang' 'cn'
+	option 'brand' 'dchy'
+
+config 'brand' 'dchy'
+	option 'hostname' 'dchy'
+	option 'logo' 'dinstar_logo.png'
+	option 'display_on_about_page' 'off'

@@ -1,7 +1,7 @@
 module("luci.controller.admin.network", package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local uci = require("luci.model.uci").cursor()
 		local util = require "luci.util"
 		local fs = require "luci.fs"

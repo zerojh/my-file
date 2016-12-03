@@ -1,7 +1,7 @@
 module("luci.controller.admin.trunk",package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local page
 		page = node("admin","trunk")
 		page.target = firstchild()
@@ -380,6 +380,7 @@ function mobile()
 	uci:check_cfg("profile_mobile")
 	uci:check_cfg("route")
 	uci:check_cfg("endpoint_routegroup")
+	uci:check_cfg("profile_numberlearning")
 	
 	--@ Enable/Disable
 	local status_target = luci.http.formvaluetable("Status")
@@ -404,8 +405,8 @@ function mobile()
 	local status = {}
 	local addnewable = true
 	local cnt = 0
-	local endpoint = uci:get_all("endpoint_mobile")
-	local profile = uci:get_all("profile_mobile")
+	local endpoint = uci:get_all("endpoint_mobile") or {}
+	local numberlearning = uci:get_all("profile_numberlearning") or {}
 
 	local from_field_v = {["0"]="Extension / Caller ID",["1"]="Extension / Extension",["2"]="Caller ID / Caller ID",["3"]="Caller ID / Extension",["4"]="Anonymous"}
 	local from_field_un_v = {["0"]="Extension / Extension",["1"]="Anonymous"}
@@ -456,7 +457,16 @@ function mobile()
 				more_info[cnt] = more_info[cnt]..i18n.translate("PIN Code")..":"..(v.pincode or i18n.translate("Not Config")).."<br>"
 				more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format")..":"..i18n.translate(from_field_v[v.sip_from_field_2] or from_field_v["2"]).."<br>"
 				more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format when CID unavailable")..":"..i18n.translate(from_field_un_v[v.sip_from_field_un_2] or from_field_un_v["0"]).."<br>"
-				
+				if v.numberlearning_profile and "0" ~= v.numberlearning_profile then
+					for x,y in pairs(numberlearning) do
+						if y.index == v.numberlearning_profile then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Number Learning Profile")..":"..(y.index .. "-< " .. y.name .. " >").."<br>"
+							break
+						end
+					end
+				else
+					more_info[cnt] = more_info[cnt]..i18n.translate("Number Learning Profile")..":"..i18n.translate("Off").."<br>"
+				end
 				status[cnt] = v.status
 				edit[cnt] = ds.build_url("admin","trunk","mobile","mobile",k,"edit")
 				delchk[cnt] = uci:check_cfg_deps("endpoint_mobile",k,"route.endpoint")

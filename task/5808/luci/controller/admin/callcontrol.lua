@@ -1,7 +1,7 @@
 module("luci.controller.admin.callcontrol",package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local page
 		page = node("admin","callcontrol")
 		page.target = firstchild()
@@ -201,7 +201,7 @@ function action_call_trace()
 		end
 
 		os.execute("killall logread && killall tcpdump")
-		os.execute("rm /tmp/calltrace_with_voice_flag /tmp/calltrace_flag")
+		os.execute("sleep 2 && rm /tmp/calltrace_with_voice_flag /tmp/calltrace_flag")
 
 		if fs.access("/tmp/calltrace0.txt") then
 			os.execute("cat /tmp/calltrace.txt >> /tmp/calltrace0.txt && mv /tmp/calltrace0.txt /tmp/calltrace.txt")
@@ -494,6 +494,7 @@ function route()
 						Source = stype
 					else
 						Source = get_name_by_cfgtype_id(stype,index)
+						Source = "" ~= Source and Source or "Error"
 					end
 				elseif "-1" == v.from then
 					if v.custom_from and "table" == type(v.custom_from) then
@@ -503,14 +504,22 @@ function route()
 					end
 				end
 
-				profile_name = get_name_by_index("profile_number",v.numberProfile)
-				if "" ~= profile_name then
-					Number =  v.numberProfile.."-< "..profile_name.." >"
+				if v.numberProfile and "0" ~= v.numberProfile then
+					profile_name = get_name_by_index("profile_number",v.numberProfile)
+					if "" ~= profile_name then
+						Number =  v.numberProfile.."-< "..profile_name.." >"
+					else
+						Number = "Error"
+					end
 				end
 
-				profile_name = get_name_by_index("profile_time",v.timeProfile)
-				if "" ~= profile_name then
-					Time =  v.timeProfile.."-< "..get_name_by_index("profile_time",v.timeProfile).." >"
+				if v.timeProfile and "0" ~= v.timeProfile then
+					profile_name = get_name_by_index("profile_time",v.timeProfile)
+					if "" ~= profile_name then
+						Time =  v.timeProfile.."-< "..profile_name.." >"
+					else
+						Time = "Error"
+					end
 				end
 
 				--td[3] = Source.."/"..Number.."/"..Time
@@ -545,8 +554,11 @@ function route()
 						dest = get_name_by_cfgtype_id(dtype,index)
 					end
 				end
-
-				td[8] =  mapl.."/"..dest
+				if "" ~= dest then
+					td[8] =  mapl.."/"..dest
+				else
+					td[8] = "Error"
+				end
 				--Succ Action: Manipulation/Dest End--
 
 				--Callfail Action: Manipulation/New Dest--
@@ -570,6 +582,11 @@ function route()
 						dest= get_name_by_cfgtype_id(dtype,index)
 					end
 					td[9] =  mapl.."/"..dest
+					if "" ~= dest then
+						td[9] =  mapl.."/"..dest
+					else
+						td[9] = "Error"
+					end
 				else
 					td[9] = i18n.translate("Not Config")
 				end

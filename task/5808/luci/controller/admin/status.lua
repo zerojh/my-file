@@ -1,7 +1,7 @@
 module("luci.controller.admin.status", package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin", "status"}, alias("admin", "status", "overview"), _("Status"), 20).index = true
 		entry({"admin", "status", "overview"}, template("admin_status/index"), _("Overview"), 1)
 		entry({"admin", "status", "sipstatus"}, template("admin_status/sipstatus"), _("SIP"), 2)

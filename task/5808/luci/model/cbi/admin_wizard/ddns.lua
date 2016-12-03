@@ -152,9 +152,11 @@ end
 function option.validate(self,value)
 	local value = m:formvalue("cbid.ddns.myddns_ipv4.password")
 
-	m.uci:set("ddns","myddns_ipv4","check_interval","10")
-	m.uci:set("ddns","myddns_ipv4","force_interval","72")
-	m.uci:set("ddns","myddns_ipv4","retry_interval","60")
+	if m:formvalue("cbid.ddns.myddns_ipv4.enabled") == "1" then
+		m.uci:set("ddns","myddns_ipv4","check_interval","10")
+		m.uci:set("ddns","myddns_ipv4","force_interval","72")
+		m.uci:set("ddns","myddns_ipv4","retry_interval","60")
+	end
 
 	if value then
 		return AbstractValue.validate(self, value)

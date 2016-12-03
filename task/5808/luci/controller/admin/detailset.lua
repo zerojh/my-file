@@ -4,7 +4,7 @@ local fs_server = require "luci.scripts.fs_server"
 local util = require "luci.util"
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local uci = require "luci.model.uci".cursor()
 
 		entry({"admin","detailset"},firstchild(),"配置",83).index = true

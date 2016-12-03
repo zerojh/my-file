@@ -30,10 +30,28 @@ function refresh_net_stat(net_info)
 		tx_str += String.format('%.2f MB',tx_bytes_persec/(1024*1024));
 
 	document.getElementById("net.rtx").innerHTML = rx_str + " / " + tx_str
-	document.getElementById("net.access_mode").innerHTML = net_info.access_mode;
 	document.getElementById("net.ipaddr").innerHTML = net_info.ipaddr;
 	document.getElementById("net.netmask").innerHTML = net_info.netmask;
 	document.getElementById("net.gateway").innerHTML = net_info.gateway;
+	translate_access_mode(net_info.access_mode)
+}
+
+function translate_access_mode(mode)
+{
+	var val = "";
+	if (mode == "wan_dhcp")
+		val = "有线动态IP"
+	else if (mode == "wan_static")
+		val = "有线静态IP"
+	else if (mode == "wan_pppoe")
+		val = "PPPoE"
+	else if (mode == "wlan_dhcp")
+		val = "无线动态IP"
+	else if (mode == "wlan_static")
+		val = "无线静态IP"
+	else
+		val = "未知"
+	document.getElementById("net.access_mode").innerHTML = val;
 }
 
 function refresh_siptrunk_stat(siptrunk_info)
@@ -79,16 +97,25 @@ function refresh_vpn_stat(vpn_info)
 		document.getElementById("vpn.openvpn").innerHTML = "连接成功"
 }
 
+function refresh_wireless_stat(wifi_info)
+{
+
+}
+
 function refresh_sim_stat(sim_info)
 {
 }
 
 XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
 	refresh_net_stat(info.net_info)
+	refresh_wireless(info.wifi_info)
 	refresh_siptrunk_stat(info.siptrunk_info)
 	refresh_ddns_stat(info.ddns_info)
 	refresh_vpn_stat(info.vpn_info)
 })
+window.onload = function() {
+	translate_access_mode('<%=net_info.access_mode%>')
+}
 </script>
 
 
@@ -96,7 +123,7 @@ XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>网络连接情况</legend>
 	<table width="100%" cellspacing="10" class="info">
-		<tr><td width="30%">接入方式</td><td id="net.access_mode"><%=net_info.access_mode%></td></tr>
+		<tr><td width="30%">接入方式</td><td id="net.access_mode"></td></tr>
 		<tr><td>IP地址</td><td id="net.ipaddr"><%=net_info.ipaddr%></td></tr>
 		<tr><td>子网掩码</td><td id="net.netmask"><%=net_info.netmask%></td></tr>
 		<tr><td>网关</td><td id="net.gateway"><%=net_info.gateway%></td></tr>
@@ -108,6 +135,17 @@ XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
 </div>
 <div style="position:relative;left:10px;top:10px;width:480px;float:left;height:240px;">
 <fieldset class="cbi-section" style="border-buttom:;">
+	<legend>无线情况</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">状态</td><td id="wireless.status"></td></tr>
+		<tr><td>模式</td><td id="wireless.mode"></td></tr>
+		<tr><td>SSID</td><td id="wireless.ssid"></td></tr>
+		<tr id="wifi-signal"><td>信号强度</td><td id="wireless.signal"></td></tr>
+	</table>
+</fieldset>
+</div>
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:105px;">
+<fieldset class="cbi-section" style="border-buttom:;">
 	<legend>通讯调度平台</legend>
 	<table width="100%" cellspacing="10" class="info">
 		<tr><td width="30%">状态</td><td id="siptrunk.status"></td></tr>
@@ -115,7 +153,7 @@ XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
 	</table>
 </fieldset>
 </div>
-<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:135px;">
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:105px;">
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>动态域名服务</legend>
 	<table width="100%" cellspacing="10" class="info">
@@ -124,7 +162,7 @@ XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
 	</table>
 </fieldset>
 </div>
-<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:135px;">
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:190px;">
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>VPN客户端</legend>
 	<table width="100%" cellspacing="10" class="info">

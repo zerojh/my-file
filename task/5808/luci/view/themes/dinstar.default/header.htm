@@ -226,7 +226,8 @@ if reboot_info then
 		str=str..translate("Network changes need to take effect after reboot !").."<br>"
 	end
 	if reboot_info:match("wireless") then
-		str=str..translate("Wireless Work Mode changes need to take effect after reboot !").."<br>"
+		--str=str..translate("Wireless Work Mode changes need to take effect after reboot !").."<br>"
+		str=str.."无线工作模式修改需要重启后生效 !".."<br>"
 	end
 	if reboot_info:match("rtp") then
 		str=str..translate("RTP Port changes need to take effect after reboot !").."<br>"

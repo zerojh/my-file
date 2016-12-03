@@ -24,8 +24,9 @@ end
 
 if next(tmp_tb) then
 	for k,v in pairs(tmp_tb) do
-		if v.slot_type and v.slot_type == "1-GSM" then
+		if v.slot_type and (v.slot_type == "1-GSM" or v.slot_type == "1-LTE") then
 			currsection = k
+			break
 		end
 	end
 end

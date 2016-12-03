@@ -1,7 +1,7 @@
 module("luci.controller.admin.system", package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","system"},firstchild(),"System",30).dependent=false
 		entry({"admin","system","setting"},cbi("admin_system/setting"),_("Setting"),1)
 		entry({"admin","system","clock_status"},call("action_clock_status"))
@@ -21,6 +21,9 @@ function index()
 		entry({"admin", "system", "cloud"},cbi("admin_system/cloud"),_("Cloud Server"),14)
 		entry({"admin","system","get_ap_list"},call("wifi_list"))
 		entry({"admin","system","upgrade_progress"},call("get_upgrade_progress"))
+		entry({"admin","system","reboot"},call("action_reboot"),_("Reboot"),20)
+	elseif luci.http.getenv("SERVER_PORT") == 80 then
+		entry({"admin","system"})
 		entry({"admin","system","reboot"},call("action_reboot"),_("Reboot"),20)
 	end
 end
@@ -946,7 +949,7 @@ function ld_verify(srcfilename,ld_type,logfile)
 				local s = con:api("gsm dump 1"):getBody()
 				local module_status = s and s:match("dev_state%s*=%s*DEV_([a-zA-Z0-9_]+)")
 				if module_status and (module_status == "READY" or module_status == "FAULT") then
-					local gsm_ver = s and s:match("\nversion%s*=%s*([0-9A-Z]+)") or luci.i18n.translate("Unknown")
+					local gsm_ver = s and s:match("\nversion%s*=%s*([0-9A-Z]+)") or "Unknown"
 					local device_gsm_module=string.sub(gsm_ver,1,4)
 					con:disconnect()
 					if "Unknown" == gsm_ver or device_gsm_module == upload_submodule then

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+cp /tmp/firmware_upgrading_temp/oem/etc/config/* /etc/config/
+cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
+cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -rf
+cp /tmp/firmware_upgrading_temp/oem/icons /www/luci-static/resources/ -rf
+
+uci set lucid.http.address=80
+uci add_list lucid.http.address=8345
+uci add_list lucid.http.address=8848
+uci set system.main.zonename=Asia/Beijing
+uci set system.main.timezone=CST-8
+uci set system.main.hostname=dchy
+uci set network.wan.hostname=dchy
+uci set network.lan.hostname=dchy
+uci commit lucid
+uci commit system
+uci commit network
+
+/etc/init.d/firewall restart >/dev/null 2>&1
+/etc/init.d/lucid restart >/dev/null 2>&1

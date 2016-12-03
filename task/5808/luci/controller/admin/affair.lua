@@ -1,10 +1,10 @@
-module("luci.controller.admin.status1",package.seeall)
+module("luci.controller.admin.affair",package.seeall)
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 8345 or luci.http.getenv("SERVER_PORT") == 8848 then
-		entry({"admin","status1"},alias("admin","status1","overview"),"状态",81).index = true
-		--entry({"admin","status1","overview"},call("action_overview"),"总览",10).leaf = true
-		entry({"admin","status1","overview"},template("admin_status1/index_empty"),"总览",11).leaf = true
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
+		--entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
+		entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
 	end
 end
 
@@ -15,11 +15,26 @@ function action_overview()
 	local uci = require "luci.model.uci".cursor()
 
 	local net_info = {}
-	local str = util.exec("ifconfig eth0.2 | grep 'RX bytes'")
+	local str 
 	net_info.access_mode = uci:get("network_tmp","network","access_mode") or "未知"
+	if net_info.access_mode == "wlan_dhcp" or net_info.access_mode == "wlan_static" then
+		str = util.exec("ifconfig ra0 | grep 'RX bytes'")
+	else
+		str = util.exec("ifconfig eth0.2 | grep 'RX bytes'")
+	end
 	net_info.ipaddr,net_info.netmask,net_info.gateway,net_info.dns =  ubus_get_addr("wan")
 	net_info.rx = str:match("RX bytes:(%d+)") or "0"
 	net_info.tx = str:match("TX bytes:(%d+)") or "0"
+
+	local wifi_info = {}
+	wifi_info.mode = uci:get("wireless","wifi0","mode") or ""
+	if wifi_info.mode == "sta" then
+		local tmp_str = util.exec("iwpriv ra0 connStatus")
+		wifi_info.status = tmp_str
+	else
+		wifi_info.status = uci:get("wireless","wifi0","disabled") or "0"
+		wifi_info.ssid = uci:get("wireless","wifi0","ssid") or ""
+	end
 
 	local siptrunk_info = {}
 	local tmp_tb = uci:get_all("endpoint_siptrunk") or {}
@@ -74,7 +89,7 @@ function action_overview()
 	end
 
 	local sim_info = {}
-	local tmp_tb = uci:get_all("endpoint_mobile") of {}
+	local tmp_tb = uci:get_all("endpoint_mobile") or {}
 	if next(tmp_tb) then
 		for k,v in pairs(tmp_tb) do
 			if v.slot == "1-GSM" then
@@ -92,8 +107,8 @@ function action_overview()
 		end
 	end
 	if section then
-		sim_info.e = uci:get("endpoint_mobile",section,status)
-		sim_info.slot = uci:get("endpoint_mobile",section,slot)
+		sim_info.e = uci:get("endpoint_mobile",section,"status")
+		sim_info.slot = uci:get("endpoint_mobile",section,"slot")
 		if sim_info.e == "Enabled" then
 			local ret_tb = sqlite.sqlite3_execute("/tmp/fsdb/core.db","select * from pstn")
 		end
@@ -112,7 +127,7 @@ function action_overview()
 
 		return
 	else
-		luci.template.render("admin_status1/index",{
+		luci.template.render("admin_affair/index",{
 			net_info = net_info,
 			siptrunk_info = siptrunk_info,
 			ddns_info = ddns_info,

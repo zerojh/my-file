@@ -59,8 +59,11 @@ function action_apply()
 	local uci = luci.model.uci.cursor()
 	local changes = uci:changes()
 	local fs = require "nixio.fs"
+	local util = require "luci.util"
 	local reload = {}
 	local luascripts = require "luci.scripts.luci_load_scripts"
+	local drv_str = util.exec("lsmod | sed -n '/^rt2x00/p;/^rt2860v2_ap/p;/^rt2860v2_sta/p;'")
+	drv_str = drv_str:match("(rt2860v2_ap)") or drv_str:match("(rt2860v2_sta)") or drv_str:match("(rt2x00)") or ""
 
 	for r,tbl in pairs(changes) do
 		--@ check unuseful and delete
@@ -241,6 +244,9 @@ function action_apply()
 		elseif "profile_time" == r or "profile_number" == r or "profile_manipl" == r or "route" == r then
 			apply_param.extension = "on"
 			apply_param.route = "on"
+		elseif "profile_numberlearning" == r then
+			apply_param.mobile = "on"
+			apply_param.smsroute = "on"
 		elseif "provision" == r then
 			apply_param.provision = "on"
 		elseif "callcontrol" == r then
@@ -301,9 +307,10 @@ function action_apply()
 				apply_param.dns = "on"
 			end
 			
-			if uci:get("wireless","wifi0","mode") ~= "sta" and (tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask) then
+			if drv_str ~= "rt2860v2_sta" and (tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask) then
 				os.execute("echo network >>/tmp/require_reboot")
-			else
+			end
+			if drv_str == "rt2860v2_sta" and uci:get("wireless","wifi0","mode") == "sta" then
 				apply_param.network_restart = "on"
 			end
 		elseif "network" == r then

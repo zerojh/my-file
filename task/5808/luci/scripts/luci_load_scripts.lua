@@ -1335,13 +1335,14 @@ function refresh_wireless_config()
 
 	if wifi_mode == "sta" then
 		uci:set("wireless","ra0","wps","off")
-		uci:set("wireless","ra0","wds_mode","disable")
+		uci:set("wireless","ra0","wdsmode","disable")
 		uci:set("wireless","ra0","channel","auto")
 		for k,v in pairs(wireless_tb) do
 			if v[".type"] == "wifi-iface" and v.ifname and v.ifname ~= "ra0" then
 				uci:set("wireless",k,"disabled","1")
 			end
 		end
+		uci:commit("wireless")
 	elseif wifi_mode == "ap" then
 		for k,v in pairs(wireless_tb) do
 			if v[".type"] == "wifi-device" then
@@ -1492,18 +1493,16 @@ function load_scripts(param)
 		fs.writefile("/tmp/fs-apply-status","Applying="..applyed_list)
 		ret = config_network()
 		--@ check reload
-		if not fs.access("/tmp/require_reboot") and param.network then
+		if not fs.access("/tmp/require_reboot") and param.network and not param.network_restart then
 			exe("/etc/init.d/network reload")
+		elseif param.network_restart then
+			exe("/etc/init.d/network restart")
 		end
 
 		if not ret then
 			flag = true
 			err = add_to_list(err, "Network")
 		end
-	end
-
-	if param.network_restart then
-		exe("/etc/init.d/network restart")
 	end
 
 	if param.log then

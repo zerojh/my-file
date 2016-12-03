@@ -9,7 +9,7 @@
 	end
 
 	if luci.http.formvalue("exit") then
-		luci.http.redirect(dsp.build_url("admin","status1","overview"))
+		luci.http.redirect(dsp.build_url("admin","affair","overview"))
 		return
 	elseif luci.http.formvalue("continue") then
 		local action = luci.http.formvalue("config")

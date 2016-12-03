@@ -5435,8 +5435,5 @@ msgstr "信号强度"
 msgid "Source MAC"
 msgstr "源MAC地址"
 
-msgid "Gateway must be in the same subnet with WLAN IP address"
-msgstr "网关必须与WLAN口IP地址在同一个子网内"
-
 msgid "Wireless Work Mode changes need to take effect after reboot !"
 msgstr "无线工作模式修改需要重启后生效 !"
