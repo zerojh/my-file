@@ -16,8 +16,8 @@ option.default = "0"
 option:value("1",translate("Disable"))
 option:value("0",translate("Enable"))
 function option.validate(self, value)
+	m.uci:set("wireless","ra0","disabled","0")
 	if value then
-		m.uci:set("wireless","ra0","disabled",value)
 		return Value.validate(self, value)
 	else
 		return ""

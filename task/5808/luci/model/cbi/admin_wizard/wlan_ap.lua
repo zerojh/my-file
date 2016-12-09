@@ -11,7 +11,11 @@ m = Map("wireless","无线热点")
 m.pageaction = false
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","sim")
+	if true then
+		m.redirect = dsp.build_url("admin","wizard","siptrunk")
+	else
+		m.redirect = dsp.build_url("admin","wizard","sim")
+	end
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","ap","1")
@@ -43,8 +47,12 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self, value)
-	m.uci:set("wireless","ra0","disabled",value)
-	return Value.validate(self, value)
+	m.uci:set("wireless","ra0","disabled","0")
+	if value then
+		return Value.validate(self, value)
+	else
+		return ""
+	end
 end
 
 --#### SSID ####----

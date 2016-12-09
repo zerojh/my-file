@@ -664,6 +664,8 @@ function config_network()
 			if drv_str == "rt2860v2_ap" or drv_str == "rt2860v2_sta" then
 				uci:set("network","lan","ifname","eth0.1 eth0.2")
 				uci:set("network","wan","ifname","ra0")
+				uci:set("wireless","ra0","disabled","0")
+				uci:set("wireless","wifi0","disabled","0")
 				uci:set("wireless","wifi0","network","wan")
 				uci:set("wireless","wifi0","mode","sta")
 				uci:set("wireless","wifi0","network","wan")
@@ -924,6 +926,8 @@ function config_firewall()
 		local enabled_https
 		local enabled_telnet
 		local enabled_ssh
+		local enabled_8345
+		local enabled_8848
 		local default_action 
 		
 		local rule_http_sec
@@ -941,6 +945,11 @@ function config_firewall()
 		local redirect_rtp_sec
 		local redirect_sip_sec_tb = {}
 		local rule_section_tb = {}
+
+		local rule_8345_sec
+		local rule_8848_sec
+		local redirect_8345_sec
+		local redirect_8848_sec
 		
 		for k,v in pairs(firewall_cfg) do
 			if v['.type'] == "defaults" then
@@ -949,6 +958,8 @@ function config_firewall()
 				enabled_https = v.enabled_https or "0"
 				enabled_ssh = v.enabled_ssh or "0"
 				enabled_telnet = v.enabled_telnet or "0"
+				enabled_8345 = v.enabled_8345 or "0"
+				enabled_8848 = v.enabled_8848 or "0"
 			elseif v['.type'] == "zone" and v.name == "lan" then
 				default_action = v.lan_forward or v.forward or "ACCEPT"
 				uci:set("firewall",k,"forward",default_action)
@@ -966,6 +977,10 @@ function config_firewall()
 				rule_telnet_sec = k
 			elseif v['.type'] == "rule" and v.name == "Allow-RTP" then
 				rule_rtp_sec = k
+			elseif v['.type'] == "rule" and v.name == "Allow-8345" then
+				rule_8345_sec = k
+			elseif v['.type'] == "rule" and v.name == "Allow-8848" then
+				rule_8848_sec = k
 			elseif v['.type'] == "redirect" and v.name == "Allow-SIP" then
 				table.insert(redirect_sip_sec_tb,k)
 			elseif v['.type'] == "redirect" and v.name == "Allow-http" then
@@ -978,6 +993,10 @@ function config_firewall()
 				redirect_telnet_sec = k
 			elseif v['.type'] == "redirect" and v.name == "Allow-RTP" then
 				redirect_rtp_sec = k
+			elseif v['.type'] == "redirect" and v.name == "Allow-8345" then
+				redirect_8345_sec = k
+			elseif v['.type'] == "redirect" and v.name == "Allow-8848" then
+				redirect_8848_sec = k
 			elseif v['.type'] == "rule" and v.index and v.name then
 				table.insert(rule_section_tb,k)
 			elseif v['.type'] == "rule" and not v.name then
@@ -1161,6 +1180,27 @@ function config_firewall()
 
 			uci:delete("firewall","dmz")
 			uci:section("firewall","redirect","dmz",{name="DMZ",src="wan",proto="tcp udp",dest_ip=dmz_ip,enabled="1"})
+		end
+
+		--@8345
+		if enabled_8345 == "1" and rule_8345_sec and redirect_8345_sec then
+			uci:set("firewall",rule_8345_sec,"enabled","1")
+			uci:set("firewall",rule_8345_sec,"target","ACCEPT")
+			uci:set("firewall",redirect_8345_sec,"enabled","1")
+		elseif rule_8345_sec and redirect_8345_sec then
+			uci:set("firewall",rule_8345_sec,"enabled","1")
+			uci:set("firewall",rule_8345_sec,"target","REJECT")
+			uci:set("firewall",redirect_8345_sec,"enabled","1")
+		end
+		--@8848
+		if enabled_8848 == "1" and rule_8848_sec and redirect_8848_sec then
+			uci:set("firewall",rule_8848_sec,"enabled","1")
+			uci:set("firewall",rule_8848_sec,"target","ACCEPT")
+			uci:set("firewall",redirect_8848_sec,"enabled","1")
+		elseif rule_8848_sec and redirect_8848_sec then
+			uci:set("firewall",rule_8848_sec,"enabled","1")
+			uci:set("firewall",rule_8848_sec,"target","REJECT")
+			uci:set("firewall",redirect_8848_sec,"enabled","1")
 		end
 		
 		uci:commit("firewall")

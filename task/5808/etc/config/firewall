@@ -58,7 +58,7 @@ config redirect
 config redirect
 	option name		'Allow-ssh' 
 	option src		'wan'
-	option src_dport '2'
+	option src_dport '22'
 	option dest_port '22'
 	option enabled	'1'
 # WAN telnet

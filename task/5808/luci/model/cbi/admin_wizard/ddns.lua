@@ -37,7 +37,11 @@ if luci.http.formvalue("cbi.cancel") then
 	if uci:get("wireless","wifi0","mode") ~= "sta" then
 		m.redirect = dsp.build_url("admin","wizard","ap")
 	else
-		m.redirect = dsp.build_url("admin","wizard","ddns")
+		if true then
+			m.redirect = dsp.build_url("admin","wizard","siptrunk")
+		else
+			m.redirect = dsp.build_url("admin","wizard","sim")
+		end
 	end
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"

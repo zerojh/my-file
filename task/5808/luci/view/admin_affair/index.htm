@@ -1,10 +1,33 @@
 <%+header%>
 
+<script language=javascript type="text/javascript" src="/luci-static/resources/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="<%=resource_cbi_js%>"></script>
 <script type="text/javascript">
-var refresh_interval = 3
-var rx = <%=net_info.rx%>
-var tx = <%=net_info.tx%>
+var refresh_interval = 3;
+var wifi_info = new Object();
+<% if wifi_info.status then -%>
+wifi_info.status = '<%=wifi_info.status%>';
+<% end
+	if wifi_info.mode then -%>
+wifi_info.mode = '<%=wifi_info.mode%>';
+<% end
+	if wifi_info.ssid then -%>
+wifi_info.ssid = '<%=wifi_info.ssid%>';
+<% end
+	if wifi_info.signal then -%>
+wifi_info.signal = '<%=wifi_info.signal%>';
+<% end
+	if wifi_info.mac_addr then -%>
+wifi_info.mac_addr = '<%=wifi_info.mac_addr%>';
+<% end
+	if wifi_info.channel then -%>
+wifi_info.channel = '<%=wifi_info.channel%>';
+<% end
+	if wifi_info.enc then -%>
+wifi_info.enc = '<%=wifi_info.enc%>';
+<%- end %>
+var rx = <%=net_info.rx%>;
+var tx = <%=net_info.tx%>;
 
 function refresh_net_stat(net_info)
 {
@@ -29,7 +52,8 @@ function refresh_net_stat(net_info)
 	else
 		tx_str += String.format('%.2f MB',tx_bytes_persec/(1024*1024));
 
-	document.getElementById("net.rtx").innerHTML = rx_str + " / " + tx_str
+	document.getElementById("net.rtx_rate").innerHTML = rx_str + " / " + tx_str
+	document.getElementById("net.rtx_total").innerHTML = String.format("%.2mB / %.2mB",rx,tx)
 	document.getElementById("net.ipaddr").innerHTML = net_info.ipaddr;
 	document.getElementById("net.netmask").innerHTML = net_info.netmask;
 	document.getElementById("net.gateway").innerHTML = net_info.gateway;
@@ -69,7 +93,17 @@ function refresh_siptrunk_stat(siptrunk_info)
 
 function refresh_ddns_stat(ddns_info)
 {
-	document.getElementById("ddns.status").innerHTML = ddns_info.status
+	var status_id = document.getElementById("ddns.status");
+	var content_id = document.getElementById("popover-content");
+	document.getElementById("ddns.enable").innerHTML = ddns_info.enable;
+	if (ddns_info.enable == "已开启") {
+		status_id.style.display = "";
+		$('#popover-content').html(ddns_info.status)
+	} else {
+		status_id.style.display = "none";
+		$('#popover-content').hide()
+		$('#popover-content').html('')
+	}
 	document.getElementById("ddns.domain").innerHTML = ddns_info.domain
 }
 
@@ -94,32 +128,120 @@ function refresh_vpn_stat(vpn_info)
 	else if (!vpn_info.openvpn_s)
 		document.getElementById("vpn.openvpn").innerHTML = "连接失败";
 	else
-		document.getElementById("vpn.openvpn").innerHTML = "连接成功"
+		document.getElementById("vpn.openvpn").innerHTML = "连接成功";
 }
 
+function change_signal_view(id,val)
+{
+	var sig_id = document.getElementById(id)
+	var signal = Number(val)
+
+	if (signal > 0 && signal <= 20)
+		sig_id.src = "/luci-static/resources/signal1.png"
+	else if (signal >= 21 && signal <= 40)
+		sig_id.src = "/luci-static/resources/signal2.png"
+	else if (signal >= 41 && signal <= 60)
+		sig_id.src = "/luci-static/resources/signal3.png"
+	else if (signal >= 61 && signal <= 80)
+		sig_id.src = "/luci-static/resources/signal4.png"
+	else if (signal >= 81 && signal <= 100)
+		sig_id.src = "/luci-static/resources/signal5.png"
+	else
+		sig_id.src = "/luci-static/resources/signal0.png"
+}
 function refresh_wireless_stat(wifi_info)
 {
+	var status_id = document.getElementById("wireless.status");
+	var mode_id = document.getElementById("wireless.mode");
+	var ssid_id = document.getElementById("wireless.ssid");
+	var enc_id = document.getElementById("wireless.encryption");
+	var mac_id = document.getElementById("wireless.macaddr");
+	var chan_id = document.getElementById("wireless.channel");
+	var sig_id = document.getElementById("wifi-signal");
 
+	ssid_id.innerHTML = wifi_info.ssid;
+	mac_id.innerHTML = wifi_info.mac_addr;
+	chan_id.innerHTML = wifi_info.channel;
+	if (wifi_info.enc == "psk")
+		enc_id.innerHTML = "WPA+PSK";
+	else if (wifi_info.enc == "psk2")
+		enc_id.innerHTML = "WPA2+PSK";
+	else
+		enc_id.innerHTML = "NONE";
+
+	if (wifi_info.mode == "sta") {
+		if (wifi_info.status == "Connected")
+			status_id.innerHTML = "连接成功";
+		else
+			status_id.innerHTML = "连接失败";
+		mode_id.innerHTML = "客户端模式";
+		sig_id.style.display = "";
+		change_signal_view("wireless.signal",wifi_info.signal);
+	} else {
+		if (wifi_info.status == "0")
+			status_id.innerHTML = "已启用";
+		else
+			status_id.innerHTML = "已禁用";
+		mode_id.innerHTML = "接入点模式"
+		sig_id.style.display = "none";
+	}
 }
 
 function refresh_sim_stat(sim_info)
 {
+	var status_id = document.getElementById("sim.status");
+	var num_id = document.getElementById("sim.number");
+	var car_id = document.getElementById("sim.carrier");
+
+	if (sim_info.status == "no_device")
+		status_id.innerHTML = "无SIM模块";
+	else if (sim_info.status == "no_card")
+		status_id.innerHTML = "无SIM卡";
+	else if (sim_info.status == "not_registered")
+		status_id.innerHTML = "未注册";
+	else if (sim_info.status == "registered")
+		status_id.innerHTML = "已注册";
+
+	num_id.innerHTML = sim_info.number;
+
+	if (sim_info.carrier == "CHINA MOBILE")
+		car_id.innerHTML = "中国移动";
+	else if (sim_info.carrier == "CHINA UNICOM")
+		car_id.innerHTML = "中国联通";
+	else
+		car_id.innerHTML = "未知";
+	change_signal_view("sim.signal",Number(sim_info.signal)*20)
 }
 
 XHR.poll(refresh_interval, '<%=REQUEST_URI%>', {status:1},function(x, info){
-	refresh_net_stat(info.net_info)
-	refresh_wireless(info.wifi_info)
-	refresh_siptrunk_stat(info.siptrunk_info)
-	refresh_ddns_stat(info.ddns_info)
-	refresh_vpn_stat(info.vpn_info)
+	if (info.net_info)
+		refresh_net_stat(info.net_info)
+	if (info.wifi_info)
+		refresh_wireless_stat(info.wifi_info)
+	if (info.siptrunk_info)
+		refresh_siptrunk_stat(info.siptrunk_info)
+	if (info.ddns_info)
+		refresh_ddns_stat(info.ddns_info)
+	if (info.vpn_info)
+		refresh_vpn_stat(info.vpn_info)
+	if (info.sim_info)
+		refresh_sim_stat(info.sim_info)
 })
-window.onload = function() {
+$(document).ready(function() {
 	translate_access_mode('<%=net_info.access_mode%>')
-}
+	refresh_wireless_stat(wifi_info)
+	$('#ddns\\.status').mouseover(function(e) {
+		$("#popover-content").show()
+		$("#popover-content").offset({top:$(this).offset().top+30,left:$(this).offset().left-50})
+	})
+	$('#ddns\\.status').mouseout(function(e) {
+		$("#popover-content").hide()
+	})
+})
 </script>
 
 
-<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:240px;">
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:245px;">
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>网络连接情况</legend>
 	<table width="100%" cellspacing="10" class="info">
@@ -128,19 +250,22 @@ window.onload = function() {
 		<tr><td>子网掩码</td><td id="net.netmask"><%=net_info.netmask%></td></tr>
 		<tr><td>网关</td><td id="net.gateway"><%=net_info.gateway%></td></tr>
 		<tr><td>DNS服务器</td><td id="net.dns"><%=net_info.dns%></td></tr>
-		<tr><td>接收/发送速率(每秒)</td><td id="net.rtx">0 / 0</td></tr>
-		<tr><td>WIFI信号强度</td><td id="wifi">-</td></tr>
+		<tr><td>接收 / 发送(每秒)</td><td id="net.rtx_rate"></td></tr>
+		<tr><td>接收 / 发送(总计)</td><td id="net.rtx_total"></td></tr>
 	</table>
 </fieldset>
 </div>
-<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:240px;">
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:245px;">
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>无线情况</legend>
 	<table width="100%" cellspacing="10" class="info">
 		<tr><td width="30%">状态</td><td id="wireless.status"></td></tr>
 		<tr><td>模式</td><td id="wireless.mode"></td></tr>
 		<tr><td>SSID</td><td id="wireless.ssid"></td></tr>
-		<tr id="wifi-signal"><td>信号强度</td><td id="wireless.signal"></td></tr>
+		<tr><td>加密方式</td><td id="wireless.encryption"></td></tr>
+		<tr><td>MAC地址</td><td id="wireless.macaddr"></td></tr>
+		<tr><td>信道</td><td id="wireless.channel"></td></tr>
+		<tr id="wifi-signal" style="display:none;"><td>信号强度</td><td><img id="wireless.signal" style="margin-left:-8px;"></td></tr>
 	</table>
 </fieldset>
 </div>
@@ -157,7 +282,7 @@ window.onload = function() {
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>动态域名服务</legend>
 	<table width="100%" cellspacing="10" class="info">
-		<tr><td width="30%">状态</td><td id="ddns.status">-</td></tr>
+		<tr><td width="30%">状态</td><td><label id="ddns.enable"></label><img id="ddns.status" style="display:none;width:17px;margin-left:5px;margin-top:-4px;" src="/luci-static/resources/icons/info.png"></div></td></tr>
 		<tr><td>域名</td><td id="ddns.domain"><%=ddns_info.domain%></td></tr>
 	</table>
 </fieldset>
@@ -172,17 +297,17 @@ window.onload = function() {
 	</table>
 </fieldset>
 </div>
-<div style="position:relative;left:10px;top:4px;width:480px;float:left;height:190px;">
+<div style="position:relative;left:10px;top:10px;width:480px;float:left;height:190px;">
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>SIM卡</legend>
 	<table width="100%" cellspacing="10" class="info">
-		<tr><td width="30%">状态</td><td id="sim.status">-</td></tr>
-		<tr><td>号码</td><td id="sim.number">-</td></tr>
-		<tr><td>运营商</td><td id="sim.operator">-</td></tr>
-		<tr><td>网络类型</td><td id="sim.type">-</td></tr>
-		<tr><td>信号强度</td><td id="sim.signal">-</td></tr>
+		<tr><td width="30%">状态</td><td id="sim.status"></td></tr>
+		<tr><td>号码</td><td id="sim.number"></td></tr>
+		<tr><td>运营商</td><td id="sim.carrier"></td></tr>
+		<tr><td>信号强度</td><td><img id="sim.signal" style="margin-left:-8px;"></td></tr>
 	</table>
 </fieldset>
 </div>
+<span id="popover-content" style="display:none;color:#a04112;background:#feffc6;padding:5px;"></span>
 
 <%+footer%>

@@ -11,7 +11,7 @@ function index()
 		entry({"admin","detailset","network"},cbi("admin_detailset/net_access"),"上网设置",10).leaf = true
 		entry({"admin","detailset","wifilist"},call("action_get_wireless"))
 		entry({"admin","detailset","siptrunk"},cbi("admin_detailset/siptrunk"),"通讯调度平台",20).leaf = true
-		entry({"admin","detailset","sim"},cbi("admin_detailset/sim"),"SIM卡",30).leaf = true
+		--entry({"admin","detailset","sim"},cbi("admin_detailset/sim"),"SIM卡",30).leaf = true
 		if uci:get("wireless","wifi0","mode") ~= "sta" then
 			entry({"admin","detailset","ap"},cbi("admin_detailset/wlan_ap"),"无线热点",40).leaf = true
 		end

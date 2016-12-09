@@ -16,10 +16,6 @@ m:chain("firewall")
 m:chain("wireless")
 m.pageaction = false
 
-if luci.http.formvalue("cbi.save") then
-	m.redirect = dsp.build_url(REQUEST_URI)
-end
-
 if luci.http.formvalue("cbi.cancel") then
 	m.redirect = dsp.build_url("admin","wizard")
 elseif luci.http.formvalue("cbi.save") then
