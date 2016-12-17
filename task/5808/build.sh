@@ -820,9 +820,9 @@
 
 			#准备安装脚本
 cat >>$tmpctrl/postinst << EOF 
-cp $firmware_upgrading_temp_dir/oem /etc/config/oem
-if [ -f $firmware_upgrading_temp_dir/${brand}_logo.png ]; then
-	cp $firmware_upgrading_temp_dir/${brand}_logo.png /www/luci-static/resources/
+cp $firmware_upgrading_temp_dir/oem/oem /etc/config/oem
+if [ -f $firmware_upgrading_temp_dir/oem/${brand}_logo.png ]; then
+	cp $firmware_upgrading_temp_dir/oem/${brand}_logo.png /www/luci-static/resources/
 fi
 sed -i '/^\/tmp\//d' /usr/lib/opkg/info/oem.list
 hostname_str=\`uci get oem.$brand.hostname -q\`
@@ -878,7 +878,7 @@ EOF
 				cp -r www/* $tmpwww
 				cp -r etc/* $tmpconf
 	
-				if [ -z ${brand} ]; then
+				#if [ -z ${brand} ]; then
 					if [ "cn" == ${lang} ]; then
 						sed -i "s/option 'lang' 'en'/option 'lang' 'cn'/g" $tmpconf/config/oem
 						sed -i "s/option 'timezone' 'GMT0'/option 'timezone' 'CST-8'/g" $tmpconf/config/oem
@@ -887,7 +887,7 @@ EOF
 					if [ "1." == ${version:0:2} ]; then
 						sed -i "s/option 'brand' 'dinstar'/option 'brand' 'unknown'/g" $tmpconf/config/oem
 					fi
-				fi
+				#fi
 
 				build_opkg_package $tmpname $curpwd
 

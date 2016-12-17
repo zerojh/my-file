@@ -83,14 +83,14 @@ function o.parse(self,section,value)
 	m.uci:set("firewall","defaults","enabled_8345",value or "0")
 end
 
-o = s:option(Flag,"enable_8848","允许WAN口访问8848端口")
-function o.cfgvalue(...)
-	return m.uci:get("firewall","defaults","enabled_8848") or "0"
-end
-function o.parse(self,section,value)
-	local value = m:formvalue("cbid.lucid.main.enable_8848")
-	m.uci:set("firewall","defaults","enabled_8848",value or "0")
-end
+--o = s:option(Flag,"enable_8848","允许WAN口访问8848端口")
+--function o.cfgvalue(...)
+--	return m.uci:get("firewall","defaults","enabled_8848") or "0"
+--end
+--function o.parse(self,section,value)
+--	local value = m:formvalue("cbid.lucid.main.enable_8848")
+--	m.uci:set("firewall","defaults","enabled_8848",value or "0")
+--end
 
 s = m:section(NamedSection,"main","lucid",translate("Telnet"))
 s.anonymous = true

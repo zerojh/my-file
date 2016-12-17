@@ -94,7 +94,7 @@ for k,v in pairs(sip_cfg) do
 	add_param_name_value(settings,"extension-in-contact","true")
 	add_param_name_value(settings,"aggressive-nat-detection","true")
     add_param_name_value(settings,"manual-redirect","true")
-    
+
 	local addr = "interface:ipv4/br-lan"
 	if uci:get("network","wan") then
 		if "pppoe" == uci:get("network","wan","proto") then

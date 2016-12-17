@@ -1,5 +1,6 @@
 module("luci.controller.admin.wizard",package.seeall)
 
+local fs = require "luci.fs"
 local fs_server = require "luci.scripts.fs_server"
 local util = require "luci.util"
 local ds = require "luci.dispatcher"
@@ -48,6 +49,16 @@ function action_openvpn()
 	local destfile = "/tmp/my-vpn.conf.latest"
 	local flag = uci_tmp:get("wizard","globals","openvpn") or "1"
 
+	if not fs.access("/etc/config/vpnselect") then
+		util.exec("touch /etc/config/vpnselect")
+	end
+
+	if not uci:get("vpnselect","vpnselect") then
+		uci:section("vpnselect","select","vpnselect")
+		uci:save("vpnselect")
+		uci:commit("vpnselect")
+	end
+
 	local fp
 	luci.http.setfilehandler(
 		function(meta, chunk, eof)
@@ -68,14 +79,30 @@ function action_openvpn()
 
 	if luci.http.formvalue("save") then
 		local status = luci.http.formvalue("status")
+		local profile_wan_section
+		local tmp_tb = uci:get_all("profile_sip") or {}
+		if next(tmp_tb) then
+			for k,v in pairs(tmp_tb) do
+				if v.index and v.index == "2" then
+					profile_wan_section = k
+				end
+			end
+		end
+
 		if status and  status == "1" then
 			uci:set("xl2tpd","main","enabled","0")
 			uci:set("pptpc","main","enabled","0")
 			uci:set("openvpn","custom_config","enabled","1")
-			uci_tmp:set("wizard","globals","vpntype","openvpn")
-			uci_tmp:delete("wizard","globals","vpnread")
+			uci:set("vpnselect","vpnselect","vpntype","openvpn")
+			if profile_wan_section then
+				uci:set("profile_sip",profile_wan_section,"localinterface","OpenVPN")
+			end
 		else
 			uci:set("openvpn","custom_config","enabled","0")
+			uci:set("vpnselect","vpnselect","vpntype","disabled")
+			if profile_wan_section then
+				uci:set("profile_sip",profile_wan_section,"localinterface","WAN")
+			end
 		end
 
 		local key = luci.http.formvalue("key")
@@ -90,6 +117,8 @@ function action_openvpn()
 		uci:save("openvpn")
 		uci:save("xl2tpd")
 		uci:save("pptpc")
+		uci:save("profile_sip")
+		uci:save("vpnselect")
 		uci_tmp:set("wizard","globals","openvpn","1")
 		uci_tmp:save("wizard")
 		uci_tmp:commit("wizard")

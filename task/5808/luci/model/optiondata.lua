@@ -1253,6 +1253,15 @@ local config = {
 		["wdskey"]="Password",
 		["wdsphymode"]="Physical Mode",
 	},
+	["vpnselect"] = {
+		["vpntype"]="VPN类型",
+		["__vpntype_value"]={
+			["disabled"]="已禁用",
+			["l2tp"]="L2TP",
+			["pptp"]="PPTP",
+			["openvpn"]="OpenVPN",
+		}
+	},
 }
 
 function translate_multi_value(value)
@@ -1490,6 +1499,8 @@ function get_config_name(cfg_name,section)
 					return "TR069"
 				elseif "wireless" == cfg_name then
 					return "WLAN / "..translate("wifi-device"==v[".type"] and "General" or "SSID")
+				elseif "vpnselect" == cfg_name then
+					return "VPN客户端选择"
 				elseif v.name then
 					return translate((config_file[cfg_name] or cfg_name or "unknown")).." / "..v.name
 				else

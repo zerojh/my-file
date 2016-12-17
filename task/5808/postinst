@@ -1,22 +1,65 @@
 #!/bin/sh
 
+cp /tmp/firmware_upgrading_temp/oem/etc/config/* /usr/lib/lua/luci/scripts/default_config/
 cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
 cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -rf
 cp /tmp/firmware_upgrading_temp/oem/icons /www/luci-static/resources/ -rf
 
+uci set lucid.http.address=80
+uci add_list lucid.http.address=8345
+uci add_list lucid.http.address=8848
+uci commit lucid
+
 if [ -f "/usr/lib/lua/luci/controller/mini/index.lua" ]; then
 	cp /tmp/firmware_upgrading_temp/oem/etc/config/* /etc/config/
-	uci set lucid.http.address=80
-	uci add_list lucid.http.address=8345
-	uci add_list lucid.http.address=8848
 	uci set system.main.zonename=Asia/Beijing
 	uci set system.main.timezone=CST-8
-	uci set system.main.hostname=dchy
-	uci set network.wan.hostname=dchy
-	uci set network.lan.hostname=dchy
-	uci commit lucid
 	uci commit system
-	uci commit network
+else
+	uci set firewall.defaults.enabled_8345=1
+	uci set firewall.defaults.enabled_8848=0
+
+	uci delete firewall.redirecta -q
+	section=`uci add firewall redirect`
+	section_name="redirecta"
+	uci set firewall.${section}.name='Allow-8345'
+	uci set firewall.${section}.src='wan'
+	uci set firewall.${section}.src_dport='8345'
+	uci set firewall.${section}.dest_port='8345'
+	uci set firewall.${section}.enabled='1'
+	uci rename firewall.${section}=${section_name}
+
+	uci delete firewall.rulea -q
+	section=`uci add firewall rule`
+	section_name="rulea"
+	uci set firewall.${section}.name='Allow-8345'
+	uci set firewall.${section}.src='wan'
+	uci set firewall.${section}.dest_port='8345'
+	uci set firewall.${section}.target='ACCEPT'
+	uci set firewall.${section}.enabled='1'
+	uci rename firewall.${section}=${section_name}
+
+	uci delete firewall.redirectb -q
+	section=`uci add firewall redirect`
+	section_name="redirectb"
+	uci set firewall.${section}.name='Allow-8848'
+	uci set firewall.${section}.src='wan'
+	uci set firewall.${section}.src_dport='8848'
+	uci set firewall.${section}.dest_port='8848'
+	uci set firewall.${section}.enabled='1'
+	uci rename firewall.${section}=${section_name}
+
+	uci delete firewall.ruleb -q
+	section=`uci add firewall rule`
+	section_name="ruleb"
+	uci set firewall.${section}.name='Allow-8848'
+	uci set firewall.${section}.src='wan'
+	uci set firewall.${section}.dest_port='8848'
+	uci set firewall.${section}.target='ACCEPT'
+	uci set firewall.${section}.enabled='1'
+	uci rename firewall.${section}=${section_name}
+
+	uci commit firewall
 fi
 
 /etc/init.d/firewall restart >/dev/null 2>&1

@@ -25,6 +25,8 @@ function index()
 	elseif luci.http.getenv("SERVER_PORT") == 80 then
 		entry({"admin","system"})
 		entry({"admin","system","reboot"},call("action_reboot"),_("Reboot"),20)
+		entry({"admin","system","backup_upgrade"},call("action_flashops"),_("Backup/Restore/Upgrade"),7)
+		entry({"admin","system","upgrade_progress"},call("get_upgrade_progress"))
 	end
 end
 function get_upgrade_progress()

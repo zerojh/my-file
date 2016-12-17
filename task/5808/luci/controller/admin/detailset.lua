@@ -1,5 +1,6 @@
 module("luci.controller.admin.detailset",package.seeall)
 
+local fs = require "luci.fs"
 local fs_server = require "luci.scripts.fs_server"
 local util = require "luci.util"
 
@@ -44,12 +45,20 @@ end
 
 function action_openvpn()
 	local sys = require "luci.sys"
-	local fs  = require "luci.fs"
 	local ds = require "luci.dispatcher"
 	local uci = require "luci.model.uci".cursor()
 	local uci_tmp  = require "luci.model.uci".cursor("/tmp/config")
-	local fs_server = require "luci.scripts.fs_server"
 	local destfile = "/tmp/my-vpn.conf.latest"
+
+	if not fs.access("/etc/config/vpnselect") then
+		util.exec("touch /etc/config/vpnselect")
+	end
+
+	if not uci:get("vpnselect","vpnselect") then
+		uci:section("vpnselect","select","vpnselect")
+		uci:save("vpnselect")
+		uci:commit("vpnselect")
+	end
 
 	local fp
 	luci.http.setfilehandler(
@@ -71,20 +80,36 @@ function action_openvpn()
 
 	local status = luci.http.formvalue("status")
 	if status then
+		local profile_wan_section
+		local tmp_tb = uci:get_all("profile_sip") or {}
+		if next(tmp_tb) then
+			for k,v in pairs(tmp_tb) do
+				if v.index and v.index == "2" then
+					profile_wan_section = k
+				end
+			end
+		end
+
 		if status == "1" then
 			uci:set("openvpn","custom_config","enabled","1")
 			uci:set("xl2tpd","main","enabled","0")
 			uci:set("pptpc","main","enabled","0")
-			uci_tmp:set("wizard","globals","vpntype","openvpn")
-			uci_tmp:delete("wizard","globals","vpnread")
-			uci_tmp:save("wizard")
-			uci_tmp:commit("wizard")
+			uci:set("vpnselect","vpnselect","vpntype","openvpn")
+			if profile_wan_section then
+				uci:set("profile_sip",profile_wan_section,"localinterface","OpenVPN")
+			end
 		else
 			uci:set("openvpn","custom_config","enabled","0")
+			uci:set("vpnselect","vpnselect","vpntype","disabled")
+			if profile_wan_section then
+				uci:set("profile_sip",profile_wan_section,"localinterface","WAN")
+			end
 		end
 		uci:save("openvpn")
 		uci:save("xl2tpd")
 		uci:save("pptpc")
+		uci:save("profile_sip")
+		uci:save("vpnselect")
 	end
 
 	local defaultroute = luci.http.formvalue("defaultroute")

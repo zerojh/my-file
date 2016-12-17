@@ -1,13 +1,35 @@
 local fs = require "nixio.fs"
-local ut = require "luci.util"
+local util = require "luci.util"
 local uci = require "luci.model.uci".cursor()
 local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
+
+if not fs.access("/etc/config/vpnselect") then
+	util.exec("touch /etc/config/vpnselect")
+end
+
+if not uci:get("vpnselect","vpnselect") then
+	uci:section("vpnselect","select","vpnselect")
+	uci:save("vpnselect")
+	uci:commit("vpnselect")
+end
 
 uci:check_cfg("xl2tpd")
 
 m = Map("xl2tpd",translate(""), translate(""))
 m:chain("pptpc")
 m:chain("openvpn")
+m:chain("profile_sip")
+m:chain("vpnselect")
+
+local profile_wan_section
+local tmp_tb = uci:get_all("profile_sip") or {}
+if next(tmp_tb) then
+	for k,v in pairs(tmp_tb) do
+		if v.index and v.index == "2" then
+			profile_wan_section = k
+		end
+	end
+end
 
 s = m:section(TypedSection,"l2tpc","")
 s.addremove = false
@@ -27,10 +49,15 @@ function status.validate(self, value)
 	if value == "1" then
 		m.uci:set("pptpc","main","enabled","0")
 		m.uci:set("openvpn","custom_config","enabled","0")
-		uci_tmp:set("wizard","globals","vpntype","l2tp")
-		uci_tmp:delete("wizard","globals","vpnread")
-		uci_tmp:save("wizard")
-		uci_tmp:commit("wizard")
+		m.uci:set("vpnselect","vpnselect","vpntype","l2tp")
+		if profile_wan_section then
+			m.uci:set("profile_sip",profile_wan_section,"localinterface","L2TP")
+		end
+	elseif value == "0" then
+		m.uci:set("vpnselect","vpnselect","vpntype","disabled")
+		if profile_wan_section then
+			m.uci:set("profile_sip",profile_wan_section,"localinterface","WAN")
+		end
 	end
 	return Value.validate(self, value)
 end

@@ -11,7 +11,7 @@ function index()
 		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
 		entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
 		--entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
-		entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务状态日志",11).leaf = true
+		--entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务状态日志",11).leaf = true
 		--entry({"admin","affair","get_service_log"},call("action_get_service_log"))
 	end
 end
@@ -86,6 +86,8 @@ function get_siptrunk_info()
 		local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/^Username/p;/^State/p' | tr '\n' '#'")
 		siptrunk_info.register = str:match("State%s+([%u_]+)") or ""
 		siptrunk_info.number = str:match("Username%s+(%d+)") or "-"
+	else
+		siptrunk_info.number = "未知"
 	end
 
 	return siptrunk_info
@@ -189,21 +191,20 @@ end
 
 function get_vpn_info()
 	local uci = require "luci.model.uci".cursor()
-	local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 	local vpn_info = {}
 	local log_str = ""
-	local vpn_type = uci_tmp:get("wizard","globals","vpnread")
 
-	if not fs.access("/tmp/config/wizard") then
-		util.exec("touch /tmp/config/wizard")
+	if not fs.access("/etc/config/vpnselect") then
+		util.exec("touch /etc/config/vpnselect")
 	end
 
-	if not uci:get("wizard","globals") then
-		uci_tmp:section("wizard","globals","globals")
-		uci_tmp:save("wizard")
-		uci_tmp:commit("wizard")
+	if not uci:get("vpnselect","vpnselect") then
+		uci:section("vpnselect","select","vpnselect")
+		uci:save("vpnselect")
+		uci:commit("vpnselect")
 	end
 
+	local vpn_type = uci:get("vpnselect","vpnselect","vpntype")
 	if not vpn_type then
 		if uci:get("xl2tpd","main","enabled") == "1" then
 			vpn_type = "l2tp"
@@ -214,10 +215,9 @@ function get_vpn_info()
 		else
 			vpn_type = "disabled"
 		end
-		uci_tmp:set("wizard","globals","vpnread",vpn_type)
-		uci_tmp:set("wizard","globals","vpntype",vpn_type)
-		uci_tmp:save("wizard")
-		uci_tmp:commit("wizard")
+		uci:set("vpnselect","vpnselect","vpntype",vpn_type)
+		uci:save("vpnselect")
+		uci:commit("vpnselect")
 	end
 
 	if vpn_type == "l2tp" then

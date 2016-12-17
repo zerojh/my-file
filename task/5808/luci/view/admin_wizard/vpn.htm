@@ -1,13 +1,18 @@
 <%
-	local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 	local uci = require "luci.model.uci".cursor()
 	local dsp = require "luci.dispatcher"
 	local fs = require "nixio.fs"
 	local util = require "luci.util"
 	local vpn_type
 
-	if not fs.access("/tmp/config/wizard") then
-		util.exec("touch /tmp/config/wizard")
+	if not fs.access("/etc/config/vpnselect") then
+		util.exec("touch /etc/config/vpnselect")
+	end
+
+	if not uci:get("vpnselect","vpnselect") then
+		uci:section("vpnselect","select","vpnselect")
+		uci:save("vpnselect")
+		uci:commit("vpnselect")
 	end
 
 	if luci.http.formvalue("cancel") then
@@ -17,22 +22,29 @@
 	elseif luci.http.formvalue("save") then
 		vpn_type = luci.http.formvalue("vpn")
 
-		if vpn_type then
-			uci_tmp:set("wizard","globals","vpntype",vpn_type)
-			if vpn_type == "disabled" then
-				uci:set("xl2tpd","main","enabled","0")
+		if not vpn_type or vpn_type == "disabled" then
+			uci:set("vpnselect","vpnselect","vpntype","disabled")
+			uci:set("xl2tpd","main","enabled","0")
+			uci:set("pptpc","main","enabled","0")
+			uci:set("openvpn","custom_config","enabled","0")
+		else
+			uci:set("vpnselect","vpnselect","vpntype",vpn_type)
+			if vpn_type == "l2tp" then
 				uci:set("pptpc","main","enabled","0")
 				uci:set("openvpn","custom_config","enabled","0")
-				uci:save("xl2tpd")
-				uci:save("pptpc")
-				uci:save("openvpn")
+			elseif vpn_type == "pptp" then
+				uci:set("xl2tpd","main","enabled","0")
+				uci:set("openvpn","custom_config","enabled","0")
+			elseif vpn_type == "openvpn" then
+				uci:set("xl2tpd","main","enabled","0")
+				uci:set("pptpc","main","enabled","0")
 			end
-		else
-			uci_tmp:set("wizard","vpn","vpntype","disabled")
 		end
 
-		uci_tmp:set("wizard")
-		uci_tmp:commit("wizard")
+		uci:save("xl2tpd")
+		uci:save("pptpc")
+		uci:save("openvpn")
+		uci:save("vpnselect")
 
 		if vpn_type then
 			if vpn_type == "l2tp" then
@@ -48,7 +60,7 @@
 
 		return
 	else
-		vpn_type = uci_tmp:get("wizard","globals","vpntype")
+		vpn_type = uci:get("vpnselect","vpnselect","vpntype")
 		if not vpn_type then
 			if uci:get("xl2tpd","main","enabled") == "1" then
 				vpn_type = "l2tp"

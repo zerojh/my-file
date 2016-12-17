@@ -1,9 +1,19 @@
 local fs = require "nixio.fs"
-local ut = require "luci.util"
+local util = require "luci.util"
 local uci = require "luci.model.uci".cursor()
 local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 local dsp = require "luci.dispatcher"
 local flag = uci_tmp:get("wizard","globals","l2tp") or "1"
+
+if not fs.access("/etc/config/vpnselect") then
+	util.exec("touch /etc/config/vpnselect")
+end
+
+if not uci:get("vpnselect","vpnselect") then
+	uci:section("vpnselect","select","vpnselect")
+	uci:save("vpnselect")
+	uci:commit("vpnselect")
+end
 
 uci:check_cfg("xl2tpd")
 
@@ -12,6 +22,7 @@ m.pageaction = false
 m:chain("openvpn")
 m:chain("pptpc")
 m:chain("profile_sip")
+m:chain("vpnselect")
 
 if luci.http.formvalue("cbi.cancel") then
 	m.redirect = dsp.build_url("admin","wizard","ddns")
@@ -21,6 +32,16 @@ elseif luci.http.formvalue("cbi.save") then
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
 	m.redirect = dsp.build_url("admin","uci","changes")
+end
+
+local profile_wan_section
+local tmp_tb = uci:get_all("profile_sip") or {}
+if next(tmp_tb) then
+	for k,v in pairs(tmp_tb) do
+		if v.index and v.index == "2" then
+			profile_wan_section = k
+		end
+	end
 end
 
 s = m:section(TypedSection,"l2tpc","")
@@ -50,23 +71,26 @@ function option.write(self,section,value)
 	m.uci:set("xl2tpd","main","enabled",value)
 	m.uci:set("qos","qos_l2tp1","enabled",(uci:get("xl2tpd","l2tpd","enabled") == "1" or value == "1" ) and "1" or "0")
 	m.uci:set("qos","qos_l2tp2","enabled",(uci:get("xl2tpd","l2tpd","enabled") == "1" or value == "1" ) and "1" or "0")
-	if value == "1" then
-		m.uci:set("")
-	else
-	end
 end
 function option.validate(self, value)
 	if value == "1" then
 		m.uci:set("pptpc","main","enabled","0")
 		m.uci:set("openvpn","custom_config","enabled","0")
-		uci_tmp:set("wizard","globals","vpntype","l2tp")
-		uci_tmp:delete("wizard","globals","vpnread")
-		uci_tmp:save("wizard")
-		uci_tmp:commit("wizard")
+		m.uci:set("vpnselect","vpnselect","vpntype","l2tp")
+		if profile_wan_section then
+			m.uci:set("profile_sip",profile_wan_section,"localinterface","L2TP")
+		end
+	elseif value == "0" then
+		m.uci:set("vpnselect","vpnselect","vpntype","disabled")
+		if profile_wan_section then
+			m.uci:set("profile_sip",profile_wan_section,"localinterface","WAN")
+		end
 	end
+
 	if not m.uci:get("xl2tpd","main","defaultroute") then
 		m.uci:set("xl2tpd","main","defaultroute","0")
 	end
+
 	return Value.validate(self, value)
 end
 
