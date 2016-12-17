@@ -962,6 +962,16 @@ local config = {
 			["0"]="Off",
 			["1"]="On",
 		},
+		["enabled_8345"]="允许8345端口从WAN口访问",
+		["__enabled_8345_value"]={
+			["0"]="Off",
+			["1"]="On",
+		},
+		["enabled_8848"]="允许8848端口从WAN口访问",
+		["__enabled_8848_value"]={
+			["0"]="Off",
+			["1"]="On",
+		},
 		["lan_forward"] = "Default action outside the filter rules",
 		["index"]="Index",
 		["name"]="Name",

@@ -1,0 +1,9 @@
+<configuration name="lua.conf" description="LUA Configuration">
+	<settings>
+		<param name="module-directory" value="/usr/lib/lua/?.so"/>
+		<param name="startup-script" value="Event_Consumer.lua"/>
+		<!--<hook event="SWITCH_EVENT_GATEWAY_RECORD_INSERT" subclass="sofia::gateway_record_insert" script="gateway_state_record.lua"/>-->
+		<hook event="CUSTOM" subclass="sofia::gateway_state_record" script="service_state_log.lua"/>
+		<hook event="CUSTOM" subclass="pstn::dev_create_event" script="service_state_log.lua"/>
+	</settings>
+</configuration>

@@ -15,6 +15,7 @@ m.currsection = s
 s.addremove = false
 s.anonymous = true
 
+--[[
 local result = luci.util.exec("tail /tmp/log/ddns/myddns_ipv4.log")
 
 if "1" ~= m.uci:get("ddns" , "myddns_ipv4" , "enabled") then
@@ -97,6 +98,7 @@ elseif string.find(result,"detected via web at") and string.find(result,"wget: b
 		local web_url = result:match("detected via web at '(.+)'")                                                                              
 		m.message = "error"..translatef("Can not get external address via IP Check URL '%s' !",web_url)
 end
+]]--
 
 local service_url_tbl = 
 {

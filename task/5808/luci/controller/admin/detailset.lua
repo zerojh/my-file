@@ -47,6 +47,7 @@ function action_openvpn()
 	local fs  = require "luci.fs"
 	local ds = require "luci.dispatcher"
 	local uci = require "luci.model.uci".cursor()
+	local uci_tmp  = require "luci.model.uci".cursor("/tmp/config")
 	local fs_server = require "luci.scripts.fs_server"
 	local destfile = "/tmp/my-vpn.conf.latest"
 
@@ -70,8 +71,20 @@ function action_openvpn()
 
 	local status = luci.http.formvalue("status")
 	if status then
-		uci:set("openvpn","custom_config","enabled",status)
+		if status == "1" then
+			uci:set("openvpn","custom_config","enabled","1")
+			uci:set("xl2tpd","main","enabled","0")
+			uci:set("pptpc","main","enabled","0")
+			uci_tmp:set("wizard","globals","vpntype","openvpn")
+			uci_tmp:delete("wizard","globals","vpnread")
+			uci_tmp:save("wizard")
+			uci_tmp:commit("wizard")
+		else
+			uci:set("openvpn","custom_config","enabled","0")
+		end
 		uci:save("openvpn")
+		uci:save("xl2tpd")
+		uci:save("pptpc")
 	end
 
 	local defaultroute = luci.http.formvalue("defaultroute")

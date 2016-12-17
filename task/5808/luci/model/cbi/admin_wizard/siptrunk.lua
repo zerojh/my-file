@@ -67,17 +67,31 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self,value)
-	m.uci:set("endpoint_siptrunk",currsection,"expire_seconds","1800")
-	m.uci:set("endpoint_siptrunk",currsection,"from_username","username")
-	m.uci:set("endpoint_siptrunk",currsection,"heartbeat","on")
-	m.uci:set("endpoint_siptrunk",currsection,"ping","5")
 	m.uci:set("endpoint_siptrunk",currsection,"name","1")
-	m.uci:set("endpoint_siptrunk",currsection,"profile","2")
-	m.uci:set("endpoint_siptrunk",currsection,"reg_url_with_transport","off")
 	m.uci:set("endpoint_siptrunk",currsection,"register","on")
-	m.uci:set("endpoint_siptrunk",currsection,"retry_seconds","60")
-	m.uci:set("endpoint_siptrunk",currsection,"status","Enabled")
-	m.uci:set("endpoint_siptrunk",currsection,"transport","udp")
+		m.uci:set("endpoint_siptrunk",currsection,"profile","2")
+	if not m.uci:get("endpoint_siptrunk",currsection,"expire_seconds") then
+		m.uci:set("endpoint_siptrunk",currsection,"expire_seconds","1800")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"from_username","username") then
+		m.uci:set("endpoint_siptrunk",currsection,"from_username","username")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"heartbeat") then
+		m.uci:set("endpoint_siptrunk",currsection,"heartbeat","on")
+		m.uci:set("endpoint_siptrunk",currsection,"ping","5")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"reg_url_with_transport") then
+		m.uci:set("endpoint_siptrunk",currsection,"reg_url_with_transport","off")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"retry_seconds") then
+		m.uci:set("endpoint_siptrunk",currsection,"retry_seconds","60")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"status") then
+		m.uci:set("endpoint_siptrunk",currsection,"status","Enabled")
+	end
+	if not m.uci:get("endpoint_siptrunk",currsection,"transport") then
+		m.uci:set("endpoint_siptrunk",currsection,"transport","udp")
+	end
 
 	return Value.validate(self, value)
 end

@@ -460,12 +460,12 @@ function mobile()
 				if v.numberlearning_profile and "0" ~= v.numberlearning_profile then
 					for x,y in pairs(numberlearning) do
 						if y.index == v.numberlearning_profile then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Number Learning Profile")..":"..(y.index .. "-< " .. y.name .. " >").."<br>"
+							more_info[cnt] = more_info[cnt]..i18n.translate("SIM Number Learning Profile")..":"..(y.index .. "-< " .. y.name .. " >").."<br>"
 							break
 						end
 					end
 				else
-					more_info[cnt] = more_info[cnt]..i18n.translate("Number Learning Profile")..":"..i18n.translate("Off").."<br>"
+					more_info[cnt] = more_info[cnt]..i18n.translate("SIM Number Learning Profile")..":"..i18n.translate("Off").."<br>"
 				end
 				status[cnt] = v.status
 				edit[cnt] = ds.build_url("admin","trunk","mobile","mobile",k,"edit")

@@ -171,7 +171,7 @@ require "ini"
 ini = INI.load("/etc/provision/control.conf")
 local sys_upgrade_flag=fs.access("/etc/upgrade_flag")
 local sys_upgrading_flag=fs.access("/etc/upgrading_flag")
-local gsm_upgrading_flag=fs.access("/etc/gsm_1_upgrading")
+local gsm_upgrading_flag=fs.access("/etc/gsm_1_upgrading") and fs.access("/tmp/gsm_upgrading")
 local gsm_upgradefail_flag=fs.access("/etc/gsm_1_upgradefail") or (fs.access("/etc/gsm_1_upgrading") and not fs.access("/tmp/gsm_upgrading"))
 local firmware_md5_valid_flag=(ini and ini.firmware and (#ini.firmware.md5 ~= 32 or (not ini.firmware.md5:match("^[a-fA-F0-9]+$"))))
 if ((sys_upgrade_flag or firmware_md5_valid_flag) and (not sys_upgrading_flag)) or gsm_upgradefail_flag then
@@ -241,7 +241,7 @@ if reboot_info then
 	str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/reboot')).."'>>>"..translate("Go to reboot...").."</a></div></div>"
 	write(str)
 end
-if luci.sys.user.checkpasswd("admin","admin") then
+if luci.sys.user.checkpasswd("admin",(luci.version.default_password or "admin")) then
 	local str=""
 	str=str.."<div class='container'><div class='alert-message warning'><h4>"..translate("Default password not change !").."</h4>"
 	str=str..translate("This device is still the default password. Please change the defaut password to protect the web interface !").."<br>"

@@ -1,24 +1,26 @@
 module("luci.controller.admin.affair",package.seeall)
 
+local ubus_get_addr = require "luci.model.network".ubus_get_addr
+local util = require "luci.util"
+local fs = require "luci.fs"
+local i18n = require "luci.i18n"
+local sqlite = require "luci.scripts.sqlite3_service"
+
 function index()
 	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
 		entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
 		--entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
+		entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务状态日志",11).leaf = true
+		--entry({"admin","affair","get_service_log"},call("action_get_service_log"))
 	end
 end
 
-function action_overview()
-	local ubus_get_addr = require "luci.model.network".ubus_get_addr
-	local sqlite = require "luci.scripts.sqlite3_service"
-	local util = require "luci.util"
-	local fs = require "luci.fs"
-	local i18n = require "luci.i18n"
+function get_network_info()
 	local uci = require "luci.model.uci".cursor()
-
-	-- network
 	local net_info = {}
-	local str 
+	local str
+
 	net_info.access_mode = uci:get("network_tmp","network","access_mode") or "未知"
 	if net_info.access_mode == "wlan_dhcp" or net_info.access_mode == "wlan_static" then
 		str = util.exec("ifconfig ra0 | grep 'RX bytes'")
@@ -29,8 +31,13 @@ function action_overview()
 	net_info.rx = str:match("RX bytes:(%d+)") or "0"
 	net_info.tx = str:match("TX bytes:(%d+)") or "0"
 
-	-- wireless
+	return net_info
+end
+
+function get_wifi_info()
+	local uci = require "luci.model.uci".cursor()
 	local wifi_info = {}
+
 	wifi_info.mode = uci:get("wireless","wifi0","mode") or "ap"
 	if wifi_info.mode == "sta" then
 		local tmp_str = util.exec("iwpriv ra0 connStatus")
@@ -58,10 +65,15 @@ function action_overview()
 		wifi_info.channel = string.upper(uci:get("wireless","ra0","channel") or "-")
 	end
 
-	-- siptrunk
+	return wifi_info
+end
+
+function get_siptrunk_info()
+	local uci = require "luci.model.uci".cursor()
 	local siptrunk_info = {}
 	local tmp_tb = uci:get_all("endpoint_siptrunk") or {}
 	local section
+
 	if tmp_tb and next(tmp_tb) then
 		for k,v in pairs(tmp_tb) do
 			if v.index and v.index == "1" then
@@ -76,9 +88,14 @@ function action_overview()
 		siptrunk_info.number = str:match("Username%s+(%d+)") or "-"
 	end
 
-	-- ddns
+	return siptrunk_info
+end
+
+function get_ddns_info()
+	local uci = require "luci.model.uci".cursor()
 	local ddns_info = {}
 	local result = util.exec("tail /tmp/log/ddns/myddns_ipv4.log")
+
 	ddns_info.domain = uci:get("ddns","myddns_ipv4","domain") or "未知"
 	if "1" ~= uci:get("ddns" , "myddns_ipv4" , "enabled") then
 		ddns_info.enable = "已禁用"
@@ -167,28 +184,94 @@ function action_overview()
 		end
 	end
 
-	-- vpn
+	return ddns_info
+end
+
+function get_vpn_info()
+	local uci = require "luci.model.uci".cursor()
+	local uci_tmp = require "luci.model.uci".cursor("/tmp/config")
 	local vpn_info = {}
-	vpn_info.l2tp_e = uci:get("xl2tpd","main","enabled")
-	vpn_info.pptp_e = uci:get("pptpc","main","enabled")
-	vpn_info.openvpn_e = uci:get("openvpn","custom_config","enabled")
-	if vpn_info.l2tp_e == "1" then
-		local str = util.exec("tail -n 1 /ramlog/l2tpc_log")
-		vpn_info.l2tp_s = str:match("^(login:)")
-	end
-	if vpn_info.pptp_e == "1" then
-		local str = util.exec("tail -n 1 /ramlog/pptpc_log")
-		vpn_info.pptp_s = str:match("^(login:)")
-	end
-	if vpn_info.openvpn_e == "1" then
-		local str = util.exec("tail -n 1 /ramlog/openvpnc_log")
-		vpn_info.openvpn_s = str:match("^(login:)")
+	local log_str = ""
+	local vpn_type = uci_tmp:get("wizard","globals","vpnread")
+
+	if not fs.access("/tmp/config/wizard") then
+		util.exec("touch /tmp/config/wizard")
 	end
 
-	-- sim
+	if not uci:get("wizard","globals") then
+		uci_tmp:section("wizard","globals","globals")
+		uci_tmp:save("wizard")
+		uci_tmp:commit("wizard")
+	end
+
+	if not vpn_type then
+		if uci:get("xl2tpd","main","enabled") == "1" then
+			vpn_type = "l2tp"
+		elseif uci:get("pptpc","main","enabled") == "1" then
+			vpn_type = "pptp"
+		elseif uci:get("openvpn","custom_config","enabled") == "1" then
+			vpn_type = "openvpn"
+		else
+			vpn_type = "disabled"
+		end
+		uci_tmp:set("wizard","globals","vpnread",vpn_type)
+		uci_tmp:set("wizard","globals","vpntype",vpn_type)
+		uci_tmp:save("wizard")
+		uci_tmp:commit("wizard")
+	end
+
+	if vpn_type == "l2tp" then
+		vpn_info.type = "L2TP"
+		log_str = util.exec("tail -n 1 /ramlog/l2tpc_log | grep '^login:'")
+		if log_str == "" then
+			vpn_info.status = "连接失败"
+			vpn_info.ipaddr = "0.0.0.0"
+			vpn_info.gateway = "0.0.0.0"
+		else
+			vpn_info.status = "连接成功"
+			vpn_info.ipaddr = log_str:match("local ip:([^,]+),") or "0.0.0.0"
+			vpn_info.gateway = log_str:match("gateway:([^,]+),") or "0.0.0.0"
+		end
+	elseif vpn_type == "pptp" then
+		vpn_info.type = "PPTP"
+		log_str = util.exec("tail -n 1 /ramlog/pptpc_log | grep '^login:'")
+		if log_str == "" then
+			vpn_info.status = "连接失败"
+			vpn_info.ipaddr = "0.0.0.0"
+			vpn_info.gateway = "0.0.0.0"
+		else
+			vpn_info.status = "连接成功"
+			vpn_info.ipaddr = log_str:match("local ip:([^,]+),") or "0.0.0.0"
+			vpn_info.gateway = log_str:match("gateway:([^,]+),") or "0.0.0.0"
+		end
+	elseif vpn_type == "openvpn" then
+		vpn_info.type = "OpenVPN"
+		log_str = util.exec("tail -n 1 /ramlog/openvpnc_log | grep '^login:'")
+		if log_str == "" then
+			vpn_info.status = "连接失败"
+			vpn_info.ipaddr = "0.0.0.0"
+			vpn_info.gateway = "0.0.0.0"
+		else
+			vpn_info.status = "连接成功"
+			vpn_info.ipaddr = log_str:match("local_ip:([^,]+),") or "0.0.0.0"
+			vpn_info.gateway = log_str:match("gateway:([^%s]+)%s") or "0.0.0.0"
+		end
+	else
+		vpn_info.status = "已禁用"
+		vpn_info.type = "未知"
+		vpn_info.ipaddr = "0.0.0.0"
+		vpn_info.gateway = "0.0.0.0"
+	end
+
+	return vpn_info
+end
+
+function get_sim_info()
+	local uci = require "luci.model.uci".cursor()
 	local sim_info = {}
 	local tmp_tb = uci:get_all("endpoint_mobile") or {}
 	local tmp_str = util.exec("fs_cli -x 'gsm dump 1' | sed -n '/^chan_ready/p;/simpin_state/p;/^not_registered/p;/^phone_num/p;/^opname/p;/^got_signal/p;' | tr '\n' '#'")
+
 	sim_info.number = tmp_str:match("phone_num%s*=%s*([^#]+)#") or "未知"
 	sim_info.carrier = tmp_str:match("opname%s*=%s*([^#]+)#") or "未知"
 	sim_info.signal = tmp_str:match("got_signal%s*=%s*(%d+)#") or "0"
@@ -202,15 +285,16 @@ function action_overview()
 		sim_info.status = "registered"
 	end
 
-	local simpin_state = tmp_str:match("simpin_state = ([^#]+)#")
-	local not_register = tmp_str:match("not_registered = (%d+)")
-	if simpin_state ~= "SIMPIN_READY" then
-		sim_info.status = "no_card"
-	elseif not_register ~= "0" then
-		sim_info.status = "not_registered"
-	else
-		sim_info.status = "registered"
-	end
+	return sim_info
+end
+
+function action_overview()
+	local net_info = get_network_info() or {}
+	local wifi_info = get_wifi_info() or {}
+	local siptrunk_info = get_siptrunk_info() or {}
+	local ddns_info = get_ddns_info() or {}
+	local vpn_info = get_vpn_info() or {}
+	local sim_info = get_sim_info() or {}
 
 	if luci.http.formvalue("status") == "1" then
 		local rv = {
@@ -236,4 +320,50 @@ function action_overview()
 			sim_info = sim_info
 		})
 	end
+end
+
+function action_get_service_log()
+	local util = require "luci.util"
+	local param = luci.http.formvalue("action")
+	local reqstart = tonumber(luci.http.formvalue("starth"))
+	local reqnum = tonumber(luci.http.formvalue("reqnumh"))
+	local info = {}
+	local content = {}
+
+	local exist_num = reqstart -1
+	local log_sum = util.exec("cat /ramlog/service_state_log |wc -l")
+	local log_start = log_sum - exist_num - reqnum+ 1
+	local log_end = log_sum - exist_num
+	local history
+	local history_tbl = {}
+	local history_tbl_r = {}
+	local tmp = {}
+	local index = reqstart
+
+	if log_start <= 0 then
+		log_start = 1
+	end
+	if log_end > 0 then
+		history = util.exec("sed -n '"..log_start..","..log_end.."p' /ramlog/service_state_log")
+		history_tbl = util.split(history,"\n")
+		for i=1, #history_tbl do
+			table.insert(history_tbl_r,table.remove(history_tbl))
+		end
+		for _,v in pairs(history_tbl_r) do
+			if v ~= "" then
+				tmp[1] = index
+				tmp[2],tmp[3],tmp[4] = v:match("Date:([^,]*),%s*Service:([^,]*),%s*State:(.*)")
+				tmp[2] = tmp[2] or ""
+				tmp[3] = tmp[3] or ""
+				tmp[4] = tmp[4] or ""
+				table.insert(content, tmp)
+				tmp = {}
+				index = index + 1
+			end
+		end
+		info["content"] = content
+	end
+	
+	luci.http.prepare_content("application/json")
+	luci.http.write_json(info)
 end

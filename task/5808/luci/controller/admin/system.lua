@@ -152,27 +152,31 @@ function get_diagnostics(m)
 	local s = ""
 
 	if m:match("fxso") then
-		s = s..i18n.translate("FXS/FXO Status").." : "..i18n.translate((uci:get("tooltest","fxso","status") or ""))
-		if "OK" == uci:get("tooltest","fxso","status") then
-			s = s.." "..i18n.translate("Duration").." : "..uci:get("tooltest","fxso","duration").."s\n"
+		local result=uci:get("tooltest","fxso","status") or ""
+		s = s..i18n.translate("FXS/FXO Status").." : "..i18n.translate(result)
+		if result:match("[A-Z%-]+/[A-Z%-]+") then
+			local fxs_dtmf_recv=uci:get("tooltest","fxso","fxs_dtmf_recv") or ""
+			local fxo_dtmf_recv=uci:get("tooltest","fxso","fxo_dtmf_recv") or ""
+			s = s.." "..i18n.translate("Verification DTMF Result").." : "..fxs_dtmf_recv.."/"..fxo_dtmf_recv.." "..i18n.translate("Duration").." : "..uci:get("tooltest","fxso","duration").."s\n"
 		else
 			s = s.."\n"
 		end
 	end
 	if m:match("gsm") then
 		local ip=uci:get("tooltest","gsm","ip")
+		local dtmf_recv=uci:get("tooltest","gsm","dtmf_recv")
 		if ip then
 			s = s..i18n.translate("LTE Status").." : "..i18n.translate((uci:get("tooltest","gsm","status") or ""))
 		else
 			s = s..i18n.translate("GSM Status").." : "..i18n.translate((uci:get("tooltest","gsm","status") or ""))
 		end
 		if "OK" == uci:get("tooltest","gsm","status") then
-			s = s.." "..i18n.translate("Duration").." : "..uci:get("tooltest","gsm","duration").."s"
 			if ip then
-				s=s.." IP:"..ip.."\n"
-			else
-				s=s.."\n"
+				s=s.." IP:"..ip
+			elseif dtmf_recv then
+				s=s.." "..i18n.translate("Verification DTMF Result").." : "..dtmf_recv
 			end
+			s = s.." "..i18n.translate("Duration").." : "..uci:get("tooltest","gsm","duration").."s\n"
 		else
 			s = s.."\n"
 		end
@@ -249,7 +253,15 @@ function system_diagnostics()
 		if fs.access("/tmp/tooltest_working") then
 			test_status = "test_working"
 		end
-		luci.template.render("admin_system/diagnostics",{test_status=test_status,test_options=test_options})
+		local fxo_online=util.exec("fs_cli -x \"ftdm driver fxso status 0\" | grep ONLINE")
+		if fxo_online == "" then
+			fxo_online=false
+		end
+		local sim_ready=util.exec("fs_cli -x \"gsm dump 1\" | grep SIMPIN_READY")
+		if sim_ready == "" then
+			sim_ready=false
+		end
+		luci.template.render("admin_system/diagnostics",{fxo_online=fxo_online,sim_ready=sim_ready,test_status=test_status,test_options=test_options})
 	end
 end
 

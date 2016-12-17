@@ -16,6 +16,7 @@ function index()
 			entry({"admin","wizard","ap"},cbi("admin_wizard/wlan_ap")).leaf = true
 		end
 		entry({"admin","wizard","ddns"},cbi("admin_wizard/ddns")).leaf = true
+		entry({"admin","wizard","vpn"},template("admin_wizard/vpn")).leaf = true
 		entry({"admin","wizard","pptp"},cbi("admin_wizard/pptp_client")).leaf = true
 		entry({"admin","wizard","l2tp"},cbi("admin_wizard/l2tp_client")).leaf = true
 		entry({"admin","wizard","openvpn"},call("action_openvpn")).leaf = true
@@ -67,8 +68,14 @@ function action_openvpn()
 
 	if luci.http.formvalue("save") then
 		local status = luci.http.formvalue("status")
-		if status then
-			uci:set("openvpn","custom_config","enabled",status)
+		if status and  status == "1" then
+			uci:set("xl2tpd","main","enabled","0")
+			uci:set("pptpc","main","enabled","0")
+			uci:set("openvpn","custom_config","enabled","1")
+			uci_tmp:set("wizard","globals","vpntype","openvpn")
+			uci_tmp:delete("wizard","globals","vpnread")
+		else
+			uci:set("openvpn","custom_config","enabled","0")
 		end
 
 		local key = luci.http.formvalue("key")
@@ -76,8 +83,13 @@ function action_openvpn()
 			uci:set("openvpn","custom_config","key_change","0"==uci:get("openvpn","custom_config","key_change") and "1" or "0")
 		end
 
-		uci:set("openvpn","custom_config","defaultroute","0")
+		if not uci:get("openvpn","custom_config","defaultroute") then
+			uci:set("openvpn","custom_config","defaultroute","0")
+		end
+
 		uci:save("openvpn")
+		uci:save("xl2tpd")
+		uci:save("pptpc")
 		uci_tmp:set("wizard","globals","openvpn","1")
 		uci_tmp:save("wizard")
 		uci_tmp:commit("wizard")
@@ -85,7 +97,7 @@ function action_openvpn()
 		luci.http.redirect(ds.build_url("admin","uci","changes"))
 		return
 	elseif luci.http.formvalue("cancel") then
-		luci.http.redirect(ds.build_url("admin","wizard","l2tp"))
+		luci.http.redirect(ds.build_url("admin","wizard","ddns"))
 	else
 		luci.template.render("admin_wizard/openvpn",{
 			status = flag == "1" and uci:get("openvpn","custom_config","enabled") or "0"

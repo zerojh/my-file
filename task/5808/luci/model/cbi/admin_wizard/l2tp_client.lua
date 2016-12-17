@@ -9,15 +9,18 @@ uci:check_cfg("xl2tpd")
 
 m = Map("xl2tpd","L2TP客户端")
 m.pageaction = false
+m:chain("openvpn")
+m:chain("pptpc")
+m:chain("profile_sip")
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","pptp")
+	m.redirect = dsp.build_url("admin","wizard","ddns")
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","l2tp","1")
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","wizard","openvpn")
+	m.redirect = dsp.build_url("admin","uci","changes")
 end
 
 s = m:section(TypedSection,"l2tpc","")
@@ -47,9 +50,23 @@ function option.write(self,section,value)
 	m.uci:set("xl2tpd","main","enabled",value)
 	m.uci:set("qos","qos_l2tp1","enabled",(uci:get("xl2tpd","l2tpd","enabled") == "1" or value == "1" ) and "1" or "0")
 	m.uci:set("qos","qos_l2tp2","enabled",(uci:get("xl2tpd","l2tpd","enabled") == "1" or value == "1" ) and "1" or "0")
+	if value == "1" then
+		m.uci:set("")
+	else
+	end
 end
 function option.validate(self, value)
-	m.uci:set("xl2tpd","main","defaultroute","0")
+	if value == "1" then
+		m.uci:set("pptpc","main","enabled","0")
+		m.uci:set("openvpn","custom_config","enabled","0")
+		uci_tmp:set("wizard","globals","vpntype","l2tp")
+		uci_tmp:delete("wizard","globals","vpnread")
+		uci_tmp:save("wizard")
+		uci_tmp:commit("wizard")
+	end
+	if not m.uci:get("xl2tpd","main","defaultroute") then
+		m.uci:set("xl2tpd","main","defaultroute","0")
+	end
 	return Value.validate(self, value)
 end
 

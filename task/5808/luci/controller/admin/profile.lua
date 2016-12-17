@@ -27,7 +27,7 @@ function index()
 		entry({"admin","profile","number"},call("number"),"Number",6)
 		entry({"admin","profile","number","number"},call("number_edit"),nil,6).leaf = true
 		if luci.version.license and luci.version.license.gsm then
-			entry({"admin","profile","numberlearning"},call("number_learning"),"Number Learning",7)
+			entry({"admin","profile","numberlearning"},call("number_learning"),"SIM Number Learning",7)
 			entry({"admin","profile","numberlearning","numberlearning"},call("number_learning_edit"),nil,7).leaf = true
 		end
 		entry({"admin","profile","time"},call("time"),"Time",8)
@@ -509,7 +509,7 @@ function number_learning()
 		addnewable = false
 	end
 	luci.template.render("cbi/configlist",{
-		title = i18n.translate("Profile / Number Learning"),
+		title = i18n.translate("Profile / SIM Number Learning"),
 		colgroup = colgroup,
 		th = th,
 		content = content,
@@ -530,7 +530,7 @@ function number_learning_edit(...)
 	local section=arg[1]
 	local add_or_edit=arg[2]
 	local next_redirect=arg[3]
-	local title="Profile / Number Learning / New"
+	local title="Profile / SIM Number Learning / New"
 	local available_id_list={}
 	local idx_value=1
 	local name_value=""
@@ -583,7 +583,7 @@ function number_learning_edit(...)
 				from_number_value=v.from_number
 				keywords_value=v.keywords
 				if "edit" == add_or_edit then
-					title="Profile / Number Learning / Edit"
+					title="Profile / SIM Number Learning / Edit"
 					available_id_list={}
 					break
 				end

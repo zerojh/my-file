@@ -109,26 +109,10 @@ function refresh_ddns_stat(ddns_info)
 
 function refresh_vpn_stat(vpn_info)
 {
-	if (vpn_info.l2tp_e != "1" )
-		document.getElementById("vpn.l2tp").innerHTML = "未连接";
-	else if (!vpn_info.l2tp_s)
-		document.getElementById("vpn.l2tp").innerHTML = "连接失败";
-	else
-		document.getElementById("vpn.l2tp").innerHTML = "连接成功";
-
-	if (vpn_info.pptp_e != "1" )
-		document.getElementById("vpn.pptp").innerHTML = "未连接";
-	else if (!vpn_info.pptp_s)
-		document.getElementById("vpn.pptp").innerHTML = "连接失败";
-	else
-		document.getElementById("vpn.pptp").innerHTML = "连接成功";
-
-	if (vpn_info.openvpn_e != "1" )
-		document.getElementById("vpn.openvpn").innerHTML = "未连接";
-	else if (!vpn_info.openvpn_s)
-		document.getElementById("vpn.openvpn").innerHTML = "连接失败";
-	else
-		document.getElementById("vpn.openvpn").innerHTML = "连接成功";
+	document.getElementById("vpn.status").innerHTML = vpn_info.status;
+	document.getElementById("vpn.type").innerHTML = vpn_info.type;
+	document.getElementById("vpn.ipaddr").innerHTML = vpn_info.ipaddr;
+	document.getElementById("vpn.gateway").innerHTML = vpn_info.gateway;
 }
 
 function change_signal_view(id,val)
@@ -291,9 +275,10 @@ $(document).ready(function() {
 <fieldset class="cbi-section" style="border-buttom:;">
 	<legend>VPN客户端</legend>
 	<table width="100%" cellspacing="10" class="info">
-		<tr><td width="30%">L2TP</td><td id="vpn.l2tp">-</td></tr>
-		<tr><td>PPTP</td><td id="vpn.pptp">-</td></tr>
-		<tr><td>OpenVPN</td><td id="vpn.openvpn">-</td></tr>
+		<tr><td width="30%">状态</td><td id="vpn.status">-</td></tr>
+		<tr><td>加密方式</td><td id="vpn.type">-</td></tr>
+		<tr><td>IP地址</td><td id="vpn.ipaddr">-</td></tr>
+		<tr><td>网关</td><td id="vpn.gateway">-</td></tr>
 	</table>
 </fieldset>
 </div>

@@ -9,6 +9,8 @@ uci:check_cfg("pptpc")
 
 m = Map("pptpc","PPTP客户端")
 m.pageaction = false
+m:chain("xl2tpd")
+m:chain("openvpn")
 
 if luci.http.formvalue("cbi.cancel") then
 	m.redirect = dsp.build_url("admin","wizard","ddns")
@@ -17,7 +19,7 @@ elseif luci.http.formvalue("cbi.save") then
 	uci_tmp:set("wizard","globals","pptp","1")
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","wizard","l2tp")
+	m.redirect = dsp.build_url("admin","uci","changes")
 end
 
 s = m:section(TypedSection,"pptpc","")
@@ -44,7 +46,17 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self,value)
-	m.uci:set("pptpc","main","defaultroute","0")
+	if value == "1" then
+		m.uci:set("xl2tpd","main","enabled","0")
+		m.uci:set("openvpn","custom_config","enabled","0")
+		uci_tmp:set("wizard","globals","vpntype","pptp")
+		uci_tmp:delete("wizard","globals","vpnread")
+		uci_tmp:save("wizard")
+		uci_tmp:commit("wizard")
+	end
+	if not m.uci:get("pptpc","main","defaultroute") then
+		m.uci:set("pptpc","main","defaultroute","0")
+	end
 	return Value.validate(self, value)
 end
 function option.write(self,section,value)

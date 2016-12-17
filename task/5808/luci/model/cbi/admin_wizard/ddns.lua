@@ -48,7 +48,7 @@ elseif luci.http.formvalue("cbi.save") then
 	uci_tmp:set("wizard","globals","ddns","1")
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","wizard","pptp")
+	m.redirect = dsp.build_url("admin","wizard","vpn")
 end
 
 s = m:section(NamedSection,"myddns_ipv4","service","")

@@ -6042,7 +6042,7 @@ static void sofia_handle_sip_r_options(switch_core_session_t *session, int statu
 							  sip->sip_to->a_url->url_user, sip->sip_to->a_url->url_host);
 					sql = switch_mprintf("update sip_registrations set ping_status='Unreachable' where sip_user='%s' and sip_host='%s' and call_id='%q'",
 							     sip->sip_to->a_url->url_user, sip->sip_to->a_url->url_host, call_id);
-				sofia_glue_execute_sql(profile, &sql, SWITCH_TRUE);
+					sofia_glue_execute_sql(profile, &sql, SWITCH_TRUE);
 					//switch_safe_free(sql);
 					sofia_reg_fire_custom_sip_user_state_event(profile, sip_user, sip_user_status.contact, sip->sip_to->a_url->url_user,
 															   sip->sip_to->a_url->url_host, call_id, SOFIA_REG_REACHABLE, status, phrase);

@@ -62,8 +62,8 @@ function action_sms_route()
 		return
 	end
 
-	local th = {"Priority","Name","Source","Src Number Prefix","Destination","Dest Number","Prefix","Suffix"}
-	local colgroup = {"6%","10%","8%","13%","9%","15","15%","15","9%"}
+	local th = {"Priority","Name","Source","Src Number","Keywords","Destination","Dest Number","Add Prefix/Suffix in Content"}
+	local colgroup = {"6%","10%","10%","10%","10%","10%","13%","22%","9%"}
 	local content = {}
 	local edit = {}
 	local delchk = {}
@@ -86,30 +86,40 @@ function action_sms_route()
 				else
 					td[3] = get_name_by_cfgtype_id(v.from:match("([A-Z]+)"),v.from:match("([0-9]+)"))
 				end
-				
 				td[4] = v.src_number or i18n.translate("NONE")
-				td[5] = get_name_by_cfgtype_id(v.dest:match("([A-Z]+)"),v.dest:match("([0-9]+)"))
+				td[5] = v.keywords or i18n.translate("NONE")
+				if v.action and "reply" == v.action then
+					td[6] = i18n.translate("Reply")
+				else
+					td[6] = get_name_by_cfgtype_id(v.dest:match("([A-Z]+)"),v.dest:match("([0-9]+)"))
+				end
 				if v.dest_number_src == "to" then
-					td[6] = i18n.translate("Get from To Header Field")
+					td[7] = i18n.translate("Get from To Header Field")
 				elseif v.dest_number_src == "content" and v.dest_number_separator then
-					td[6] = i18n.translate("Get from Content").." / "..v.dest_number_separator
+					td[7] = i18n.translate("Get from Content").." / "..v.dest_number_separator
 				else
-					td[6] = v.dst_number or i18n.translate("NONE")
+					td[7] = v.dst_number or i18n.translate("NONE")
 				end
+
+				local prefix=""
 				if v.prefix == "from" then
-					td[7] = i18n.translatef("From %s : ","${from_user}")
+					prefix = i18n.translatef("From %s : ","${from_user}")
 				elseif v.prefix == "custom" then
-					td[7] = v.custom_prefix or ""
+					prefix = v.custom_prefix or ""
 				else
-					td[7] = i18n.translate("NONE")
+					prefix = i18n.translate("NONE")
 				end
+
+				local suffix=""
 				if v.suffix == "from" then
-					td[8] = i18n.translatef(" -- Send by %s","${from_user}")
+					suffix = i18n.translatef(" -- Send by %s","${from_user}")
 				elseif v.suffix == "custom" then
-					td[8] = v.custom_suffix or ""
+					suffix = v.custom_suffix or ""
 				else
-					td[8] = i18n.translate("NONE")
+					suffix = i18n.translate("NONE")
 				end
+
+				td[8]=prefix.." / "..suffix
 				
 				edit[cnt] = ds.build_url("admin","callcontrol","sms_route","sms_route",k,"edit")
 				delchk[cnt] = ""
@@ -322,9 +332,9 @@ function get_name_by_index(cfg,index,cfg_type)
 	return ""
 end
 function get_name_by_cfgtype_id(cfg_type,index)
-	local cfg = {SIPP="endpoint_sipphone",SIPT="endpoint_siptrunk",FXS="endpoint_fxso",FXO="endpoint_fxso",FXSO="endpoint_fxso",GSM="endpoint_mobile",CDMA="endpoint_mobile",RING="endpoint_ringgroup",ROUTE="endpoint_routegroup",IVR="ivr"}
+	local cfg = {SIPP="endpoint_sipphone",SIPT="endpoint_siptrunk",FXS="endpoint_fxso",FXO="endpoint_fxso",FXSO="endpoint_fxso",GSM="endpoint_mobile",SMS="endpoint_mobile",USSD="endpoint_mobile",CDMA="endpoint_mobile",RING="endpoint_ringgroup",ROUTE="endpoint_routegroup",IVR="ivr"}
 	if cfg[cfg_type] and index then
-		if "FXS" == cfg_type or "FXO" == cfg_type or "GSM" == cfg_type or "CDMA" == cfg_type then
+		if "FXS" == cfg_type or "FXO" == cfg_type or "GSM" == cfg_type or "CDMA" == cfg_type or "SMS" == cfg_type or "USSD" == cfg_type then
 			return cfg_type
 		else
 			return get_name_by_index(cfg[cfg_type],index,cfg_type)

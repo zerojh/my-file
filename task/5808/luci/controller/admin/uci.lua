@@ -204,6 +204,7 @@ function action_apply()
 			apply_param.route = "on"
 			apply_param.extension = "on"
 			apply_param.routegrp = "on"
+			apply_param.smsroute = "on"
 			if "endpoint_mobile" == r then
 				for k,v in pairs(tbl) do
 					if v.port_reg or v.port_server_1 or v.port_server_2 or v.authuser or v.username or v.number then

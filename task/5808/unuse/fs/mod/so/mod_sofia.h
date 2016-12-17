@@ -477,14 +477,14 @@ struct sofia_gateway_subscription {
 	struct sofia_gateway_subscription *next;
 };
 
-#define GATEWAY_STATE_RECORD_LENGTH 10
+#define GATEWAY_STATE_RECORD_LENGTH 30
 
 struct sofia_gateway_state_record {
 	char *state[GATEWAY_STATE_RECORD_LENGTH];
 	char *time[GATEWAY_STATE_RECORD_LENGTH];
-	int8_t end_idx;
-	int8_t initialing;
-	int8_t cycling;
+	int end_idx;
+	int exist_num;
+	int initialing;
 };
 typedef struct sofia_gateway_state_record sofia_gateway_state_record_t;
 
@@ -525,6 +525,7 @@ struct sofia_gateway {
 	time_t reg_timeout;
 	int pinging;
 	sofia_gateway_status_t status;
+	sofia_gateway_state_record_t *state_record;
 	switch_time_t uptime;
 	uint32_t ping_freq;
 	int ping_count;
@@ -539,7 +540,6 @@ struct sofia_gateway {
 	int32_t reg_timeout_seconds;
 	int32_t failure_status;
 	reg_state_t state;
-	sofia_gateway_state_record_t *state_record;
 	switch_memory_pool_t *pool;
 	int deleted;
 	switch_event_t *ib_vars;
@@ -1109,7 +1109,7 @@ void sofia_reg_release_gateway__(const char *file, const char *func, int line, s
 	} while(!_session)
 
 int sofia_gateway_init_state_record(sofia_gateway_t *gateway);
-int sofia_gateway_insert_state_record(sofia_gateway_t *gateway, const char *state);
+int sofia_gateway_insert_state_record(sofia_gateway_t *gateway);
 int sofia_gateway_traverse_state_record(sofia_gateway_t *gateway, switch_stream_handle_t *stream);
 
 /*
