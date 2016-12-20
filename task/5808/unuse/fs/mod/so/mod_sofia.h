@@ -98,6 +98,7 @@ typedef struct private_object private_object_t;
 #define MY_EVENT_RECOVERY_RECOVERED "sofia::recovery_recovered"
 #define MY_EVENT_ERROR "sofia::error"
 #define MY_EVENT_PROFILE_START "sofia::profile_start"
+#define MY_EVENT_GATEWAY_STATE_RECORD "sofia::gateway_state_record"
 
 #define MULTICAST_EVENT "multicast::event"
 #define SOFIA_REPLACES_HEADER "_sofia_replaces_"
@@ -477,7 +478,7 @@ struct sofia_gateway_subscription {
 	struct sofia_gateway_subscription *next;
 };
 
-#define GATEWAY_STATE_RECORD_LENGTH 30
+#define GATEWAY_STATE_RECORD_LENGTH 25
 
 struct sofia_gateway_state_record {
 	char *state[GATEWAY_STATE_RECORD_LENGTH];

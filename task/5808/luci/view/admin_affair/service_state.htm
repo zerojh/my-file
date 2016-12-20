@@ -20,7 +20,7 @@ button.filter-btn {
 
 /* Content table style */
 div.div-table {
-	max-height: 285px;
+	max-height: 450px;
 	overflow: auto;
 }
 
@@ -34,7 +34,7 @@ table {table-layout: fixed;}
 var access_state = "ready"
 var tmp_access = ""
 var starth = 1
-var reqnumh = 20
+var reqnumh = 25
 
 function filter_result()
 {
@@ -60,9 +60,55 @@ function keyup_event()
 	$(".connfilter").trigger(e)
 }
 
-function transfer(param)
+function translate_string(option, service, string)
 {
+	var service = service;
+	var string = string;
+	var ret = "";
 
+	if (option == "name") {
+		if (service == "Network") {
+			ret = "网络";
+		} else if (service == "Siptrunk") {
+			ret = "通讯调度平台";
+		} else if (service == "SIM") {
+			ret = "SIM卡";
+		} else if (service == "L2TP" || service == "PPTP" || service == "OpenVPN") {
+			ret = service + "客户端";
+		} else if (service == "DDNS") {
+			ret = "动态域名服务";
+		} else {
+			ret = "未知服务";
+		}
+	} else if (option == "state") {
+		if (service == "Network") {
+			if (string.indexOf("Connected") >= 0) {
+				ret = "联网成功";
+			} else if (string.indexOf("Disconnected") >= 0) {
+				ret = "联网失败";
+			} else {
+				ret = "未知信息";
+			}
+		} else if (service == "Siptrunk") {
+			ret = string;
+		} else if (service == "SIM") {
+			ret = string;
+		} else if (service == "L2TP" || service == "PPTP" || service == "OpenVPN") {
+			if (string.indexOf("Login") >= 0) {
+				ret = "登录成功";
+			} else if (string.indexOf("Logout") >= 0) {
+				ret = "登出成功";
+			} else {
+				ret = "未知信息";
+			}
+		} else if (service == "DDNS") {
+			ret = string;
+		}
+	} else {
+		ret = "未知错误";
+	}
+
+	return ret;
 }
 
 function get_list(param)
@@ -86,10 +132,10 @@ function get_list(param)
 							str += "<tr class='cbi-rowstyle-odd'>"
 						else
 							str += "<tr class='cbi-rowstyle-even'>"
-						for (var j=0;j<3;j++) {
-							str += "<td class='text-center'>"+raw[j]+"</td>"
-						}
-						str += "<td class='text-center connlist' colspan='2'>"+raw[3]+"</td>"
+						str += "<td class='text-center'>"+raw[0]+"</td>"
+						str += "<td class='text-center'>"+raw[1]+"</td>"
+						str += "<td class='text-center'>"+translate_string('name',raw[2],null)+"</td>"
+						str += "<td class='text-center connlist' colspan='2'>"+translate_string('state',raw[2],raw[3])+"</td>"
 						$(".history-section-table tbody").append(str)
 						num += 1
 					}
@@ -183,7 +229,7 @@ $(document).ready(function() {
 			<th>编号</th>
 			<th>时间</th>
 			<th>服务</th>
-			<th>状态</th>
+			<th style="padding-left:50px;">状态</th>
 			<th><button type="button" class="filter-btn" onclick="filter_result()"><%:Filter%></button></th>
 		</tr>
 		<tr id="filter-id" style="display: none;">

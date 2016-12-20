@@ -159,7 +159,6 @@ void sofia_reg_fire_custom_gateway_state_event(sofia_gateway_t *gateway, int sta
 		}
 		switch_event_fire(&s_event);
 	}
-	sofia_gateway_insert_state_record(gateway);
 }
 
 void sofia_reg_fire_custom_sip_user_state_event(sofia_profile_t *profile, const char *sip_user, const char *contact,
@@ -537,6 +536,7 @@ void sofia_reg_check_gateway(sofia_profile_t *profile, time_t now)
 		}
 		if (ostate != gateway_ptr->state) {
 			sofia_reg_fire_custom_gateway_state_event(gateway_ptr, 0, NULL);
+			sofia_gateway_insert_state_record(gateway_ptr);
 		}
 	}
 	switch_mutex_unlock(profile->gw_mutex);
@@ -3627,7 +3627,10 @@ int sofia_gateway_insert_state_record(sofia_gateway_t *gateway)
 	switch_time_exp_t tm;
 	switch_size_t retsize;
 	switch_time_t ts;
+	switch_event_t *s_event;
 	sofia_gateway_state_record_t *record;
+	static const char *state_str;
+	int state;
 
 	if (!gateway)
 		goto done;
@@ -3637,16 +3640,27 @@ int sofia_gateway_insert_state_record(sofia_gateway_t *gateway)
 		goto done;
 
 	if (record->initialing == 1) {
-		record->end_idx = (record->end_idx + 1) % GATEWAY_STATE_RECORD_LENGTH;
-		record->exist_num++;
-		if (record->exist_num > GATEWAY_STATE_RECORD_LENGTH)
-			record->exist_num = GATEWAY_STATE_RECORD_LENGTH;
+		state = gateway->state;
+		state_str = sofia_state_string(state);
+		if ((state == REG_STATE_REGED || state == REG_STATE_NOREG || state == REG_STATE_FAIL_WAIT)
+				&& (record->end_idx == -1 || (record->end_idx != -1 && strcasecmp(record->state[record->end_idx],state_str)))) {
+			record->end_idx = (record->end_idx + 1) % GATEWAY_STATE_RECORD_LENGTH;
+			record->exist_num++;
+			if (record->exist_num > GATEWAY_STATE_RECORD_LENGTH)
+				record->exist_num = GATEWAY_STATE_RECORD_LENGTH;
 
-		ts = switch_micro_time_now();
-		switch_time_exp_lt(&tm, ts);
-		switch_strftime_nocheck(date, &retsize, sizeof(date), "%Y-%m-%d %T", &tm);
-		record->time[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", date);
-		record->state[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", sofia_state_string(gateway->state));
+			ts = switch_micro_time_now();
+			switch_time_exp_lt(&tm, ts);
+			switch_strftime_nocheck(date, &retsize, sizeof(date), "%Y-%m-%d %T", &tm);
+			record->time[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", date);
+			record->state[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", sofia_state_string(gateway->state));
+
+			if (switch_event_create_subclass(&s_event, SWITCH_EVENT_CUSTOM, MY_EVENT_GATEWAY_STATE_RECORD) == SWITCH_STATUS_SUCCESS) {
+				switch_event_add_header_string(s_event, SWITCH_STACK_BOTTOM, "Gateway", gateway->name);
+				switch_event_add_header_string(s_event, SWITCH_STACK_BOTTOM, "State", state_str);
+				switch_event_fire(&s_event);
+			}
+		}
 	}
 
 done:

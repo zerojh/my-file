@@ -663,7 +663,14 @@ function config_network()
 		elseif network_model == "client" then
 			if drv_str == "rt2860v2_ap" or drv_str == "rt2860v2_sta" then
 				uci:set("network","lan","ifname","eth0.1 eth0.2")
-				uci:set("network","wan","ifname","ra0")
+				if uci:get_all("network","wan") then
+					uci:set("network","wan","ifname","ra0")
+				else
+					local mac_addr = uci:get("network","eth0","macaddr") or ""
+					
+					uci:create_section("network","interface","wan",{ifname="ra0",force_link="1"})
+					uci:set("network","wan","macaddr",mac_addr)
+				end
 				uci:set("wireless","ra0","disabled","0")
 				uci:set("wireless","wifi0","disabled","0")
 				uci:set("wireless","wifi0","network","wan")
@@ -1411,71 +1418,73 @@ function refresh_wireless_config()
 		end
 		uci:commit("wireless")
 
-		local ssid_cnt=0
-		local ssid_disabled_cnt=0
-		wireless_tb = uci:get_all("wireless")
-		if "1" == uci:get("wireless","ra0","disabled") then
-			for k,v in pairs(wireless_tb) do
-				if "wifi-iface" == v[".type"] and v.ifname then
-					os.execute("ifconfig "..v.ifname.." down")
-				end
-			end
-		else
-			local mode_list={["11bg"]="0",["11b"]="1",["11a"]="2",["11abg"]="3",["11g"]="4",["11abgn"]="5",["11n"]="6",["11gn"]="7",["11an"]="8",["11bgn"]="9",["11agn"]="10",}
-			local cmd_head="#!/bin/sh\n"
-			local cmd_public=""
-			local cmd_ssid=""
-			cmd_head=cmd_head.."#"..os.date().."\n"
-			for k,v in pairs(wireless_tb) do
-				if v[".name"] == "ra0" then
-					cmd_public=cmd_public.."iwpriv ra0 set WirelessMode="..(mode_list[v.hwmode] or "9").."\n"
-					if v.channel == "auto" then
-						cmd_public=cmd_public.."iwpriv ra0 set AutoChannelSel=2\n"
-					else
-						cmd_public=cmd_public.."iwpriv ra0 set AutoChannelSel=0\n"
-						cmd_public=cmd_public.."iwpriv ra0 set Channel="..v.channel.."\n"
-					end
-					if "HT40" == v.htmode then
-						cmd_public=cmd_public.."iwpriv ra0 set HtBw=1\n"
-						cmd_public=cmd_public.."iwpriv ra0 set HtBssCoex=0\n"
-					elseif "HT20/HT40" == v.htmode then
-						cmd_public=cmd_public.."iwpriv ra0 set HtBw=1\n"
-						cmd_public=cmd_public.."iwpriv ra0 set HtBssCoex=1\n"
-					else
-						cmd_public=cmd_public.."iwpriv ra0 set HtBw=0\n"
-					end
-
-					cmd_public=cmd_public.."iwpriv ra0 set NoForwardingBTNBSSID="..(v.isolate == "1" and "1" or "0").."\n"
-					cmd_public=cmd_public.."iwpriv ra0 set TxPower="..(v.TxPower or 50).."\n"
-					cmd_public=cmd_public.."iwpriv ra0 set WscConfMode="..("on"==v.wps and "7" or "0").."\n"
-				else
-					ssid_cnt=ssid_cnt+1
-					if "0" == v.disabled then
-						cmd_ssid=cmd_ssid.."brctl addif br-lan "..v.ifname.."\n"
-						cmd_ssid=cmd_ssid.."ifconfig "..v.ifname.." up\n"
-						cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set NoForwarding="..("1"==v.isolate and "1" or "0").."\n"
-						cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set WmmCapable="..("1"==v.wmm and "1" or "0").."\n"
-
-						if v.encryption and ("psk" == v.encryption or "psk2" == v.encryption) then
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set AuthMode="..("psk"==v.encryption and "WPAPSK" or "WPA2PSK").."\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set EncrypType=AES\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set SSID="..v.ssid.."\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set WPAPSK=\""..v.key.."\"\n"
-						else
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set AuthMode=OPEN\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set EncrypType=NONE\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set IEEE8021X=0\n"
-							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set SSID="..v.ssid.."\n"
-						end
-					else
-						ssid_disabled_cnt=ssid_disabled_cnt+1
+		if not fs.access("/tmp/require_reboot") then
+			local ssid_cnt=0
+			local ssid_disabled_cnt=0
+			wireless_tb = uci:get_all("wireless")
+			if "1" == uci:get("wireless","ra0","disabled") then
+				for k,v in pairs(wireless_tb) do
+					if "wifi-iface" == v[".type"] and v.ifname then
 						os.execute("ifconfig "..v.ifname.." down")
 					end
 				end
-			end
-			if ssid_cnt > ssid_disabled_cnt then
-				fs.writefile("/tmp/refresh_wireless.sh",cmd_head..cmd_ssid..cmd_public) --if no any raX up, public part will execute fail
-				os.execute("sh /tmp/refresh_wireless.sh")
+			else
+				local mode_list={["11bg"]="0",["11b"]="1",["11a"]="2",["11abg"]="3",["11g"]="4",["11abgn"]="5",["11n"]="6",["11gn"]="7",["11an"]="8",["11bgn"]="9",["11agn"]="10",}
+				local cmd_head="#!/bin/sh\n"
+				local cmd_public=""
+				local cmd_ssid=""
+				cmd_head=cmd_head.."#"..os.date().."\n"
+				for k,v in pairs(wireless_tb) do
+					if v[".name"] == "ra0" then
+						cmd_public=cmd_public.."iwpriv ra0 set WirelessMode="..(mode_list[v.hwmode] or "9").."\n"
+						if v.channel == "auto" then
+							cmd_public=cmd_public.."iwpriv ra0 set AutoChannelSel=2\n"
+						else
+							cmd_public=cmd_public.."iwpriv ra0 set AutoChannelSel=0\n"
+							cmd_public=cmd_public.."iwpriv ra0 set Channel="..v.channel.."\n"
+						end
+						if "HT40" == v.htmode then
+							cmd_public=cmd_public.."iwpriv ra0 set HtBw=1\n"
+							cmd_public=cmd_public.."iwpriv ra0 set HtBssCoex=0\n"
+						elseif "HT20/HT40" == v.htmode then
+							cmd_public=cmd_public.."iwpriv ra0 set HtBw=1\n"
+							cmd_public=cmd_public.."iwpriv ra0 set HtBssCoex=1\n"
+						else
+							cmd_public=cmd_public.."iwpriv ra0 set HtBw=0\n"
+						end
+
+						cmd_public=cmd_public.."iwpriv ra0 set NoForwardingBTNBSSID="..(v.isolate == "1" and "1" or "0").."\n"
+						cmd_public=cmd_public.."iwpriv ra0 set TxPower="..(v.TxPower or 50).."\n"
+						cmd_public=cmd_public.."iwpriv ra0 set WscConfMode="..("on"==v.wps and "7" or "0").."\n"
+					else
+						ssid_cnt=ssid_cnt+1
+						if "0" == v.disabled then
+							cmd_ssid=cmd_ssid.."brctl addif br-lan "..v.ifname.."\n"
+							cmd_ssid=cmd_ssid.."ifconfig "..v.ifname.." up\n"
+							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set NoForwarding="..("1"==v.isolate and "1" or "0").."\n"
+							cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set WmmCapable="..("1"==v.wmm and "1" or "0").."\n"
+
+							if v.encryption and ("psk" == v.encryption or "psk2" == v.encryption) then
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set AuthMode="..("psk"==v.encryption and "WPAPSK" or "WPA2PSK").."\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set EncrypType=AES\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set SSID="..v.ssid.."\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set WPAPSK=\""..v.key.."\"\n"
+							else
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set AuthMode=OPEN\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set EncrypType=NONE\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set IEEE8021X=0\n"
+								cmd_ssid=cmd_ssid.."iwpriv "..v.ifname.." set SSID="..v.ssid.."\n"
+							end
+						else
+							ssid_disabled_cnt=ssid_disabled_cnt+1
+							os.execute("ifconfig "..v.ifname.." down")
+						end
+					end
+				end
+				if ssid_cnt > ssid_disabled_cnt then
+					fs.writefile("/tmp/refresh_wireless.sh",cmd_head..cmd_ssid..cmd_public) --if no any raX up, public part will execute fail
+					os.execute("sh /tmp/refresh_wireless.sh")
+				end
 			end
 		end
 	end
@@ -1533,10 +1542,12 @@ function load_scripts(param)
 		fs.writefile("/tmp/fs-apply-status","Applying="..applyed_list)
 		ret = config_network()
 		--@ check reload
-		if not fs.access("/tmp/require_reboot") and param.network and not param.network_restart then
-			exe("/etc/init.d/network reload")
-		elseif param.network_restart then
-			exe("/etc/init.d/network restart")
+		if not fs.access("/tmp/require_reboot") and param.network then 
+			if not param.network_restart then
+				exe("/etc/init.d/network reload")
+			else
+				exe("/etc/init.d/network restart")
+			end
 		end
 
 		if not ret then

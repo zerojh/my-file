@@ -35,8 +35,8 @@ option.template = "admin_wizard/description"
 option.data = {}
 table.insert(option.data,"本设备提供五种上网方式．")
 table.insert(option.data,"")
-table.insert(option.data,"有线上网方式有＂动态IP＂、＂静态IP＂和＂PPPOE＂．")
-table.insert(option.data,"无线上网方式有＂动态IP＂和＂静态IP＂．")
+table.insert(option.data,"有线上网方式有＂<span style='color:#b94a48;'>动态IP</span>＂、＂<span style='color:#b94a48;'>静态IP</span>＂和＂<span style='color:#b94a48;'>PPPOE</span>＂．")
+table.insert(option.data,"无线上网方式有＂<span style='color:#b94a48;'>动态IP</span>＂和＂<span style='color:#b94a48;'>静态IP</span>＂．")
 
 local section_firewall
 

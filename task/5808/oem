@@ -3,6 +3,6 @@ config 'oem' 'general'
 	option 'brand' 'dchy'
 
 config 'brand' 'dchy'
-	option 'hostname' 'dchy'
+	option 'hostname' 'DC1000'
 	option 'logo' 'dinstar_logo.png'
 	option 'display_on_about_page' 'off'

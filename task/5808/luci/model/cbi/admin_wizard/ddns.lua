@@ -60,7 +60,7 @@ option = s:option(DummyValue,"_description")
 option.template = "admin_wizard/description"
 option.data = {}
 table.insert(option.data,"此处可选择是否启动动态域名服务．")
-table.insert(option.data,"如果启用动态域名服务，可以实现网页输入字段如＂www.xxx.com＂登入本设备网页．")
+table.insert(option.data,"如果启用动态域名服务，可以实现网页输入字段如＂<span style='color:#b94a48;'>www.xxx.com</span>＂登入本设备网页．")
 
 --#### Enable #####----
 option = s:option(ListValue,"enabled","启动动态域名服务")

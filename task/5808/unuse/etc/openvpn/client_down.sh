@@ -47,6 +47,6 @@ fi
 #fi
 
 lock /tmp/service_state_log_lock
-echo "Date:$daemon_start_time, Service:OpenVPN, State:Logout" >> /ramlog/service_state_log
+echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:OpenVPN, State:Logout" >> /ramlog/service_state_log
 lock -u /tmp/service_state_log_lock
 

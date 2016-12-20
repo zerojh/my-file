@@ -307,22 +307,24 @@ function action_apply()
 			if tbl.wan_dns or tbl.lan_dns or tbl.wan_peerdns or tbl.lan_peerdns then
 				apply_param.dns = "on"
 			end
-			
-			if drv_str ~= "rt2860v2_sta" and (tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask) then
-				os.execute("echo network >>/tmp/require_reboot")
-			end
-			if drv_str == "rt2860v2_sta" and uci:get("wireless","wifi0","mode") == "sta" then
-				apply_param.network_restart = "on"
+
+			if tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask then
+				if drv_str == "rt2860v2_ap" and uci:get("wireless","wifi0","mode") == "ap" then
+					os.execute("echo network >>/tmp/require_reboot")
+				elseif drv_str == "rt2860v2_sta" and uci:get("wireless","wifi0","mode") == "sta" and not fs.access("/tmp/require_reboot") then
+					apply_param.network_restart = "on"
+				end
 			end
 		elseif "network" == r then
 			apply_param.network = "on"
 		elseif "wireless" == r then
 			apply_param.network = "on"
 			apply_param.wireless = "on"
+
 			if tbl.wifi0.mode then
-				os.execute("echo wireless >>/tmp/require_reboot")
-			end
-			if tbl.wifi0.mode or uci:get("wireless","wifi0","mode") == "sta" then
+				os.execute("echo wireless >>/tmp/require_reboot;sh /usr/lib/lua/luci/scripts/change_wireless_dat.sh")
+				apply_param.change_wireless_dat = "on"
+			elseif not tbl.wifi0.mode and drv_str == "rt2860v2_sta" and uci:get("wireless","wifi0","mode") == "sta" and not fs.access("/tmp/require_reboot") then
 				apply_param.network_restart = "on"
 			end
 		elseif "static_route" == r then

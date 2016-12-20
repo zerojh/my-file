@@ -22,7 +22,7 @@
 			if v['.type'] == "wifi" and v.ssid and not ssid_list[v.ssid] then
 				ssid_list[v.ssid] = 1
 			end %>
-			g_ssid_list['<%=v.ssid%>']='<%=v.ssid%>'; g_signal_list['<%=v.ssid%>']='<%=v.signal%>'; g_encryption_list['<%=v.ssid%>']='<%=v.encryption%>'; g_ssid_number += 1;<% 
+			g_signal_list['<%=v.ssid%>']=dbm_to_percentage('<%=v.signal%>'); g_ssid_list['<%=v.ssid%>']='<%=v.ssid%> ('+g_signal_list['<%=v.ssid%>']+'%)'; g_encryption_list['<%=v.ssid%>']='<%=v.encryption%>'; g_ssid_number += 1;<% 
 		end %>
 
 	function change_encryption_view(encryption)
@@ -55,8 +55,8 @@
 
 				for (i=0;i<info.length;i++) {
 					if (!g_ssid_list[info[i]["ssid"]]) {
-						g_ssid_list[info[i]["ssid"]] = info[i]["ssid"]
-						g_signal_list[info[i]["ssid"]] = info[i]["signal"]
+						g_signal_list[info[i]["ssid"]] = ''+dbm_to_percentage(info[i]["signal"])
+						g_ssid_list[info[i]["ssid"]] = ''+info[i]["ssid"]+' ('+g_signal_list[info[i]["ssid"]]+'%)'
 						g_encryption_list[info[i]["ssid"]] = info[i]["encryption"]
 						g_ssid_number += 1
 					}
@@ -86,6 +86,33 @@
 		$("#cbi\\.combobox\\.cbid\\.network_tmp\\.network\\.wifi_ssid").bind("change", check_ssid)
 	}
 
+	function dbm_to_percentage(param)
+	{
+		var signal = param;
+
+		if (!signal) {
+			signal = 0
+		} else {
+			if (signal.indexOf("%") >= 0) {
+				signal = signal.replace(/[^0-9]/g,"")
+				signal = Number(signal)
+			} else {
+				signal = signal.replace(/[^0-9]/g,"")
+				signal = Number(signal)
+				if (signal <= 50)
+					signal = 100;
+				else if (signal <= 80)
+					signal = Math.round(24 + (80 - signal) * 26 / 10);
+				else if (signal < 90)
+					signal = Math.round((90 - signal) * 26 / 10);
+				else
+					signal = 1;
+			}
+		}
+
+		return signal;
+	}
+
 	function check_ssid()
 	{
 		var ssid_id = document.getElementById('cbi.combobox.cbid.network_tmp.network.wifi_ssid')
@@ -105,25 +132,6 @@
 			}
 			$("#cbid\\.network_tmp\\.network\\.wifi_encryption").val(encryption)
 
-			if (!signal) {
-				signal = 0
-			} else {
-				if (signal.indexOf("%") >= 0) {
-					signal = signal.replace(/[^0-9]/g,"")
-					signal = Number(signal)
-				} else {
-					signal = signal.replace(/[^0-9]/g,"")
-					signal = Number(signal)
-					if (signal <= 50)
-						signal = 100;
-					else if (signal <= 80)
-						signal = 24 + (80 - signal) * 26 / 10;
-					else if (signal <= 90)
-						signal = (90 - signal) * 26 / 10;
-					else
-						signal = 1;
-				}
-			}
 			if (signal > 0 && signal <= 20)
 				sig_id.src = "/luci-static/resources/signal1.png"
 			else if (signal >= 21 && signal <= 40)

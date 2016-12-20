@@ -10,6 +10,8 @@
 	local lte_led_state
 	local lte_link
 	local str
+	local internet_link_state
+	local prev_link_state
 	config_load network
 	config_get lanif lan ifname
 	
@@ -23,32 +25,33 @@
 	lanif=eth0.1
 	#echo $lanif > /dev/console
 	[ -z "$lanif" ] && exit 0
-                                              
-	prev_linkmode=yes                         
-	while true                                
-	do                                        
-		linkmode=$(ethtool $lanif)        
+
+	prev_linkmode=yes
+	prev_link_state="Connected"
+	while true
+	do
+		linkmode=$(ethtool $lanif)
 		linkmode=${linkmode#*Link detected: }
 		linkmode=${linkmode%%\n}
 		while [ "$linkmode" != "yes" -a "$linkmode" != "no" ]
-		do                 
-			sleep 1    
+		do
+			sleep 1
 			linkmode=$(ethtool $lanif)
 			linkmode=${linkmode#*Link detected: }
 			linkmode=${linkmode%%\n}
-		done                      
+		done
 		#echo $linkmode > /dev/console
 
 		[ -n "$linkmode" ] && [ "$linkmode" != "$prev_linkmode" ] && {
-			prev_linkmode=$linkmode                      
+			prev_linkmode=$linkmode
 
 			[ "$linkmode" = "no" ] && {
 				echo link down
-			}                       
+			}
 			[ "$linkmode" = "yes" ] && {
 				echo link up
-			}                                         
-			#/etc/init.d/network reload 
+			}
+			#/etc/init.d/network reload
 		}
 
 		str=""
@@ -79,6 +82,22 @@
 			echo "255" > /sys/class/leds/lte-run/brightness
 			lte_led_state="off"
 		fi
-		sleep 1                                           
-	done        
+
+		ping_baidu_ret=`ping -c 2 www.baidu.com 2>/dev/null | wc -l`
+		if [ $ping_baidu_ret -gt 4 ]; then
+			internet_link_state="Connected"
+		else
+			internet_link_state="Disconnected"
+		fi
+
+		echo $internet_link_state
+		if [ -n "$internet_link_state" ] && [ "$prev_link_state" != "$internet_link_state" ]; then
+			prev_link_state=$internet_link_state
+			lock /tmp/service_state_log_lock
+			echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:Network, State:$internet_link_state" >> /ramlog/service_state_log
+			lock -u /tmp/service_state_log_lock
+		fi
+
+		sleep 1
+	done
 }
