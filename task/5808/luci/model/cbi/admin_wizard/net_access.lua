@@ -66,6 +66,11 @@ function option.write(self, section, value)
 	if value == "wan_dhcp" or value == "wan_static" or value == "wan_pppoe" then
 		m.uci:set("network_tmp","network","network_mode","route")
 		m.uci:set("network_tmp","network","wan_proto",string.sub(value,5))
+		if m.uci:get("wireless","wifi0","mode") == "sta" then
+			m.uci:set("wireless","wifi0","ssid","DC1000")
+			m.uci:set("wireless","wifi0","encryption","none")
+			m.uci:delete("wireless","wifi0","key")
+		end
 		m.uci:set("wireless","wifi0","mode","ap")
 		m.uci:set("firewall",section_firewall,"enabled","1")
 	elseif value == "wlan_dhcp" or value == "wlan_static" then
@@ -109,6 +114,7 @@ end
 option = s:option(ListValue,"wifi_encryption","WIFI加密方式")
 option.margin = "30px"
 option.default = "psk2"
+option:value("psk","WPA+PSK")
 option:value("psk2","WPA2+PSK")
 option:value("none","无")
 option:depends("access_mode","wlan_dhcp")
@@ -129,7 +135,9 @@ option.margin = "30px"
 option.datatype = "wifi_password"
 option.rmempty = false
 option.password = true
+option:depends({access_mode="wlan_dhcp",wifi_encryption="psk"})
 option:depends({access_mode="wlan_dhcp",wifi_encryption="psk2"})
+option:depends({access_mode="wlan_static",wifi_encryption="psk"})
 option:depends({access_mode="wlan_static",wifi_encryption="psk2"})
 function option.cfgvalue(self, section)
 	if flag == "1" then

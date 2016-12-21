@@ -328,7 +328,7 @@ while : ; do
 			syslog_err "Error detecting local IP - retry $ERR_LOCAL_IP/$retry_count in $RETRY_SECONDS seconds"
 			[ $SECTION_ID == "myddns_ipv4" ] && {
 				lock /tmp/service_state_log_lock
-				echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:Detecting local IP - retry $ERR_LOCAL_IP/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
+				echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:Error detecting local IP - retry $ERR_LOCAL_IP/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
 				lock -u /tmp/service_state_log_lock
 			}
 			sleep $RETRY_SECONDS
@@ -374,7 +374,7 @@ while : ; do
 				syslog_err "Error sending update - retry $ERR_SEND/$retry_count in $RETRY_SECONDS seconds"
 				[ $SECTION_ID == "myddns_ipv4" ] && {
 					lock /tmp/service_state_log_lock
-					echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:sending update - retry $ERR_SEND/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
+					echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:Error sending update - retry $ERR_SEND/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
 					lock -u /tmp/service_state_log_lock
 				}
 				sleep $RETRY_SECONDS
@@ -425,7 +425,7 @@ while : ; do
 			syslog_err "Error detecting Registered IP - retry $ERR_REG_IP/$retry_count in $RETRY_SECONDS seconds"
 			[ $SECTION_ID == "myddns_ipv4" ] && {
 				lock /tmp/service_state_log_lock
-				echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:Detecting Registered IP - retry $ERR_REG_IP/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
+				echo "Date:`date '+%Y-%m-%d %H:%M:%S'`, Service:DDNS, State:Error detecting Registered IP - retry $ERR_REG_IP/$retry_count in $RETRY_SECONDS seconds" >> /ramlog/service_state_log
 				lock -u /tmp/service_state_log_lock
 			}
 			sleep $RETRY_SECONDS

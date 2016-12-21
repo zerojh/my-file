@@ -78,7 +78,7 @@ function translate_string(option, service, string)
 		} else if (service == "DDNS") {
 			ret = "动态域名服务";
 		} else {
-			ret = "未知服务";
+			ret = service;
 		}
 	} else if (option == "state") {
 		if (service == "Network") {
@@ -87,25 +87,80 @@ function translate_string(option, service, string)
 			} else if (string.indexOf("Disconnected") >= 0) {
 				ret = "联网失败";
 			} else {
-				ret = "未知信息";
+				ret = string;
 			}
 		} else if (service == "Siptrunk") {
-			ret = string;
+			if (string.indexOf("NOREG") >= 0) {
+				ret = "注销成功";
+			} else if (string.indexOf("REGED") >= 0) {
+				ret = "注册成功";
+			} else if (string.indexOf("FAIL_WAIT") >= 0) {
+				ret = "注册失败";
+			} else {
+				ret = string;
+			}
 		} else if (service == "SIM") {
-			ret = string;
+			if (string.indexOf("OK") >= 0) {
+				ret = "注册成功";
+			} else if (string.indexOf("NOT_REGISTERED") >= 0) {
+				ret = "注册失败";
+			} else if (string.indexOf("SIMPIN_NOT_INSERTED") >= 0 || string.indexOf("SIMPIN_ERROR") >= 0) {
+				ret = "SIM卡未插入";
+			} else {
+				ret = string;
+			}
 		} else if (service == "L2TP" || service == "PPTP" || service == "OpenVPN") {
 			if (string.indexOf("Login") >= 0) {
 				ret = "登录成功";
 			} else if (string.indexOf("Logout") >= 0) {
 				ret = "登出成功";
 			} else {
-				ret = "未知信息";
+				ret = string;
 			}
 		} else if (service == "DDNS") {
+			if (string.match('(\\d*) seconds \\(Check Interval\\) before continue')) {
+				ret = "将于" + Number(RegExp.$1)/60 + "分钟后重新检查";
+			} else if (string.match('Detecting external address via IP Check URL (.*)')) {
+				ret = "正在通过IP检查地址 " + RegExp.$1 + " 检测外部地址";
+			} else if (string.match('Resolving domain (.*)')) {
+				ret = "解析域名 " + RegExp.$1;
+			} else if (string.match('Private or invalid or no IP (.*) given')) {
+				ret = "设备地址 " + RegExp.$1 + " 是个私网地址或者非法地址";
+			} else if (string.match('Error sending update to DDNS Provider')) {
+				ret = "连接动态域名服务商发生错误";
+			} else if (string.match('DDNS Provider answered \\[(.*)\\]')) {
+				var answer = RegExp.$1;
+				if (answer.indexOf('badauth') >= 0) {
+					ret = "用户名或密码错误";
+				} else if (answer.indexOf('abuse') >= 0) {
+					ret = "请求过于频繁, 动态域名更新失败";
+				} else if (answer.indexOf('nohost') >= 0 || answer.indexOf('notfqdn') >= 0 || answer.indexOf('numhost') >= 0) {
+					ret = "域名不存在";
+				} else if (answer.indexOf('good 127.0.0.1') >= 0 || answer.indexOf('badagent') >= 0) {
+					ret = "更新地址不符合动态域名提供商要求";
+				} else if (answer.match('^good$') || answer.match('^nochg$') || answer.match('good \\d+\\.\\d+\\.\\d+\\.\\d+') || answer.match('nochg \\d+\\.\\d+\\.\\d+\\.\\d+')) {
+					ret = "动态域名更新成功";
+				} else if (answer.indexOf('dnserr') >= 0 || answer.indexOf('911') >= 0) {
+					ret = "动态域名服务商发生错误 [" + answer + "]";
+				} else if (answer != "") {
+					ret = "动态域名服务商已应答 [" + answer + "]";
+				} else {
+					ret = "未知信息";
+				}
+			} else if (string.match('10 seconds for interfaces to fully come up')) {
+				ret = "准备连接动态域名服务商";
+			} else if (string.match('Error detecting local IP - retry (\\d+)/(\\d+) in (\\d+) seconds')) {
+				ret = "检测本地IP错误, " + RegExp.$3 + "秒内重试第" + RegExp.$1 + "次, 共" + RegExp.$2 + "次";
+			} else if (string.match('Error sending update - retry (\\d+)/(\\d+) in (\\d+) seconds')) {
+				ret = "向服务器发送更新信息错误, " + RegExp.$3 + "秒内重试第" + RegExp.$1 + "次, 共" + RegExp.$2 + "次";
+			} else if (string.match('Error detecting Registered IP - retry (\\d+)/(\\d+) in (\\d+) seconds')) {
+				ret = "检测已注册IP地址错误, " + RegExp.$3 + "秒内重试第" + RegExp.$1 + "次, 共" + RegExp.$2 + "次";
+			} else {
+				ret = string;
+			}
+		} else {
 			ret = string;
 		}
-	} else {
-		ret = "未知错误";
 	}
 
 	return ret;
@@ -215,7 +270,7 @@ $(document).ready(function() {
 	get_list("default")
 });
 </script>
-<h2><a id="content" name="content">状态 / 服务状态日志</a></h2>
+<h2><a id="content" name="content">状态 / 服务日志</a></h2>
 <fieldset>
 	<table>
 		<colgroup>

@@ -6,19 +6,30 @@ local currsection
 
 uci:check_cfg("endpoint_siptrunk")
 
-local tmp_tb = uci:get_all("endpoint_siptrunk") or {}
-if tmp_tb and next(tmp_tb) then
-	for k,v in pairs(tmp_tb) do
-		if v.index and v.index == "1" then
-			currsection = k
-			break
+if uci:get("endpoint_siptrunk","main_trunk") then
+	currsection = "main_trunk"
+else
+	local tmp_tb = uci:get_all("endpoint_siptrunk") or {}
+	if tmp_tb and next(tmp_tb) then
+		for k,v in pairs(tmp_tb) do
+			if v.index and v.index == "1" then
+				currsection = k
+				break
+			end
 		end
 	end
 end
 
 if not currsection then
-	currsection = uci:section("endpoint_siptrunk","sip")
-	uci:save("endpoint_siptrunk")
+	local ret = uci:create_section("endpoint_siptrunk","sip","main_trunk",{index="1"})
+	if ret then
+		currsection = "main_trunk"
+	else
+		currsection = uci:section("endpoint_siptrunk","sip")
+		uci:set("endpoint_siptrunk",currsection,"index","1")
+		uci:save("endpoint_siptrunk")
+		uci:commit("endpoint_siptrunk")
+	end
 end
 
 m = Map("endpoint_siptrunk",translate("通讯调度平台"))
@@ -58,8 +69,6 @@ option = s:option(Value,"ipv4","服务器地址")
 option.rmempty = false
 option.datatype="abc_ip4addr_domain"
 function option.cfgvalue(self, section)
-	m.uci:set("endpoint_siptrunk",currsection,"index","1")
-	m.uci:save("endpoint_siptrunk")
 	if flag == "1" then
 		return AbstractValue.cfgvalue(self, section)
 	else

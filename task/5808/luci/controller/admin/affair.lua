@@ -11,8 +11,14 @@ function index()
 		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
 		entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
 		--entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
-		--entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务状态日志",11).leaf = true
-		--entry({"admin","affair","get_service_log"},call("action_get_service_log"))
+		entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务日志",11).leaf = true
+		entry({"admin","affair","get_service_log"},call("action_get_service_log"))
+	end
+
+	if luci.http.getenv("SERVER_PORT") == 80 then
+		-- overview
+		entry({"admin","status"})
+		entry({"admin","status","overview"},call("action_overview"))
 	end
 end
 
@@ -21,7 +27,42 @@ function get_network_info()
 	local net_info = {}
 	local str
 
-	net_info.access_mode = uci:get("network_tmp","network","access_mode") or "未知"
+	if not fs.access("/etc/config/network_tmp") then
+		require "luci.model.network".profile_network_init()
+	end
+
+	net_info.access_mode = uci:get("network_tmp","network","access_mode")
+	if not net_info.access_mode then
+		local access_mode
+		local network_mode = uci:get("network_tmp","network","network_mode")
+		local wan_proto = uci:get("network_tmp","network","wan_proto")
+		if not network_mode or not wan_proto or wan_proto == "dhcp" then
+			network_mode = "route"
+			wan_proto = "dhcp"
+			if uci:get("network","wan","ifname") == "ra0" then
+				access_mode = "wlan_dhcp"
+			else
+				access_mode = "wan_dhcp"
+			end
+		elseif wan_proto == "static" then
+			wan_proto = "static"
+			if uci:get("network","wan","ifname") == "ra0" then
+				access_mode = "wlan_static"
+			else
+				access_mode = "wan_static"
+			end
+		else
+			wan_proto = "pppoe"
+			access_mode = "wan_pppoe"
+		end
+		net_info.access_mode = access_mode
+		uci:set("network_tmp","network","wan_proto",wan_proto)
+		uci:set("network_tmp","network","access_mode",access_mode)
+		uci:set("network_tmp","network","network_mode",network_mode)
+		uci:save("network_tmp")
+		uci:commit("network_tmp")
+	end
+
 	if net_info.access_mode == "wlan_dhcp" or net_info.access_mode == "wlan_static" then
 		str = util.exec("ifconfig ra0 | grep 'RX bytes'")
 	else

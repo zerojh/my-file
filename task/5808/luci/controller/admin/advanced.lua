@@ -163,16 +163,20 @@ function start_diagnostics(string)
 			end
 		end
 		if status and status == "Enabled" then
-			local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/Address/p' | tr '\n' '#'")
-			local trunk_ipaddr = str:match("Address%s+(%d+%.%d+%.%d+%.%d+)")
 			local num = 0
 			local continue = true
 			
 			while num < 3 do
-				local result = util.exec("ping -c 5 -W 1 2>&1 "..trunk_ipaddr.." | grep 'loss'")
-				result = result:match("(%d+)%%")
-				if result and result ~= "" and result ~= "100" then
-					break
+				local str = util.exec("fs_cli -x 'sofia status gateway 2_1' | sed -n '/Address/p' | tr '\n' '#'")
+				local trunk_ipaddr = str:match("Address%s+([^#]*)#")
+				if trunk_ipaddr and trunk_ipadddr ~= "" and trunk_ipaddr ~= "0.0.0.0" then
+					local result = util.exec("ping -c 5 -W 1 2>&1 "..trunk_ipaddr.." | grep 'loss'")
+					result = result:match("(%d+)%%")
+					if result and result ~= "" and result ~= "100" then
+						break
+					end
+				else
+					exe("sleep 2");
 				end
 				num = num + 1
 			end
