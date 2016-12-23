@@ -4,6 +4,17 @@ cp /tmp/firmware_upgrading_temp/oem/etc/config/* /usr/lib/lua/luci/scripts/defau
 cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
 cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -rf
 cp /tmp/firmware_upgrading_temp/oem/icons /www/luci-static/resources/ -rf
+cp /tmp/firmware_upgrading_temp/oem/bin/network_watch /bin/network_watch
+cp /tmp/firmware_upgrading_temp/oem/etc/freeswitch/conf/autoload_configs/lua.conf.xml /etc/freeswitch/conf/autoload_configs/lua.conf.xml
+cp /tmp/firmware_upgrading_temp/oem/etc/freeswitch/scripts/service_state_log.lua /etc/freeswitch/scripts/service_state_log.lua
+cp /tmp/firmware_upgrading_temp/oem/etc/hotplug.d/54-ra0 /etc/hotplug.d/54-ra0
+cp /tmp/firmware_upgrading_temp/oem/etc/openvpn/client_down.sh /etc/openvpn/client_down.sh
+cp /tmp/firmware_upgrading_temp/oem/etc/openvpn/client_up.sh /etc/openvpn/client_up.sh
+cp /tmp/firmware_upgrading_temp/oem/lib/netifd/ppp-down /lib/netifd/ppp-down
+cp /tmp/firmware_upgrading_temp/oem/lib/netifd/ppp-up /lib/netifd/ppp-up
+cp /tmp/firmware_upgrading_temp/oem/usr/bin/cron_app.sh /usr/bin/cron_app.sh
+cp /tmp/firmware_upgrading_temp/oem/lib/ddns/dynamic_dns_functions.sh /usr/lib/ddns/dynamic_ddns_function.sh
+cp /tmp/firmware_upgrading_temp/oem/lib/ddns/dynamic_dns_updater.sh /usr/lib/ddns/dynamic_ddns_updater.sh
 
 uci set lucid.http.address=80
 uci add_list lucid.http.address=8345
