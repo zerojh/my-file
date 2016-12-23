@@ -126,7 +126,7 @@ function action_openvpn()
 		luci.http.redirect(ds.build_url("admin","uci","changes"))
 		return
 	elseif luci.http.formvalue("cancel") then
-		luci.http.redirect(ds.build_url("admin","wizard","ddns"))
+		luci.http.redirect(ds.build_url("admin","wizard","vpn"))
 	else
 		luci.template.render("admin_wizard/openvpn",{
 			status = flag == "1" and uci:get("openvpn","custom_config","enabled") or "0"

@@ -25,7 +25,7 @@ m:chain("profile_sip")
 m:chain("vpnselect")
 
 if luci.http.formvalue("cbi.cancel") then
-	m.redirect = dsp.build_url("admin","wizard","ddns")
+	m.redirect = dsp.build_url("admin","wizard","vpn")
 elseif luci.http.formvalue("cbi.save") then
 	flag = "1"
 	uci_tmp:set("wizard","globals","pptp","1")

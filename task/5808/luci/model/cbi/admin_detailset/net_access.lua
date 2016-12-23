@@ -2,6 +2,7 @@ local uci = require "luci.model.uci".cursor()
 local dsp = require "luci.dispatcher"
 local fs = require "nixio.fs"
 local fs_server = require "luci.scripts.fs_server"
+local sys = require "luci.sys"
 
 --@ init network_tmp from network,wireless
 if not fs.access("/etc/config/network_tmp") then
@@ -99,67 +100,6 @@ function option.write(self,section,value)
 	return m.uci:set("wireless","wifi0","encryption",value or "psk2")
 end
 
---[[
-	--# wifi wep encryption
-	option = s:option(ListValue,"wifi_wep",translate(" "))
-	option.margin = "30px"
-	option:depends("wifi_encryption","wep")
-	option:value("64bit","64bit")
-	option:value("128bit","128bit")
-
-	--# wifi wep key
-	option = s:option(Value,"wifi_wep_key",translate("Password"))
-	option.margin = "30px"
-	option.rmempty = false
-	option:depends({wifi_disabled="0",wifi_encryption="wep"})
-	option.datatype = "wep_password"
-	option.password = true
-	function option.cfgvalue(...)
-		local tmp = m.uci:get("network_tmp","network","wifi_encryption")
-		local key = m.uci:get("network_tmp","network","wifi_key")
-		
-		if tmp == "wep" and key and key:match("^[0-9a-fA-F]+$") then
-			local ret_key = ""
-			local i = 1
-
-			while string.byte(key,i) do
-				ret_key = ret_key..string.format("%c","0x"..string.sub(key,i,i+1))
-				i = i + 2
-			end
-			
-			return ret_key
-		else
-			return key or ""
-		end
-	end
-
-	local sys = require "luci.sys"
-	function option.write(self, section, value)
-		local tmp = m:formvalue("cbid.network_tmp.network.wifi_encryption")
-		local wep_type = m:formvalue("cbid.network_tmp.network.wifi_wep")
-
-		if tmp == "wep" then
-			if wep_type == "64bit" then
-				local ret_str = sys.exec("echo -n '"..(value or "").."' | hexdump -e '5/1 \"%02x\"'")	
-				m.uci:set("network_tmp","network","wifi_key",ret_str or "")
-			else
-				local ret_str = sys.exec("echo -n '"..(value or "").."' | hexdump -e '13/1 \"%02x\"'")	
-				m.uci:set("network_tmp","network","wifi_key",ret_str or "")							
-			end
-		end
-	end
-	function option.validate(self,value)
-		local tmp = m:formvalue("cbid.network_tmp.network.wifi_encryption")
-		local disabled = m:formvalue("cbid.network_tmp.network.wifi_disabled")
-		
-		if disabled == "0" and tmp == "wep" then
-			return Value.validate(self,value)
-		else
-			return value or ""
-		end
-	end
-]]--
-
 option = s:option(Value,"wifi_key","WIFI密码")
 option.margin = "30px"
 option.datatype = "wifi_password"
@@ -180,19 +120,92 @@ end
 function option.validate(self,value)
 	local encryption = m:formvalue("cbid.network_tmp.network.wifi_encryption")
 	
-	if encryption ~= "none" then
-		if value then
+	if value then
+		if encryption ~= "none" then
+			if encryption ~= "wep" then
+				m.uci:delete("wireless","wifi0","wep")
+			end
 			return Value.validate(self,value)
 		else
-			return ""
+			m.uci:delete("wireless","wifi0","key")
+			return value or ""
 		end
 	else
-		m.uci:delete("wireless","wifi0","key")
-		return value or ""
+		return ""
 	end
 end
 function option.write(self,section,value)
 	return m.uci:set("wireless","wifi0","key",value or "")
+end
+
+--# wifi wep encryption
+option = s:option(ListValue,"wifi_wep",translate(" "))
+option.margin = "30px"
+option:depends({access_mode="wlan_dhcp",wifi_encryption="wep"})
+option:depends({access_mode="wlan_static",wifi_encryption="wep"})
+option:value("64bit","64bit")
+option:value("128bit","128bit")
+function option.cfgvalue(self, section)
+	return m.uci:get("wireless","wifi0","wep")
+end
+function option.validate(self, value)
+	if value then
+		return Value.validate(self, value)
+	else
+		return ""
+	end
+end
+function option.write(self,section,value)
+	return m.uci:set("wireless","wifi0","wep",value or "")
+end
+
+--# wifi wep key
+option = s:option(Value,"wifi_wep_key","WIFI密码")
+option.margin = "30px"
+option.rmempty = false
+option:depends("wifi_encryption","wep")
+option.datatype = "wep_password"
+option.password = true
+function option.cfgvalue(...)
+	local tmp = m.uci:get("wireless","wifi0","encryption")
+	local key = m.uci:get("wireless","wifi0","key")
+	
+	if tmp == "wep" and key and key:match("^[0-9a-fA-F]+$") then
+		local ret_key = ""
+		local i = 1
+
+		while string.byte(key,i) do
+			ret_key = ret_key..string.format("%c","0x"..string.sub(key,i,i+1))
+			i = i + 2
+		end
+		
+		return ret_key
+	else
+		return key or ""
+	end
+end
+function option.write(self, section, value)
+	local tmp = m:formvalue("cbid.network_tmp.network.wifi_encryption")
+	local wep_type = m:formvalue("cbid.network_tmp.network.wifi_wep")
+
+	if tmp == "wep" then
+		if wep_type == "64bit" then
+			local ret_str = sys.exec("echo -n '"..(value or "").."' | hexdump -e '5/1 \"%02x\"'")
+			m.uci:set("wireless","wifi0","key",ret_str or "")
+		else
+			local ret_str = sys.exec("echo -n '"..(value or "").."' | hexdump -e '13/1 \"%02x\"'")
+			m.uci:set("wireless","wifi0","key",ret_str or "")
+		end
+	end
+end
+function option.validate(self,value)
+	local tmp = m:formvalue("cbid.network_tmp.network.wifi_encryption")
+	
+	if value and tmp == "wep" then
+		return Value.validate(self,value)
+	else
+		return value or ""
+	end
 end
 
 --####Extranet static ip addr####----

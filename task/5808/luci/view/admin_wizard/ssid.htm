@@ -33,6 +33,8 @@
 			ret = "psk2"
 		else if (encryption.indexOf('WPA1') >= 0)
 			ret = "psk"
+		else if (encryption.indexOf('WEP') >= 0)
+			ret = "wep"
 		else if (encryption.indexOf('NONE') >= 0)
 			ret = "none"
 		else

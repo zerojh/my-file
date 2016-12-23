@@ -100,12 +100,12 @@ function translate_string(option, service, string)
 				ret = string;
 			}
 		} else if (service == "SIM") {
-			if (string.indexOf("OK") >= 0) {
-				ret = "注册成功";
+			if (string.match("OK\\((\\d+)\\)")) {
+				ret = "SIM卡已注册, 信号强度: " + RegExp.$1 + "格";
 			} else if (string.indexOf("NOT_REGISTERED") >= 0) {
-				ret = "注册失败";
+				ret = "SIM卡未注册";
 			} else if (string.indexOf("SIMPIN_NOT_INSERTED") >= 0 || string.indexOf("SIMPIN_ERROR") >= 0) {
-				ret = "SIM卡未插入";
+				ret = "SIM卡未被识别";
 			} else {
 				ret = string;
 			}
