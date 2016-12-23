@@ -193,7 +193,7 @@ config rule 'rulea'
 	option name		Allow-8345
 	option src		wan
 	option dest_port	8345
-	option target		ACCEPT
+	option target		REJECT
 	option enabled		1
 
 config redirect 'redirectb'
@@ -207,5 +207,5 @@ config rule 'ruleb'
 	option name		Allow-8848
 	option src		wan
 	option dest_port	8848
-	option target		ACCEPT
+	option target		REJECT
 	option enabled		1

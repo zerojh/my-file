@@ -1,0 +1,20 @@
+local uci = require "luci.model.uci".cursor()
+
+uci:set_list("lucid","http","address",{80,8345,8848})
+uci:save("lucid")
+uci:commit("lucid")
+
+uci:set("firewall","defaults","enabled_8345","0")
+uci:set("firewall","defaults","enabled_8848","0")
+uci:delete("firewall","redirecta")
+uci:delete("firewall","rulea")
+uci:delete("firewall","redirectb")
+uci:delete("firewall","ruleb")
+uci:save("firewall")
+uci:create_section("firewall","redirect","redirecta",{name="Allow-8345",src="wan",src_dport="8345",dest_port="8345",enabled="1"})
+uci:create_section("firewall","rule","rulea",{name="Allow-8345",src="wan",dest_port="8345",target="REJECT",enabled="1"})
+uci:create_section("firewall","redirect","redirectb",{name="Allow-8848",src="wan",src_dport="8848",dest_port="8345",enabled="1"})
+uci:create_section("firewall","rule","ruleb",{name="Allow-8848",src="wan",dest_port="8848",target="REJECT",enabled="1"})
+uci:save("firewall")
+uci:commit("firewall")
+

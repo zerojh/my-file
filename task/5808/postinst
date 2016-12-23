@@ -27,7 +27,10 @@ if [ -f "/usr/lib/lua/luci/controller/mini/index.lua" ]; then
 	uci set system.main.timezone=CST-8
 	uci commit system
 else
-	uci set firewall.defaults.enabled_8345=1
+	uci set system.main.zonename=Asia/Beijing
+	uci set system.main.timezone=CST-8
+
+	uci set firewall.defaults.enabled_8345=0
 	uci set firewall.defaults.enabled_8848=0
 
 	uci delete firewall.redirecta -q
@@ -46,7 +49,7 @@ else
 	uci set firewall.${section}.name='Allow-8345'
 	uci set firewall.${section}.src='wan'
 	uci set firewall.${section}.dest_port='8345'
-	uci set firewall.${section}.target='ACCEPT'
+	uci set firewall.${section}.target='REJECT'
 	uci set firewall.${section}.enabled='1'
 	uci rename firewall.${section}=${section_name}
 
@@ -66,10 +69,11 @@ else
 	uci set firewall.${section}.name='Allow-8848'
 	uci set firewall.${section}.src='wan'
 	uci set firewall.${section}.dest_port='8848'
-	uci set firewall.${section}.target='ACCEPT'
+	uci set firewall.${section}.target='REJECT'
 	uci set firewall.${section}.enabled='1'
 	uci rename firewall.${section}=${section_name}
 
+	uci commit system
 	uci commit firewall
 fi
 
