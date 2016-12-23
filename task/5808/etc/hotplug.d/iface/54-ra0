@@ -1,0 +1,12 @@
+#/bin/sh
+
+file="/tmp/ra0_down_up"
+
+if [ ! -e $file ]; then
+	touch $file
+	stat=`uci get wireless.wifi0.disabled -q`
+	if [ -z $stat ] || [ "0" == "$stat" ]; then
+		ifconfig ra0 down
+		ifconfig ra0 up
+	fi
+fi

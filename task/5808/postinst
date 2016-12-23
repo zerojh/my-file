@@ -62,5 +62,30 @@ else
 	uci commit firewall
 fi
 
+echo "/www/luci-static/resources/icons/correct.png" > /usr/lib/opkg/info/oem.list
+echo "/www/luci-static/resources/icons/error.png" >> /usr/lib/opkg/info/oem.list
+echo "/www/luci-static/resources/icons/info.png" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/controller/admin/advanced.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/controller/admin/affair.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/controller/admin/detailset.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/controller/admin/wizard.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/ddns.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/l2tp_client.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/net_access.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/pptp_client.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/sim.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/siptrunk.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_wizard/wlan_ap.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/ddns.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/l2tp_client.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/net_access.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/pptp_client.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/sim.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/siptrunk.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/model/cbi/admin_detailset/wlan_ap.lua" >> /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/scripts/change_wireless_dat.sh" >> /usr/lib/opkg/info/oem.list
+echo "/etc/hotplug.d/iface/54-ra0" >> /usr/lib/opkg/info/oem.list
+echo "/etc/freeswitch/scripts/service_state_log.lua" >> /usr/lib/opkg/info/oem.list
+
 /etc/init.d/firewall restart >/dev/null 2>&1
 /etc/init.d/lucid restart >/dev/null 2>&1

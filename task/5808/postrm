@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cp /rom/bin/network_watch /bin/network_watch
+cp /rom/etc/openvpn/client_down.sh /etc/openvpn/client_down.sh
+cp /rom/etc/openvpn/client_up.sh /etc/openvpn/client_up.sh
+cp /rom/lib/netifd/ppp-down /lib/netifd/ppp-down
+cp /rom/lib/netifd/ppp-up /lib/netifd/ppp-up
+
+uci set lucid.http.address=80
+
+uci delete firewall.defaults.enabled_8345 -q
+uci delete firewall.defaults.enabled_8848 -q
+uci delete firewall.redirecta -q
+uci delete firewall.rulea -q
+uci delete firewall.redirectb -q
+uci delete firewall.ruleb -q
+
+uci commit lucid
+uci commit firewall
