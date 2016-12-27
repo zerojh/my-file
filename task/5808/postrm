@@ -1,10 +1,18 @@
 #!/bin/sh
 
+#rm /usr/lib/lua/luci/model/cbi/admin_detailset -rf
+#rm /usr/lib/lua/luci/model/cbi/admin_wizard -rf
+#rm /usr/lib/lua/luci/view/admin_advanced -rf
+#rm /usr/lib/lua/luci/view/admin_affair -rf
+#rm /usr/lib/lua/luci/view/admin_detailset -rf
+#rm /usr/lib/lua/luci/view/admin_wizard -rf
+
 cp /rom/bin/network_watch /bin/network_watch
+cp /rom/bin/restore_default /bin/restore_default
+cp /rom/bin/restore_factory /bin/restore_factory
 cp /rom/etc/openvpn/client_down.sh /etc/openvpn/client_down.sh
 cp /rom/etc/openvpn/client_up.sh /etc/openvpn/client_up.sh
 cp /rom/lib/netifd/ppp-down /lib/netifd/ppp-down
-cp /rom/lib/netifd/ppp-up /lib/netifd/ppp-up
 
 uci set lucid.http.address=80
 

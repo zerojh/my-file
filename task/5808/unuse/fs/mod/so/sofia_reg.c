@@ -3335,7 +3335,7 @@ static int sofia_get_ip_by_hostname(char* hostname, char(*ip)[32], int max)
 			}
 			else
 			{
-		        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "gethostbyname ip too large\n");
+		        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "gethostbyname ip num is too large\n");
 				return i;
 			}
 	    }
@@ -3376,8 +3376,8 @@ static int sofia_check_gateway_by_hostname(char* realm, sofia_gateway_t *gateway
 			}
 			for (; ip[i][0] != '\0'; i++)
 		    {
-		        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "i:%d realm_ip:%s, ip:%s, sip_port:%d, realm_port:%s\n",
-				i, realm_ip, ip[i], gateway->sip_port, realm_port);
+		        switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG, "i:%d name:%s realm_ip:%s, ip:%s, sip_port:%d, realm_port:%s\n",
+				i, gateway->name, realm_ip, ip[i], gateway->sip_port, realm_port);
 				if (!strcmp(realm_ip, ip[i]) && (!realm_port || (realm_port && gateway->sip_port == atoi(realm_port))))
 				{
 					return 1;
@@ -3624,6 +3624,9 @@ int sofia_gateway_init_state_record(sofia_gateway_t *gateway)
 int sofia_gateway_insert_state_record(sofia_gateway_t *gateway)
 {
 	char date[30] = "";
+	uint32_t len = 0;
+	int end_idx = 0;
+	int exist_num = 0;
 	switch_time_exp_t tm;
 	switch_size_t retsize;
 	switch_time_t ts;
@@ -3640,20 +3643,35 @@ int sofia_gateway_insert_state_record(sofia_gateway_t *gateway)
 		goto done;
 
 	if (record->initialing == 1) {
+		end_idx = record->end_idx;
+		exist_num = record->exist_num;
 		state = gateway->state;
 		state_str = sofia_state_string(state);
 		if ((state == REG_STATE_REGED || state == REG_STATE_NOREG || state == REG_STATE_FAIL_WAIT)
-				&& (record->end_idx == -1 || (record->end_idx != -1 && strcasecmp(record->state[record->end_idx],state_str)))) {
-			record->end_idx = (record->end_idx + 1) % GATEWAY_STATE_RECORD_LENGTH;
-			record->exist_num++;
-			if (record->exist_num > GATEWAY_STATE_RECORD_LENGTH)
-				record->exist_num = GATEWAY_STATE_RECORD_LENGTH;
+				&& (end_idx == -1 || (end_idx != -1 && strcasecmp(record->state[end_idx],state_str)))) {
+			end_idx = (end_idx + 1) % GATEWAY_STATE_RECORD_COUNT;
+			exist_num++;
+			if (exist_num > GATEWAY_STATE_RECORD_COUNT)
+				exist_num = GATEWAY_STATE_RECORD_COUNT;
 
 			ts = switch_micro_time_now();
 			switch_time_exp_lt(&tm, ts);
 			switch_strftime_nocheck(date, &retsize, sizeof(date), "%Y-%m-%d %T", &tm);
-			record->time[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", date);
-			record->state[record->end_idx] = switch_core_sprintf(gateway->pool, "%s", sofia_state_string(gateway->state));
+
+			len = strlen(date);
+			if (len >= RECORD_TIME_LENGTH)
+				len = RECORD_TIME_LENGTH - 1;
+			strncpy(record->time[end_idx],date,len);
+			record->time[end_idx][len] = '\0';
+
+			len = strlen(state_str);
+			if (len >= RECORD_STATE_LENGTH)
+				len = RECORD_STATE_LENGTH - 1;
+			strncpy(record->state[end_idx],state_str,len);
+			record->state[end_idx][len] = '\0';
+
+			record->end_idx = end_idx;
+			record->exist_num = exist_num;
 
 			if (switch_event_create_subclass(&s_event, SWITCH_EVENT_CUSTOM, MY_EVENT_GATEWAY_STATE_RECORD) == SWITCH_STATUS_SUCCESS) {
 				switch_event_add_header_string(s_event, SWITCH_STACK_BOTTOM, "Gateway", gateway->name);

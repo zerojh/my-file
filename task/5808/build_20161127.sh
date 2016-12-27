@@ -819,7 +819,7 @@
 			cp oem_database/dchy/icons $tmpconf -rf
 			cp oem_database/dchy/lib $tmpconf -rf
 			cp oem_database/dchy/luci $tmpconf -rf
-			cp oem_database/dchy/usr $tmpctrl -rf
+			cp oem_database/dchy/usr $tmpconf -rf
 			cp oem_database/dchy/postinst $tmpctrl
 			cp oem_database/dchy/postrm $tmpctrl
 		else

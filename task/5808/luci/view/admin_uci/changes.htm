@@ -1,0 +1,13 @@
+<%+header%>
+<% if changes and upgrading then
+	write("<div class='container'><div class='alert-message info'>"..translate("Can not apply changes while system upgrading ! Please wait !").."<br></div></div>")
+end %>
+<h2><a id="content" name="content"><%:Configuration / Changes%></a></h2>
+<% if changes then %>
+	<%+admin_uci/changelog%>
+	<%- uci_changelog(changes) -%>
+<% else
+	write("<p><strong>"..translate("There are no pending changes !").."</strong></p>")
+end %>
+
+<%+footer%>

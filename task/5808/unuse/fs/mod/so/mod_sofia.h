@@ -478,11 +478,13 @@ struct sofia_gateway_subscription {
 	struct sofia_gateway_subscription *next;
 };
 
-#define GATEWAY_STATE_RECORD_LENGTH 25
+#define GATEWAY_STATE_RECORD_COUNT (25)
+#define RECORD_STATE_LENGTH (15)
+#define RECORD_TIME_LENGTH (30)
 
 struct sofia_gateway_state_record {
-	char *state[GATEWAY_STATE_RECORD_LENGTH];
-	char *time[GATEWAY_STATE_RECORD_LENGTH];
+	char state[GATEWAY_STATE_RECORD_COUNT][RECORD_STATE_LENGTH];
+	char time[GATEWAY_STATE_RECORD_COUNT][RECORD_TIME_LENGTH];
 	int end_idx;
 	int exist_num;
 	int initialing;

@@ -7,10 +7,11 @@ local exe = require "os".execute
 function index()
 	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","advanced"},firstchild(),"高级",84).index = true
-		entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",10).leaf = true
+		entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",10).leaf = true
+		entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",20).leaf = true
+		entry({"admin","advanced","reboot"},call("action_reboot"),"重启",30).leaf = true
+
 		entry({"admin","advanced","detectstatus"},call("detect_status"))
-		--entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",20).leaf = true
-		entry({"admin","advanced","reboot"},call("action_reboot"),"重启",20).leaf = true
 	end
 end
 
