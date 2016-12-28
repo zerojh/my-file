@@ -120,7 +120,6 @@ cat > /usr/lib/opkg/info/oem.list << EOF
 /usr/lib/lua/luci/view/admin_wizard/vpn.htm
 /usr/lib/lua/luci/view/admin_wizard/wizard.htm
 /usr/lib/lua/luci/view/admin_wizard
-/usr/lib/lua/luci/scripts/change_wireless_dat.sh
 /usr/lib/lua/luci/scripts/default_config/custom_reset.lua
 /etc/freeswitch/scripts/service_state_log.lua
 EOF

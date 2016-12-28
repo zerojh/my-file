@@ -153,7 +153,7 @@ if [ "$ip_source" = "script" ]; then
 fi
 
 # compute update interval in seconds
-get_seconds CHECK_SECONDS ${check_interval:-10} ${check_unit:-"minutes"} # default 10 min
+get_seconds CHECK_SECONDS ${check_interval:-60} ${check_unit:-"minutes"} # default 10 min
 get_seconds FORCE_SECONDS ${force_interval:-72} ${force_unit:-"hours"}	 # default 3 days
 get_seconds RETRY_SECONDS ${retry_interval:-60} ${retry_unit:-"seconds"} # default 60 sec
 verbose_echo "check interval =: $CHECK_SECONDS seconds"
