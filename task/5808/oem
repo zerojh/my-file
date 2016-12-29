@@ -4,7 +4,6 @@ config 'oem' 'general'
 
 config 'brand' 'dchy'
 	option 'hostname' 'DC1000'
-	option 'logo' 'dinstar_logo.png'
-	option 'display_on_about_page' 'off'
+	option 'model' 'DC1000'
 	option 'timezone' 'CST-8'
 	option 'zonename' 'Asia/Beijing'

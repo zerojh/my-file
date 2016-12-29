@@ -1,9 +1,13 @@
 #!/bin/sh
 . /lib/netifd/netifd-wireless.sh
-
+. /lib/functions.sh
 init_wireless_driver "$@"
 
 dat_file=/etc/Wireless/RT2860/RT2860.dat
+sta_file=/etc/Wireless/RT2860/RT2860_STA.dat 
+ap_file=/etc/Wireless/RT2860/RT2860_AP.dat 
+mode_file=/etc/modules.d/36-rt2860v2-ap 
+
 oldup=""
 
 nvram_get() {
@@ -13,7 +17,6 @@ nvram_get() {
 	if [ "$#" -lt "2" ]; then
 		return
 	fi
-
 	val=`cat $dat_file | grep -e "^$var="`
 	val=${val##*=}
 	echo $val
@@ -23,7 +26,6 @@ nvram_set() {
 	if [ "$#" -lt "3" ]; then
 		return
 	fi
-
 	sed -i "s/^$2=.*/$2=$3/" $dat_file
 }
 
@@ -33,6 +35,7 @@ find_phy() {
 }
 
 drv_mt7620a_init_device_config() {
+	#echo "drv_mt7620a_init_device_config" >> /tmp/aaaaaa
 	config_add_string path phy 'macaddr:macaddr'
 	config_add_string hwmode htmode wdsmode wps
 	config_add_int beacon_int chanbw frag rts channel
@@ -63,6 +66,7 @@ drv_mt7620a_init_device_config() {
 }
 
 drv_mt7620a_init_iface_config() {
+	#echo "drv_mt7620a_init_iface_config" >> /tmp/aaaaaa
 	config_add_string 'bssid:macaddr' 'ssid:string'
 	config_add_boolean wmm hidden
 	config_add_int maxassoc max_inactivity
@@ -91,6 +95,7 @@ drv_mt7620a_init_iface_config() {
 }
 
 list_phy_interfaces() {
+	#echo "list_phy_interfaces" >> /tmp/aaaaaa
 	local phy="$1"
 
 	if [ -d "/sys/class/net/${phy}" ]; then
@@ -99,6 +104,7 @@ list_phy_interfaces() {
 }
 
 mt7620a_interface_cleanup() {
+	#echo "list_phy_interfaces" >> /tmp/aaaaaa
 	local phy="$1"
 
 	for wdev in $(list_phy_interfaces "$phy"); do
@@ -108,6 +114,7 @@ mt7620a_interface_cleanup() {
 }
 
 mt7620a_interface_up() {
+	#echo "mt7620a_interface_up" >> /tmp/aaaaaa
 	local phy="$1"
 
 	for wdev in $(list_phy_interfaces "$phy"); do
@@ -116,6 +123,7 @@ mt7620a_interface_up() {
 }
 
 mt7620a_interface_cleanup_all() {
+	#echo "mt7620a_interface_cleanup_all" >> /tmp/aaaaaa
 	mt7620a_interface_cleanup "ra0"
 	mt7620a_interface_cleanup "ra1"
 	mt7620a_interface_cleanup "ra2"
@@ -127,6 +135,7 @@ mt7620a_interface_cleanup_all() {
 }
 
 mt7620a_interface_up_all() {
+	#echo "mt7620a_interface_up_all" >> /tmp/aaaaaa
 	local start
 	local end
 
@@ -140,9 +149,9 @@ mt7620a_interface_up_all() {
 }
 
 check_and_update() {
+	#echo "check_and_update" >> /tmp/aaaaaa
 	local nv_var="$1"
 	local val="$2"
-
 	[ -n "$val" ] && {
 		local inter_val=`nvram_get 2860 $nv_var`
 		[ "$val" = "$inter_val" ] || {
@@ -152,6 +161,7 @@ check_and_update() {
 }
 
 update_var_offset() {
+	#echo "update_var_offset" >> /tmp/aaaaaa
 	local nv_var="$1"
 	local offset=$2
 	local val="$3"
@@ -218,6 +228,7 @@ update_var_offset() {
 }
 
 mt7620a_setup_vif() {
+	#echo "mt7620a_setup_vif" >> /tmp/aaaaaa
 	local name="$1"
 	local authmode_val
 	local entype_val
@@ -227,13 +238,39 @@ mt7620a_setup_vif() {
 	local bssidnum
 	local val
 	local ifname=""
+	local dat_coment
+	local mode_coment
+
+	config_load wireless
+	config_get mode "wifi0" mode
+	mode_coment=`cat $mode_file`
+
+	dat_coment=`cat $dat_file | grep -e "AutoRoaming"`
+	if [ "$mode" = "sta" ]; then
+		if [ "$mode_coment" = "rt2860v2_ap" ]; then
+			echo > $mode_file
+			echo "rt2860v2_sta" > $mode_file
+		fi
+		if [ -z "$dat_coment" ]; then	
+			cp $sta_file $dat_file
+		fi
+	elif [ "$mode" = "ap" ]; then
+		if [ "$mode_coment" = "rt2860v2_sta" ]; then
+			echo > $mode_file
+			echo "rt2860v2_ap" > $mode_file
+		fi
+		if [ -n "$dat_coment" ]; then	
+			cp $ap_file $dat_file
+		fi
+	fi
+
 
 	isolate=0
 	json_select config
 	json_get_vars \
 		ssid wmm wds encryption \
 		key device isolate wdspeermac wdsencryptype \
-		wdskey wdsphymode device ifname
+		wdskey wdsphymode device ifname 
 
 	[ -n "$ifname" ] || ifname="$device"
 	wireless_set_data ifname="$ifname"
@@ -274,8 +311,11 @@ mt7620a_setup_vif() {
 	ifindex=$((index+1))
 
 	if [ "${ifname:0:2}" = "ra" ]; then
-		check_and_update "SSID$((index+1))" "$ssid"
-
+		if [ "$mode" = "sta" ] && [ $index -eq 0 ]; then 
+			check_and_update "SSID" "$ssid"	
+		else
+			check_and_update "SSID$((index+1))" "$ssid"
+		fi
 		wireless_vif_parse_encryption
 		if [ "$wpa" = "2" ] && [ "$auth_type" = "psk" ]; then
 			authmode_val=wpa2psk
@@ -286,7 +326,12 @@ mt7620a_setup_vif() {
 			elif [ "$wpa_pairwise" = "TKIP" ]; then
 				entype_val=tkip
 			fi
-			check_and_update "WPAPSK${ifindex}" "$key"
+			if [ "$mode" = "sta" ] && [ $index -eq 0 ]; then
+				check_and_update "WPAPSK" "$key"
+			else
+				check_and_update "WPAPSK${ifindex}" "$key"
+			fi
+
 		elif [ "$wpa" = "1" ] && [ "$auth_type" = "psk" ]; then
 			authmode_val=wpapsk
 			if [ "$wpa_pairwise" = "CCMP TKIP" ]; then
@@ -296,7 +341,11 @@ mt7620a_setup_vif() {
 			elif [ "$wpa_pairwise" = "TKIP" ]; then
 				entype_val=tkip
 			fi
-			check_and_update "WPAPSK${ifindex}" "$key"
+			if [ "$mode" = "sta" ] && [ $index -eq 0 ]; then
+				check_and_update "WPAPSK" "$key"
+			else
+				check_and_update "WPAPSK${ifindex}" "$key"
+			fi
 		elif [ "$wpa" = "3" ]; then
 			authmode_val=wpapskwpa2psk
 			if [ "$wpa_pairwise" = "CCMP TKIP" ]; then
@@ -306,7 +355,11 @@ mt7620a_setup_vif() {
 			elif [ "$wpa_pairwise" = "TKIP" ]; then
 				entype_val=tkip
 			fi
-			check_and_update "WPAPSK${ifindex}" "$key"
+			if [ "$mode" = "sta" ] && [ $index -eq 0 ]; then
+				check_and_update  "WPAPSK" "$key"
+			else
+				check_and_update "WPAPSK${ifindex}" "$key"
+			fi
 		elif [ "$wpa" = "0" ] && [ "$auth_type" = "wep" ] && [ "$auth_mode_open" = "0" ] && [ "$auth_mode_shared" = "1" ]; then
 			authmode_val=shared
 			entype_val=wep
@@ -335,13 +388,21 @@ mt7620a_setup_vif() {
 			authmode_val=open
 			entype_val=none
 		fi
+		if [ "$mode" = "sta" ] && [ $index -eq 0 ]; then
 
-		update_var_offset "AuthMode" $index "${authmode_val}"
+			check_and_update "AuthMode" "${authmode_val}"
+			check_and_update "EncrypType" "${entype_val}"
+			check_and_update "WmmCapable" "${wmm}"
+			check_and_update "NoForwarding"  "${isolate}"
 
-		update_var_offset "EncrypType" $index "${entype_val}"
-		update_var_offset "WmmCapable" $index "${wmm}"
-		update_var_offset "NoForwarding" $index "${isolate}"
+		else
+			update_var_offset "AuthMode" $index "${authmode_val}"
+			update_var_offset "EncrypType" $index "${entype_val}"
+			update_var_offset "WmmCapable" $index "${wmm}"
+			update_var_offset "NoForwarding" $index "${isolate}"
+		fi
 		#check_and_update "BssidNum" "$ifindex"
+		check_and_update "CountryCode" "$country" 
 	fi
 
 	if [ "${ifname:0:3}" = "wds" ]; then
@@ -367,8 +428,8 @@ mt7620a_setup_vif() {
 }
 
 drv_mt7620a_setup() {
+	#echo "drv_mt7620a_setup" >> /tmp/aaaaaa
 	local j
-
 	allif=""
 	local LOCKFILE="/tmp/.wifi_lock"
 
@@ -397,6 +458,7 @@ drv_mt7620a_setup() {
 	#echo "var 1 $1" > /dev/console
 
 	#if [ "$1" = "ra0" ]; then
+
 	check_and_update "CountryCode" "$country"
 	check_and_update "TxPower" "$txpower"
 	if [ "$channel" = "0" ] || [ "$channel" = "auto" ]; then
@@ -465,15 +527,17 @@ drv_mt7620a_setup() {
 	#mt7620a_interface_cleanup "$1"
 	for_each_interface "ap sta adhoc mesh monitor" mt7620a_setup_vif
 
-	mt7620a_interface_cleanup_all
+	config_load network
+	config_get proto "wan" proto 
+	[ "$mode" = "sta" ] && [ "$proto" = "static" ] || mt7620a_interface_cleanup_all
 	#	oldup=`cat /tmp/oldwifiupif`
 	for i in $allif
 	do
-		mt7620a_interface_up "$i"
-		#		echo "i $i" > /dev/console
-		#		if [ -z "${oldup}"] || [ "${oldup%$i*}" = "${oldup}" ]; then
-		#			oldup="$oldup $i"
-		#		fi
+		[ "$mode" = "sta" ]  && [ "$proto" = "static" ] || mt7620a_interface_up "$i"
+#		echo "i $i" > /dev/console
+#		if [ -z "${oldup}"] || [ "${oldup%$i*}" = "${oldup}" ]; then
+#			oldup="$oldup $i"
+#		fi
 	done
 	wireless_set_up
 	#	echo "$oldup" > /tmp/oldwifiupif
@@ -481,6 +545,7 @@ drv_mt7620a_setup() {
 }
 
 drv_mt7620a_teardown() {
+#echo "drv_mt7620a_teardown" >> /tmp/aaaaaa
 #	local LOCKFILE="/tmp/.wifi_lock"
 #	local olduppre=""
 #	local olduppost=""
@@ -503,4 +568,5 @@ drv_mt7620a_teardown() {
 #	flock -u 7
 }
 
+#echo "add_driver" >> /tmp/aaaaaa
 add_driver mt7620a

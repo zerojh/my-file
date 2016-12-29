@@ -8,18 +8,21 @@
 #rm /usr/lib/lua/luci/view/admin_wizard -rf
 
 rm /etc/log/service_state_log -rf
+rm /ramlog/service_state_log -rf
 rm /etc/config/vpnselect -rf
-rm /etc/config/network_tmp -rf
-rm /etc/config/wireless -rf
 
-macaddr=$(readwifimac)
-if [ -z "$macaddr" ]; then
-	macaddr=$(cat /sys/class/net/ra0/address)
-fi
-myssid=${macaddr//:/}
-myssid=${myssid:6}
-echo > /etc/config/wireless
-cat > /etc/config/wireless <<EOF
+wifi_mode=`uci get wireless.wifi0.mode`
+if [ ! -z "$wifi_mode" ] && [ "$wifi_mode" = "sta" ]; then
+	rm /etc/config/wireless -rf
+
+	macaddr=$(readwifimac)
+	if [ -z "$macaddr" ]; then
+		macaddr=$(cat /sys/class/net/ra0/address)
+	fi
+	myssid=${macaddr//:/}
+	myssid=${myssid:6}
+	echo > /etc/config/wireless
+	cat > /etc/config/wireless <<EOF
 config wifi-device  ra0
 	option type     mt7620a
 	option channel  11
@@ -43,6 +46,15 @@ config wifi-iface wifi0
 	option ssid     domain_$myssid
 	option encryption none
 EOF
+	rm /etc/config/network_tmp -rf
+	cp /usr/lib/lua/luci/scripts/default_config/network /etc/config/network
+	mv /usr/lib/lua/luci/scripts/change_wireless_dat.sh /tmp/
+	sh /tmp/change_wireless_dat.sh
+else
+	rm /usr/lib/lua/luci/scripts/change_wireless_dat.sh -rf
+	uci delete network_tmp.network.access_mode -q
+	uci commit network_tmp -q
+fi
 
 cp /rom/bin/network_watch /bin/network_watch
 cp /rom/bin/restore_default /bin/restore_default
@@ -50,18 +62,14 @@ cp /rom/bin/restore_factory /bin/restore_factory
 cp /rom/etc/openvpn/client_down.sh /etc/openvpn/client_down.sh
 cp /rom/etc/openvpn/client_up.sh /etc/openvpn/client_up.sh
 cp /rom/lib/netifd/ppp-down /lib/netifd/ppp-down
-cp /usr/lib/lua/luci/scripts/default_config/network /etc/config/network
-mv /usr/lib/lua/luci/scripts/change_wireless_dat.sh /tmp
 
-sh /tmp/change_wireless_dat.sh
-
-uci set lucid.http.address=80
+uci set lucid.http.address='80' -q
 uci delete firewall.defaults.enabled_8345 -q
 uci delete firewall.defaults.enabled_8848 -q
 uci delete firewall.redirecta -q
 uci delete firewall.rulea -q
 uci delete firewall.redirectb -q
 uci delete firewall.ruleb -q
-uci commit lucid
-uci commit firewall
+uci commit lucid -q
+uci commit firewall -q
 
