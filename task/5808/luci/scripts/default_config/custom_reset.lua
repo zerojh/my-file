@@ -1,4 +1,7 @@
 local uci = require "luci.model.uci".cursor()
+local exe = require "os".execute
+
+exe("rm /etc/config/vpnselect -rf")
 
 uci:set_list("lucid","http","address",{"80","8345","8848"})
 uci:save("lucid")

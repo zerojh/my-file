@@ -105,6 +105,7 @@ cat > /usr/lib/opkg/info/oem.list << EOF
 /usr/lib/lua/luci/model/cbi/admin_detailset
 /usr/lib/lua/luci/view/admin_advanced/detect.htm
 /usr/lib/lua/luci/view/admin_advanced/flashops.htm
+/usr/lib/lua/luci/view/admin_advanced/applyreboot.htm
 /usr/lib/lua/luci/view/admin_advanced
 /usr/lib/lua/luci/view/admin_affair/index.htm
 /usr/lib/lua/luci/view/admin_affair/index_empty.htm
