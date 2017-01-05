@@ -87,14 +87,27 @@ end
 option = s:option(ListValue,"wifi_encryption","WIFI加密方式")
 option.margin = "30px"
 option.default = "psk2"
---option:value("wep","WEP")
 option:value("psk","WPA+PSK")
 option:value("psk2","WPA2+PSK")
+option:value("wep","WEP")
 option:value("none","无")
 option:depends("access_mode","wlan_dhcp")
 option:depends("access_mode","wlan_static")
 function option.cfgvalue(self, section)
 	return m.uci:get("wireless","wifi0","encryption")
+end
+function option.validate(self,value)
+	if value then
+		if value == "none" then
+			m.uci:delete("wireless","wifi0","key")
+		end
+		if value ~= "wep" and m.uci:get("wireless","wifi0","wep") then
+			m.uci:delete("wireless","wifi0","wep")
+		end
+		return Value.validate(self,value)
+	else
+		return ""
+	end
 end
 function option.write(self,section,value)
 	return m.uci:set("wireless","wifi0","encryption",value or "psk2")
@@ -118,18 +131,8 @@ function option.cfgvalue(self, section)
 	end
 end
 function option.validate(self,value)
-	local encryption = m:formvalue("cbid.network_tmp.network.wifi_encryption")
-	
 	if value then
-		if encryption ~= "none" then
-			if encryption ~= "wep" then
-				m.uci:delete("wireless","wifi0","wep")
-			end
-			return Value.validate(self,value)
-		else
-			m.uci:delete("wireless","wifi0","key")
-			return value or ""
-		end
+		return Value.validate(self,value)
 	else
 		return ""
 	end

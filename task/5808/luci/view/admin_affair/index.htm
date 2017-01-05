@@ -152,6 +152,8 @@ function refresh_wireless_stat(wifi_info)
 		enc_id.innerHTML = "WPA+PSK";
 	else if (wifi_info.enc == "psk2")
 		enc_id.innerHTML = "WPA2+PSK";
+	else if (wifi_info.enc == "wep")
+		enc_id.innerHTML = "WEP";
 	else
 		enc_id.innerHTML = "NONE";
 

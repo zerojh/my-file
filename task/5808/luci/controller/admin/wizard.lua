@@ -6,7 +6,7 @@ local util = require "luci.util"
 local ds = require "luci.dispatcher"
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 443 or luci.http.getenv("SERVER_PORT") == 8848 then
 		local uci = require "luci.model.uci".cursor()
 		entry({"admin","wizard"},template("admin_wizard/wizard"),"配置向导",82)
 		entry({"admin","wizard","wifilist"},call("action_get_wireless"))

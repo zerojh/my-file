@@ -5,7 +5,7 @@ local fs = require "nixio.fs"
 local exe = require "os".execute
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 443 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","advanced"},firstchild(),"高级",84).index = true
 		entry({"admin","advanced","backup_restore"},call("action_backup_restore"),"备份/恢复",10).leaf = true
 		entry({"admin","advanced","diagnostics"},call("action_diagnostics"),"检测",20).leaf = true
@@ -274,7 +274,7 @@ function start_diagnostics(string)
 			if ddns_addr then
 				local num = 0
 				while num < 3 do
-					local result = util.exec("ping -c 5 -W 1 2>&1 "..ipaddr.." | grep 'loss'")
+					local result = util.exec("ping -c 5 -W 1 2>&1 "..ddns_addr.." | grep 'loss'")
 					result = result:match("(%d+)%%")
 					if result and result ~= "" and result ~= "100" then
 						break
@@ -639,6 +639,7 @@ function action_backup_restore()
 
 		uci:set("network","lan","macaddr",mac)
 		uci:commit("network")
+		os.execute("rm /etc/config/vpnselect -rf")
 
 		if upload and #upload > 0 then
 			luci.template.render("admin_advanced/flashops", {

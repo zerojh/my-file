@@ -1,12 +1,10 @@
-#/bin/sh
+#!/bin/sh
 
-file="/tmp/ra0_down_up"
-
-if [ ! -e $file ]; then
-	touch $file
+if [ "$INTERFACE" = "wan" ] && [ "$ACTION" = "ifup" ] ; then
 	stat=`uci get wireless.wifi0.disabled -q`
-	if [ -z $stat ] || [ "0" == "$stat" ]; then
-		ifconfig ra0 down
-		ifconfig ra0 up
+	mode=`uci get wireless.wifi0.mode -q`
+	if [ ! -z $stat ] && [ ! -z $mode ] && [ "$stat" = "0" ] && [ "$mode" = "sta" ]; then
+		ubus call network.wireless down
+		ubus call network.wireless up
 	fi
 fi

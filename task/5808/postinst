@@ -31,6 +31,7 @@ else
 	uci set system.main.zonename=Asia/Beijing
 	uci set system.main.timezone=CST-8
 
+	uci set firewall.defaults.enabled_http=1
 	uci set firewall.defaults.enabled_8345=1
 	uci set firewall.defaults.enabled_8848=0
 

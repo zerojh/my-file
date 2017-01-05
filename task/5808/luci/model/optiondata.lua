@@ -1231,6 +1231,7 @@ local config = {
 		["__encryption_value"]={
 			["psk2"]="WPA2+PSK",
 			["psk"]="WPA+PSK",
+			["wep"]="WEP",
 			["none"]="None",
 		},
 		["key"]="Password",

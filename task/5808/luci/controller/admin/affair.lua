@@ -7,7 +7,7 @@ local i18n = require "luci.i18n"
 local sqlite = require "luci.scripts.sqlite3_service"
 
 function index()
-	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 8848 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 443 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
 		entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
 		--entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
@@ -15,7 +15,7 @@ function index()
 		entry({"admin","affair","get_service_log"},call("action_get_service_log"))
 	end
 
-	if luci.http.getenv("SERVER_PORT") == 80 then
+	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 443 then
 		-- overview
 		entry({"admin","status"})
 		entry({"admin","status","overview"},call("action_overview"))
@@ -171,7 +171,7 @@ function get_ddns_info()
 			local url = result:match("transfer prog =:.+'(.+)' 2>/dev/null\n$")
 			ddns_info.status = tostring(i18n.translatef("Connecting to DDNS Provider by '%s'",url))
 		elseif (string.find(result,"Connecting to ") and string.find(result,"error getting response: Connection reset by peer")) then
-			local host = result:match("Connecting to (.+%))\n") or m.uci:get("ddns" , "myddns_ipv4" , "service_name") or ""
+			local host = result:match("Connecting to (.+%))\n") or uci:get("ddns" , "myddns_ipv4" , "service_name") or ""
 			local retrycnt, retrytime = result:match("retry (%d)/5 in (%d+)")
 			if retrycnt and retrytime then
 				ddns_info.status = tostring(i18n.translatef("Connecting to '%s' fail, connection reset by peer !",host)).." - ".. tostring(i18n.translatef("retry in %d seconds (%d)",retrytime,retrycnt))
@@ -179,7 +179,7 @@ function get_ddns_info()
 				ddns_info.status = tostring(i18n.translatef("Connecting to '%s' fail, connection reset by peer !",host))
 			end
 		elseif (string.find(result,"Connecting to ") and string.find(result,"server returned error: HTTP/1.1 404 Not Found")) then
-			local host = result:match("Connecting to (.+%))\n") or m.uci:get("ddns" , "myddns_ipv4" , "service_name") or ""
+			local host = result:match("Connecting to (.+%))\n") or uci:get("ddns" , "myddns_ipv4" , "service_name") or ""
 			local retrycnt, retrytime = result:match("retry (%d)/5 in (%d+)")
 			if retrycnt and retrytime then
 				ddns_info.status = tostring(i18n.translatef("Connecting to '%s' fail, DDNS Provider returned error: HTTP/1.1 404 Not Found !",host)).." - ".. tostring(i18n.translatef("retry in %d seconds (%d)",retrytime,retrycnt))
@@ -200,7 +200,7 @@ function get_ddns_info()
 			elseif "abuse" == answer then
 				ddns_info.status = tostring(i18n.translate("DDNS update fail because requests too frequently !"))
 			elseif "nohost" == answer or "notfqdn" == answer or "numhost" == answer then
-				local d = m.uci:get("ddns" , "myddns_ipv4" , "domain") or ""
+				local d = uci:get("ddns" , "myddns_ipv4" , "domain") or ""
 				ddns_info.status = tostring(i18n.translatef("Domain '%s' doesn't exit !",d))
 			elseif "good 127.0.0.1" == answer or "badagent" == answer then
 				ddns_info.status = tostring(i18n.translate("Update url doesn't follow DDNS Provider's specifications !"))

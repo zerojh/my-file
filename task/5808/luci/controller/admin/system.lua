@@ -1000,12 +1000,16 @@ function check_downgrade(file)
 	local hdr = dpr.getldhdr(file)
 	local model = dpr.getproduct()
 
-	if hdr and "firmware" == hdr.type and hdr.product == model and hdr.version then
+	if hdr and "firmware" == hdr.type and hdr.version then
 		local v1,v2 = hdr.version:match("(%d+)%.(%d+)$")
-		if tonumber(v1) <= 2 and tonumber(v2) < 8 then
-			os.execute("rm /usr/bin/upnpc")
+		v1 = tonumber(v1)
+		v2 = tonumber(v2)
+		if v1 >= 3 and not (v2 <= 10 or v2 == 11 or v2 == 13) then
+			return true
 		end
 	end
+
+	return false
 end
 function backup()
 	local sys = require "luci.sys"
@@ -1108,9 +1112,13 @@ function action_flashops()
 					os.execute("rm /etc/config/network_tmp")
 					web_rpc_syn(50000, "provision", "cli-download", "config", destfile, web_rpc_syn_cb)
 				elseif meta and "software" == meta.name and "system" == upgrade_type then
-					check_downgrade(destfile)
-					os.execute("touch /tmp/upgrading_flag")
-					web_rpc_syn(50000, "provision", "cli-download", "firmware", destfile, web_rpc_syn_cb)
+					local ret = check_downgrade(destfile)
+					if ret then
+						os.execute("touch /tmp/upgrading_flag")
+						web_rpc_syn(50000, "provision", "cli-download", "firmware", destfile, web_rpc_syn_cb)
+					else
+						syn_result = "Fail !"
+					end
 				elseif meta and "software" == meta.name and "kernel" == upgrade_type then
 					os.execute("echo kernel file upload succ !> /tmp/upgrade_log")
 					os.execute("echo file size:"..fs.stat(destfile,"size").." >>/tmp/upgrade_log")
@@ -1179,6 +1187,7 @@ function action_flashops()
 
 		uci:set("network","lan","macaddr",mac)
 		uci:commit("network")
+		os.execute("rm /etc/config/vpnselect -rf")
 
 		if upload and #upload > 0 then
 			luci.template.render("admin_system/flashops", {

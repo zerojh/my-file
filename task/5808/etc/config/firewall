@@ -6,7 +6,7 @@ config defaults 'defaults'
 	option enabled	0
 	option default_ip_rule	ACCEPT
 	option default_mac_rule   ACCEPT
-	option enabled_http '0'
+	option enabled_http '1'
 	option enabled_https '0'
 	option enabled_ssh '0'
 	option enabled_telnet '0'
@@ -140,7 +140,7 @@ config rule
 	option src	wan
 	option dest_port	80
 	option enabled	1
-	option target	REJECT
+	option target	ACCEPT
 	
 # Allow https
 config rule
