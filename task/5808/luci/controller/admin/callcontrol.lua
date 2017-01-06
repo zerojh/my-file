@@ -774,19 +774,19 @@ end
 
 function action_deletemsg()
 	local freeswitch = require "luci.scripts.fs_server"
-	local endpoint = luci.http.formvalue("endpoint")
+	local id = luci.http.formvalue("id")
 	local direction = luci.http.formvalue("direction") 
-	local contact = luci.http.formvalue("contact") 
-	local date = luci.http.formvalue("date")
 	local msg_info = {}
-	
+    
+	id=id:match("(%d+)$")
+    
 	if direction == "recvfrom" then
 		direction = "sms_recv"
 	elseif direction == "sendto" then
 		direction = "sms_sendover"
 	end
-
-	local cmd = "gsm deletesms "..direction.." '"..date.."' "..endpoint.." "..contact
+    
+	local cmd = "gsm deletesms "..direction.." "..id
 	local str = freeswitch.message(cmd)
 
 	luci.http.prepare_content("application/json")
@@ -797,14 +797,11 @@ end
 
 function action_readmsg()
 	local freeswitch = require "luci.scripts.fs_server"
-	local endpoint = luci.http.formvalue("endpoint")
-	local contact = luci.http.formvalue("contact") 
-	local date = luci.http.formvalue("date")
 	local status = luci.http.formvalue("status")
-	
+	local id = luci.http.formvalue("id")
 	local msg_info = {}
-	
-	local cmd = "gsm updatesms '"..date.."' "..endpoint.." "..contact.." "..status
+	id=id:match("(%d+)$")
+	local cmd = "gsm updatesms "..id.." "..status
 	local str = freeswitch.message(cmd)
 
 	

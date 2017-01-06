@@ -4,6 +4,7 @@ local dsp = require "luci.dispatcher"
 local flag = uci_tmp:get("wizard","globals","network") or "1"
 local fs = require "nixio.fs"
 local fs_server = require "luci.scripts.fs_server"
+local sys = require "luci.sys"
 
 --@ init network_tmp from network,wireless
 if not fs.access("/etc/config/network_tmp") then

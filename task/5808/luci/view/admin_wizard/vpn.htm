@@ -54,7 +54,7 @@
 			elseif vpn_type == "openvpn" then
 				luci.http.redirect(dsp.build_url("admin","wizard","openvpn"))
 			else
-				luci.http.redirect(dsp.build_url("admin","uci","changes"))
+				luci.http.redirect(dsp.build_url("admin","wizard","changes"))
 			end
 		end
 

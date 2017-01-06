@@ -831,7 +831,7 @@ function patch_id_extract(t)
 	return 0
 end
 
-function patch_file_verify(srcfilename)
+function patch_file_verify(srcfilename,logfile)
 	require "ini"
 	require("dpr")
 	local fs = require("luci.fs")
@@ -843,10 +843,28 @@ function patch_file_verify(srcfilename)
 	if model and model:match("(%w+)%-") then
 		model=model:match("(%w+)%-")
 	end
-	if hdr and "patch" == hdr.type and hdr.product == model and hdr.rely == ini['firmware']['version'] then
+	if logfile then
+		os.execute("echo ready verify patch file >"..logfile)
+		os.execute("echo sys model:"..(model or "unknown").." >>"..logfile)
+		os.execute("echo current firmware version:"..(ini['firmware']['version'] or "unknown")..">>"..logfile)
+		if hdr then
+			os.execute("echo file header: >>"..logfile)
+			os.execute("echo type: "..(hdr.type or "unknown").." >>"..logfile)
+			os.execute("echo version: "..(hdr.version or "unknown").." >>"..logfile)
+			os.execute("echo rely: "..(hdr.rely or "").." >>"..logfile)
+			os.execute("echo product: "..(hdr.product or "unknown").." >>"..logfile)
+			os.execute("echo md5: "..(hdr.md5sum or "unknown").." >>"..logfile)
+			os.execute("echo buildtime: "..(hdr.buildtime or "unknown").." >>"..logfile)
+		else
+			os.execute("echo read file header fail ! >>"..logfile)
+			return false
+		end
+	end
+	if hdr and "patch" == hdr.type and string.lower(hdr.product) == string.lower(model) and hdr.rely == ini['firmware']['version'] then
 		local patch_ver = tonumber(hdr.version:match("%d$")) - tonumber(hdr.rely:match("%d$"))
 		if ini['firmware']['version'] == uci:get("patch","main","version") and fs.access("/usr/lib/lua/patch/"..patch_ver) then
 			-- if device exist patch 10, and upload patch version < 10, will fail
+			os.execute("echo the upload patch version lower than the existed one>>"..logfile)
 			return false
 		end
 		unpackld(srcfilename,"/tmp/patch.tar.gz")
@@ -880,6 +898,15 @@ function patch_file_verify(srcfilename)
 		end
 		return true
 	else
+		if "patch" ~= hdr.type then
+			os.execute("echo type not match ! select type:patch != upload type:"..(hdr.type or "unknown")..">>"..logfile)
+		end
+		if string.lower(hdr.product) ~= string.lower(model) then
+			os.execute("echo product not match ! current product:"..model.." != upload product:"..(hdr.product or "unknown")..">>"..logfile)
+		end
+		if hdr.rely ~= ini['firmware']['version'] then
+			os.execute("echo version not match ! current version:"..(ini['firmware']['version'] or "unknown").." != upload rely version:"..(hdr.rely or "unknown")..">>"..logfile)
+		end
 		return false
 	end
 end
@@ -1082,6 +1109,7 @@ function action_flashops()
 	local fs_server = require "luci.scripts.fs_server"
 	local restore_avail = check_backup_available()
 	local provision_avail,dprproxy_avail,fs_avail = check_service_status()
+	local updateimage_avail = fs.access("/bin/updateimage")
 	local mac = uci:get("network","lan","macaddr")
 	local upgrade_fail_log=""
 	local destfile = "/tmp/latest_upload_file"
@@ -1195,6 +1223,7 @@ function action_flashops()
 			result = result_str,
 			restore_avail = restore_avail,
 			sys_upgrade_avail = provision_avail and dprproxy_avail,
+			updateimage_avail = updateimage_avail,
 			fs_avail = fs_avail,
 		})
 		end
@@ -1237,7 +1266,7 @@ function action_flashops()
 			end
 		else
 			local verify_flag
-			verify_flag = patch_file_verify(destfile,tmp_type)
+			verify_flag = patch_file_verify(destfile,"/tmp/upgrade_log")
 			if verify_flag then
 				result_str = "Upload Patch Succ !"
 				log_str = req_from.." | ".."UploadPatchSucc /admin/system/backup_upgrade"	
@@ -1246,6 +1275,7 @@ function action_flashops()
 				result_str = "Upload succ but verify file fail !"
 				log_str = req_from.." | ".."VerifyPatchFail /admin/system/backup_upgrade"	
 				log.web_operation_log("Info",log_str)
+				upgrade_fail_log=fs.readfile("/tmp/upgrade_log") or ""
 			end
 		end
 		os.execute("rm "..destfile)
@@ -1253,6 +1283,7 @@ function action_flashops()
 		result = result_str,
 		restore_avail = restore_avail,
 		sys_upgrade_avail = provision_avail and dprproxy_avail,
+		updateimage_avail = updateimage_avail,
 		fs_avail = fs_avail,
 		gsm_upgrading=gsm_upgrading,
 		patch_list = get_patch_list(),
@@ -1285,6 +1316,7 @@ function action_flashops()
 			result = result_str,
 			restore_avail = restore_avail,
 			sys_upgrade_avail = provision_avail and dprproxy_avail,
+			updateimage_avail = updateimage_avail,
 			fs_avail = fs_avail,
 			gsm_upgrading=gsm_upgrading,
 			patch_list = get_patch_list(),

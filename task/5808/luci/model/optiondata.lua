@@ -176,6 +176,7 @@ local config = {
 		},
 		["send_dtmf_end_char"]="Send DTMF Terminator",
 		["cid_send_mode"]="CID Send Mode",
+		['ren']="REN(Ringer Equivalency Number)",
 		["dtmf_gain"]="DTMF Gain",
 		["__cid_send_mode_value"]={
 			["FSK"]="FSK-BEL202",

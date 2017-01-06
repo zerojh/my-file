@@ -21,7 +21,30 @@ function index()
 		entry({"admin","wizard","pptp"},cbi("admin_wizard/pptp_client")).leaf = true
 		entry({"admin","wizard","l2tp"},cbi("admin_wizard/l2tp_client")).leaf = true
 		entry({"admin","wizard","openvpn"},call("action_openvpn")).leaf = true
+		local page = entry({"admin","wizard","changes"},call("action_changes"))
+		page.query = {redir=redir}
+		page.leaf = true
 	end
+end
+
+function action_changes()
+	local fs = require "nixio.fs"
+	local uci = luci.model.uci.cursor()
+	local changes = uci:changes()
+	local network
+
+	for r,tbl in pairs(changes) do
+		if tbl.lan then
+			if tbl.lan.proto or tbl.lan.ipaddr or tbl.lan.netmask then
+				network = true
+			end
+		end
+	end
+	luci.template.render("admin_wizard/changes", {
+		changes = next(changes) and changes,
+		network = network,
+		upgrading = fs.access("/tmp/upgrading_flag"),
+	})
 end
 
 function action_get_wireless()
@@ -123,7 +146,7 @@ function action_openvpn()
 		uci_tmp:save("wizard")
 		uci_tmp:commit("wizard")
 
-		luci.http.redirect(ds.build_url("admin","uci","changes"))
+		luci.http.redirect(ds.build_url("admin","wizard","changes"))
 		return
 	elseif luci.http.formvalue("cancel") then
 		luci.http.redirect(ds.build_url("admin","wizard","vpn"))

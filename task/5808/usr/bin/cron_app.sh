@@ -263,5 +263,5 @@ check_process lucid
 check_upnpc_service
 check_cloud
 check_ddns
-check_dhcp_status
+#check_dhcp_status
 check_dhcp_lease

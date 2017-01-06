@@ -31,7 +31,7 @@ elseif luci.http.formvalue("cbi.save") then
 	uci_tmp:set("wizard","globals","pptp","1")
 	uci_tmp:save("wizard")
 	uci_tmp:commit("wizard")
-	m.redirect = dsp.build_url("admin","uci","changes")
+	m.redirect = dsp.build_url("admin","wizard","changes")
 end
 
 local profile_wan_section
