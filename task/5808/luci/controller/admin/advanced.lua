@@ -270,6 +270,40 @@ function start_diagnostics(string)
 		fs.writefile("/tmp/detect_status",write_str)
 
 		if uci:get("ddns","myddns_ipv4","enabled") == "1" then
+			local num = 0
+			while num < 15 do
+				local result = util.exec("tail /tmp/log/ddns/myddns_ipv4.log")
+				local ddns_status_flag
+
+				if not fs.access("/usr/bin/wget") and not fs.access("/usr/bin/curl") then
+					ddns_status_flag = false
+				elseif result:match("local ip =: '%d+%.%d+%.%d+%.%d+' detected via web at '.+'\n%s*%*%*%*%*%*%* WAITING =: %d+ seconds %(Check Interval%) before continue\n$") or result:match("local ip =: '%d+%.%d+%.%d+%.%d+' detected on network 'wan'\n%s*%*%*%*%*%*%* WAITING =: %d+ seconds %(Check Interval%) before continue\n$")then
+					local time = result:match("WAITING =: (%d+) seconds %(Check Interval%) before continue\n$")
+					local local_ip = result:match("resolved ip =: '(%d+%.%d+%.%d+%.%d+)'")
+					if local_ip and time then
+						ddns_status_flag = true
+					end
+				elseif string.find(result,"DDNS Provider answered") then
+					local answer = result:match("DDNS Provider answered %[(.+)%]") or ""
+					if "good" == answer or "nochg" == answer or answer:match("good %d+%.%d+%.%d+%.%d+") or answer:match("nochg %d+%.%d+%.%d+%.%d+") then
+						ddns_status_flag = true
+					end
+				else
+					ddns_status_flag = false
+				end
+
+				if ddns_status_flag then
+					break
+				end
+				num = num + 1
+				exe("sleep 1")
+			end
+			if num == 15 then
+				write_str = write_str.."fail; "
+			else
+				write_str = write_str.."success; "
+			end
+
 			local ddns_addr = uci:get("ddns","myddns_ipv4","domain")
 			if ddns_addr then
 				local num = 0
