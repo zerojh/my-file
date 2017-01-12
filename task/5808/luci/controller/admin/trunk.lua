@@ -204,6 +204,10 @@ function fxo()
 
 	local th = {"Extension","Autodial Num","Register to SIP Server","Input Gain","Output Gain","Impedance","Profile","Status"}
 	local colgroup = {"10%","10%","15%","10%","10%","15%","13%","10%","7%"}
+	if luci.version.license.fxo > 1 then
+		th = {"Port","Extension","Autodial Num","Register to SIP Server","Input Gain","Output Gain","Impedance","Profile","Status"}
+		colgroup = {"5%","10%","10%","15%","8%","9%","13%","13%","10%","7%"}
+	end
 	local content = {}
 	local edit = {}
 	local delchk = {}
@@ -221,54 +225,64 @@ function fxo()
 	for i=1,MAX_FXO_TRUNK do
 		for k,v in pairs(endpoint) do
 			if v.index and v.name and "fxo" == v['.type'] and i == tonumber(v.index) then
-				cnt = cnt + 1
-				local tmp = {}
-				tmp[1] = v.number_2 or ""
-				tmp[2] = v.autodial_2 or ""
-				tmp[3] = i18n.translate((("on" == v.port_2_reg and "On" or "Off")))
-				tmp[4] = v.dsp_input_gain_2.."dB" or "0dB"
-				tmp[5] = v.dsp_output_gain_2.."dB" or "0dB"
-				tmp[6] = slic_tb[tonumber((v.slic_2 and v.slic_2:match("^%d+$")) and v.slic_2 or 0)+1]
-				tmp[7] = ""
-				for x,y in pairs(profile) do
-					if y.index and y.name and v.profile and y.index == v.profile then
-						tmp[7] = v.profile .. "-< " .. y.name .. " >"
+				local total_port=luci.version.license.fxo or 1
+				for port=1, total_port do
+					cnt = cnt + 1
+					local col = 0
+					local tmp = {}
+					if 1 == total_port then
+						port=2
+					else
+						tmp[1] = port-1
+						col = 1
 					end
-				end
-				tmp[7] = "" ~= tmp[7] and tmp[7] or "Error"
-				tmp[8] = i18n.translate(v.status or "")
-				if "on" == v.port_2_reg and (v.port_2_server_1 or v.port_2_server_2 or v.authuser_2) then
-					more_info[cnt] = ""
-					if v.port_2_server_1 == "0" then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..": "..i18n.translate("Not Config").."<br>"
-					end
-					if v.port_2_server_1 ~= "0" or v.port_2_server_2 ~= "0" then
-						if v.port_2_server_1 ~= "0" then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..": "..uci.get_siptrunk_server(v.port_2_server_1).."<br>"
-						end
-						if v.port_2_server_2 ~= "0"  then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..": "..uci.get_siptrunk_server(v.port_2_server_2).."<br>"
+					tmp[col+1] = v["number_"..port] or ""
+					tmp[col+2] = v["autodial_"..port] or ""
+					tmp[col+3] = i18n.translate((("on" == v["port_"..port.."_reg"] and "On" or "Off")))
+					tmp[col+4] = (v["dsp_input_gain_"..port] or 0).."dB"
+					tmp[col+5] = (v["dsp_output_gain_"..port] or 0).."dB"
+					tmp[col+6] = slic_tb[tonumber((v["slic_"..port] and v["slic_"..port]:match("^%d+$")) and v["slic_"..port] or 0)+1]
+					tmp[col+7] = ""
+					for x,y in pairs(profile) do
+						if y.index and y.name and v.profile and y.index == v.profile then
+							tmp[col+7] = v.profile .. "-< " .. y.name .. " >"
 						end
 					end
-					if v.port_2_server_2 == "0" then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..i18n.translate("Not Config").."<br>"
+					tmp[col+7] = "" ~= tmp[col+7] and tmp[col+7] or "Error"
+					tmp[col+8] = i18n.translate(v.status or "")
+					if "on" == v["port_"..port.."_reg"] and (v["port_"..port.."_server_1"] or v["port_"..port.."_server_2"] or v["authuser_"..port]) then
+						more_info[cnt] = ""
+						if v["port_"..port.."_server_1"] == "0" then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..": "..i18n.translate("Not Config").."<br>"
+						end
+						if v["port_"..port.."_server_1"] ~= "0" or v["port_"..port.."_server_2"] ~= "0" then
+							if v["port_"..port.."_server_1"] ~= "0" then
+								more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..": "..uci.get_siptrunk_server(v["port_"..port.."_server_1"]).."<br>"
+							end
+							if v["port_"..port.."_server_2"] ~= "0"  then
+								more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..": "..uci.get_siptrunk_server(v["port_"..port.."_server_2"]).."<br>"
+							end
+						end
+						if v["port_"..port.."_server_2"] == "0" then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..i18n.translate("Not Config").."<br>"
+						end
+						more_info[cnt] = more_info[cnt]..i18n.translate("Username")..": "..(v["username_"..port] or v["number_"..port] or "").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Auth Username")..": "..(v["authuser_"..port] or v["username_"..port] or v["number_"..port] or "").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("From Header Username")..": "..i18n.translate(v["from_username_"..port] == "caller" and "Caller" or "Username").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Specify Transport Protocol on Register URL")..": "..(i18n.translate(v["reg_url_with_transport_"..port] == "on" and "On" or "Off")).."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Expire Seconds")..": "..(v["expire_seconds_"..port] or "1800").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Retry Seconds")..": "..(v["retry_seconds_"..port] or "60").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format")..": "..i18n.translate(from_field_v[v["sip_from_field_"..port]] or from_field_v["0"]).."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format when CID unavailable")..": "..i18n.translate(from_field_un_v[v["sip_from_field_un_"..port]] or from_field_un_v["0"]).."<br>"
+					else
+						more_info[cnt] = ""
 					end
-					more_info[cnt] = more_info[cnt]..i18n.translate("Username")..": "..(v.username_2 or v.number_2 or "").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Auth Username")..": "..(v.authuser_2 or v.username_2 or v.number_2 or "").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("From Header Username")..": "..i18n.translate(v.from_username_2 == "caller" and "Caller" or "Username").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Specify Transport Protocol on Register URL")..": "..(i18n.translate(v.reg_url_with_transport_2 == "on" and "On" or "Off")).."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Expire Seconds")..": "..(v.expire_seconds_2 or "1800").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Retry Seconds")..": "..(v.retry_seconds_2 or "60").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format")..": "..i18n.translate(from_field_v[v.sip_from_field_2] or from_field_v["0"]).."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Display Name / Username Format when CID unavailable")..": "..i18n.translate(from_field_un_v[v.sip_from_field_un_2] or from_field_un_v["0"]).."<br>"
-
+					status[cnt] = v.status
+					edit[cnt] = ds.build_url("admin","trunk","fxo","fxo",k,"edit",tostring(port))
+					delchk[cnt] = uci:check_cfg_deps("endpoint_fxso",k,"route.endpoint")
+					uci_cfg[cnt] = "endpoint_fxso." .. k
+					table.insert(content,tmp)
 				end
-				status[cnt] = v.status
-				edit[cnt] = ds.build_url("admin","trunk","fxo","fxo",k,"edit")
-				delchk[cnt] = uci:check_cfg_deps("endpoint_fxso",k,"route.endpoint")
-				uci_cfg[cnt] = "endpoint_fxso." .. k
-				table.insert(content,tmp)
-				break
 			end
 		end
 	end

@@ -169,7 +169,11 @@ function get_netstat(wan,lan,wlan,lte)
 	end
 
 	if wlan then
-		s.wlan.rx_pkts,s.wlan.tx_pkts,s.wlan.rx_bytes,s.wlan.tx_bytes = get_netstat_detail(raw_info,"wlan0");
+		if wlan.drv_str == "rt2860v2_ap" or wlan.drv_str == "rt2860v2_sta" then
+			s.wlan.rx_pkts,s.wlan.tx_pkts,s.wlan.rx_bytes,s.wlan.tx_bytes = get_netstat_detail(raw_info,"ra0");
+		else
+			s.wlan.rx_pkts,s.wlan.tx_pkts,s.wlan.rx_bytes,s.wlan.tx_bytes = get_netstat_detail(raw_info,"wlan0");
+		end
 	end
 
 	if lte then
@@ -193,6 +197,8 @@ function get_wifi_info()
 	elseif drv_str == "rt2x00" then
 		raw_info = utl.exec("iwinfo")
 	end
+
+	wlan.drv_str = drv_str
 
 	wlan.mac_addr = raw_info:match("Access Point:%s+([%w%:]+)")
 

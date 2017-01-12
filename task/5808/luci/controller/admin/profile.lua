@@ -20,7 +20,7 @@ function index()
 			entry({"admin","profile","fxso","fxs"},cbi("admin_profile/fxs_edit"),nil,2).leaf = true
 		elseif luci.version.license and luci.version.license.fxo then
 			entry({"admin","profile","fxso"},call("fxso"),"FXO",2)
-			entry({"admin","profile","fxso","fxs"},cbi("admin_profile/fxo_edit"),nil,2).leaf = true
+			entry({"admin","profile","fxso","fxo"},cbi("admin_profile/fxo_edit"),nil,2).leaf = true
 		end
 		entry({"admin","profile","codec"},call("codec"),"Codec",4)
 		entry({"admin","profile","codec","codec"},cbi("admin_profile/codec_edit"),nil,4).leaf = true

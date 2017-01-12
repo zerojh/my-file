@@ -530,7 +530,7 @@ function service_log()
 
 		local destfile_gz = "/tmp/servicelog.tar.gz"
 		local destfile_ld = "/tmp/servicelog.ld"
-		local cmd_gen_runing_log = "date >> /tmp/running_log && uptime >> /tmp/running_log && cat /proc/bootversion >> /tmp/running_log && cat /proc/kernelversion >> /tmp/running_log && cat /etc/provision/control.conf >> /tmp/running_log"
+		local cmd_gen_runing_log = "date >> /tmp/running_log && uptime >> /tmp/running_log && cat /proc/bootversion >> /tmp/running_log && cat /proc/kernelversion >> /tmp/running_log && cat /proc/wifiversion >> /tmp/running_log && cat /etc/provision/control.conf >> /tmp/running_log"
 		cmd_gen_runing_log = cmd_gen_runing_log .. " && ps >> /tmp/running_log && top -b -n1 >> /tmp/running_log && netstat -alpn >> /tmp/running_log "
 		cmd_gen_runing_log = cmd_gen_runing_log .. " && ifconfig >> /tmp/running_log && iwinfo >> /tmp/running_log && dmesg >> /tmp/running_log "
 		cmd_gen_runing_log = cmd_gen_runing_log .. " && df >> /tmp/running_log && free >> /tmp/running_log && cat /proc/meminfo >> /tmp/running_log && cat /proc/slabinfo >> /tmp/running_log "

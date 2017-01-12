@@ -750,7 +750,7 @@
 				#提取版本号
 				build_opkg_control "$tmpctrl/control" \
 				"factorytest-client" \
-				"1.0-`date +%y%m%d%H%M`" \
+				"1.0-${brand}-`date +%y%m%d%H%M`" \
 				"misc" \
 				"optional" \
 				"$buildarch" \
@@ -788,7 +788,7 @@
 		#提取版本号
 		build_opkg_control "$tmpctrl/control" \
 		"oem" \
-		"1.0-`echo ${brand} | tr '/' '-'`-`date +%y%m%d%H%M`" \
+		"1.0-${brand}-`date +%y%m%d%H%M`" \
 		"misc" \
 		"optional" \
 		"$buildarch" \
@@ -796,39 +796,21 @@
 		"$tmpsrc" \
 		""
 
-		if [ "bluewave/WP1" == ${brand} ]; then
-			cp oem_database/bluewave/WP1/bin/network_watch $tmpconf
-			cp oem_database/bluewave/WP1/bin/restore_default $tmpconf
-			cp oem_database/bluewave/WP1/oem $tmpconf
-			cp oem_database/bluewave/WP1/bluewave_logo.png $tmpconf
-			cp oem_database/bluewave/WP1/etc $tmpconf -rf
-			cp oem_database/bluewave/WP1/postinst $tmpctrl
-			cp oem_database/bluewave/WP1/postrm $tmpctrl
-		elif [ "bluewave/S5V" == ${brand} ]; then
-			cp oem_database/bluewave/S5V/network_watch $tmpconf
-			cp oem_database/bluewave/S5V/oem $tmpconf
-			cp oem_database/bluewave/S5V/bluewave_logo.png $tmpconf
-			cp oem_database/bluewave/S5V/system_custom.lua $tmpconf
-			cp oem_database/bluewave/S5V/led.lua $tmpconf
-			cp oem_database/bluewave/S5V/postinst $tmpctrl
-			cp oem_database/bluewave/S5V/postrm $tmpctrl
+		if [ "bluewave" == ${brand} ]; then
+			cp oem_database/bluewave/bin/network_watch $tmpconf
+			cp oem_database/bluewave/bin/restore_default $tmpconf
+			cp oem_database/bluewave/oem $tmpconf
+			cp oem_database/bluewave/bluewave_logo.png $tmpconf
+			cp oem_database/bluewave/etc $tmpconf -rf
+			cp oem_database/bluewave/postinst $tmpctrl
 		elif [ "dchy" == ${brand} ]; then
 			cp oem_database/dchy/oem $tmpconf
-			cp oem_database/dchy/bin $tmpconf -rf
 			cp oem_database/dchy/etc $tmpconf -rf
 			cp oem_database/dchy/icons $tmpconf -rf
-			cp oem_database/dchy/lib $tmpconf -rf
 			cp oem_database/dchy/luci $tmpconf -rf
-			cp oem_database/dchy/usr $tmpconf -rf
 			cp oem_database/dchy/postinst $tmpctrl
-			cp oem_database/dchy/postrm $tmpctrl
 		else
 			cp oem_database/${brand}/oem $tmpconf
-			if [ "cn" == ${lang} ]; then
-				sed -i "s/option 'lang' 'en'/option 'lang' 'cn'/g" $tmpconf/oem
-				sed -i "s/option 'timezone' 'GMT0'/option 'timezone' 'CST-8'/g" $tmpconf/oem
-				sed -i "s/option 'zonename' 'UTC'/option 'zonename' 'Asia\/Beijing'/g" $tmpconf/oem
-			fi
 			if [ -f oem_database/${brand}/${brand}_logo.png ]; then
 				cp oem_database/${brand}/${brand}_logo.png $tmpconf
 			fi
@@ -843,16 +825,13 @@ if [ -f $firmware_upgrading_temp_dir/oem/${brand}_logo.png ]; then
 	cp $firmware_upgrading_temp_dir/oem/${brand}_logo.png /www/luci-static/resources/
 fi
 sed -i '/^\/tmp\//d' /usr/lib/opkg/info/oem.list
-/etc/init.d/lucid restart&
-EOF
-			echo "#!/bin/sh" >> $tmpctrl/preinst
-			chmod +x $tmpctrl/preinst
-			#opkg install oem.ipk 若之前安装过oem，install的话,其postrm脚本并不会执行，prerm和postrm只有在 opkg remove时才会执行，
-			#若从某些第三方oem定制重刷到dinstar或中性等版本，就会导致因为没执行postrm从而导致第三方oem信息清理不干净的问题
-			#若直接在oem.preinst里执行opkg remove oem，opkg会报错的，所以这里用-f判断该脚本是否存在，手动执行
-cat >>$tmpctrl/preinst << EOF
-if [ -f "/usr/lib/opkg/info/oem.postrm" ]; then
-	sh /usr/lib/opkg/info/oem.postrm >>/dev/null 2>&1
+hostname_str=\`uci get oem.$brand.hostname -q\`
+if [ -n \$hostname_str ]; then
+	uci set system.main.hostname=\$hostname_str -q
+	uci set network.wan.hostname=\$hostname_str -q
+	uci set network.lan.hostname=\$hostname_str -q
+	uci commit system
+	uci commit network
 fi
 EOF
 		fi
@@ -898,10 +877,17 @@ EOF
 				cp $syslibdir/lib/lsqlite3.so $tmplib
 				cp -r www/* $tmpwww
 				cp -r etc/* $tmpconf
-
-				if [ "dinstar" == "${brand}" -a "1." == ${version:0:2} ]; then
-					brand="unknown"
-				fi
+	
+				#if [ -z ${brand} ]; then
+					if [ "cn" == ${lang} ]; then
+						sed -i "s/option 'lang' 'en'/option 'lang' 'cn'/g" $tmpconf/config/oem
+						sed -i "s/option 'timezone' 'GMT0'/option 'timezone' 'CST-8'/g" $tmpconf/config/oem
+						sed -i "s/option 'zonename' 'UTC'/option 'zonename' 'Asia\/Beijing'/g" $tmpconf/config/oem
+					fi
+					if [ "1." == ${version:0:2} ]; then
+						sed -i "s/option 'brand' 'dinstar'/option 'brand' 'unknown'/g" $tmpconf/config/oem
+					fi
+				#fi
 
 				build_opkg_package $tmpname $curpwd
 
@@ -1779,10 +1765,6 @@ EOF
 		local app=${pdt}_${ver}_${lang}
 
 		if [ ! -z ${brand} ]; then
-			if [ "dinstar" == "${brand}" -a "1." == ${version:0:2} ]; then
-				brand="unknown"
-			fi
-			brand="`echo ${brand} | tr '/' '_'`"
 			app=${pdt}_${brand}_${ver}_${lang}
 		fi
 		
@@ -1863,7 +1845,7 @@ EOF
 	version=""
 	with_syslib="yes"
 	lang="en"
-	brand="dinstar"
+	brand=""
 	rely=""
 	mod_list=""
 	quiet=""

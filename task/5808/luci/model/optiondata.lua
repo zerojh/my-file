@@ -544,6 +544,38 @@ local config = {
 		["forward_noreply_timeout_1"]="Call Forward No Reply Timeout(s)",
 		["dsp_input_gain_1"]="Input Gain",
 		["dsp_output_gain_1"]="Output Gain",
+		["slic_1"]="Impedance",
+		["__slic_1_value"]={
+				["0"]="600 Ohm",
+				["1"]="900 Ohm",
+				["2"]="270 Ohm + (750 Ohm || 150 nF) and 275 Ohm + (780 Ohm || 150 nF)",
+				["3"]="220 Ohm + (820 Ohm || 120 nF) and 220 Ohm + (820 Ohm || 115 nF)",
+				["4"]="370 Ohm + (620 Ohm || 310 nF)",
+				["5"]="320 Ohm + (1050 Ohm || 230 nF)",
+				["6"]="370 Ohm + (820 Ohm || 110 nF)",
+				["7"]="275 Ohm + (780 Ohm || 115 nF)",
+				["8"]="120 Ohm + (820 Ohm || 110 nF)",
+				["9"]="350 Ohm + (1000 Ohm || 210 nF)",
+				["10"]="200 Ohm + (680 Ohm || 100 nF)",
+				["11"]="600 Ohm + 2.16 uF",
+				["12"]="900 Ohm + 1 uF",
+				["13"]="900 Ohm + 2.16 uF",
+				["14"]="600 Ohm + 1 uF",
+				["15"]="Global impedance"
+		},
+		["sip_from_field_1"]="Display Name / Username Format",
+		["__sip_from_field_1_value"]={
+			["0"]="Caller ID / Caller ID",
+			["1"]="Display Name / Caller ID",
+			["2"]="Extension / Caller ID",
+			["3"]="Caller ID / Extension",
+			["4"]="Anonymous",
+		},
+		["sip_from_field_un_1"]="Display Name / Username Format when CID unavailable",
+		["__sip_from_field_un_1_value"]={
+			["0"]="Display Name / Extension",
+			["1"]="Anonymous",
+		},
 		["number_2"]="Extension",
 		["autodial_2"]="Autodial Number",
 		["did_2"]="DID",
@@ -1284,17 +1316,64 @@ function get_siptrunk_server(server_index)
 	return translate("Not Config")
 end
 
-function get_endpoint_name(value)
-	if value:match("^GSM%-%d+$") or value:match("^gsmopen") then
-		return translate("GSM Trunk")
+function get_endpoint_name(value,dest_type)
+	local interface=uci:get("system","main","interface") or ""
+
+	if value:match("^%d+$") then
+		local number=value:match("^(%d+)$")
+
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxs" then
+				if number == v.number_1 or number == v.number_2 then
+					return translate("FXS Extension").." / "..number
+				end
+			end
+		end
+		for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
+			if number == v.user and v.name then
+				return translate("SIP Extension").." / "..v.name.." / "..number
+			end
+		end
+	end
+
+	if value:match("^FXO%-%d+%-%d+$") or value:match("^FXO%-%d+%/%d+$") then
+		local slot,port=value:match("^FXO%-(%d+)%-(%d+)$")
+		if not slot then
+			slot,port=value:match("^FXO%-(%d+)%/(%d+)$")
+		end
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxo" and v.index and slot == v.index then
+				if "0" == port or ("1"==port and "from" == dest_type) then
+					return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)
+				else
+					if interface:match("1O") then
+						return translate("FXO Trunk")
+					else
+						return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)+1
+					end
+				end
+			end
+		end
 	end
 
 	if value:match("^FXS%-%d+%-%d+$") or value:match("^FXS%-%d+%/%d+$") then
-		return translate("FXS Extension")
+		local slot,port=value:match("^FXS%-(%d+)%-(%d+)$")
+		if not slot then
+			slot,port=value:match("^FXS%-(%d+)%/(%d+)$")
+		end
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxs" and v.index and v.name and slot == v.index then
+				if "0" == port or ("1"==port and "from" == dest_type) then
+					return translate("FXS Extension").." / "..v.number_1
+				else
+					return translate("FXS Extension").." / "..v.number_2
+				end
+			end
+		end
 	end
 
-	if value:match("^FXO%-%d+%-%d+$") or value:match("^FXO%/%d+%/%d+$") then
-		return translate("FXO Trunk")
+	if value:match("^GSM%-%d+$") or value:match("^gsmopen") then
+		return translate("GSM Trunk")
 	end
 
 	if value:match("^SIPP%-%d+$") then
@@ -1345,6 +1424,7 @@ end
 function get_ivr_dest(name)
 	local i18n = require "luci.i18n"
 	local uci = require "luci.model.uci".cursor()
+	local interface = uci:get("system","main","interface") or ""
 
 	local desttype,param = name:match("(.+),(.+)")
 	if desttype and param then
@@ -1357,7 +1437,20 @@ function get_ivr_dest(name)
 			return "FXS Extension / "..param
 		elseif "Trunks" == desttype then
 			if param:match("^FXO") then
-				return "FXO Trunk"
+				if interface:match("1O") then
+					return "FXO Trunk"
+				else
+					local slot,port=param:match("FXO%/(%d+)%/(%d+)$")
+					for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+						if v[".type"] == "fxo" and v.index and slot == v.index then
+							if "1" == port then
+								return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)
+							else
+								return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)+1
+							end
+						end
+					end
+				end
 			elseif param:match("^gsmopen") then
 				return "GSM Trunk"
 			else
@@ -1460,6 +1553,64 @@ function parse_dhcp_server_value(option,value)
 	return translate("NULL")
 end
 
+function parse_fxso(fxso_ct)
+	local s=""
+	local port_map={}
+	for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+		port_map[k]={}
+		port_map[k]["1"]=v.number_1
+		port_map[k]["2"]=v.number_2
+		port_map[k]["type"] = v[".type"]
+	end
+	for i,j in ipairs(fxso_ct) do
+		for k,v in pairs(j) do
+			local port_1_s=""
+			local port_2_s=""
+			for kk,vv in util.kspairs(v) do
+				if kk:sub(1,1) ~= "." then
+					local ret=""
+					if vv and #vv > 0 then
+						if type(vv) == "table" then
+							local ii
+							for ii = 1, #vv do
+								ret=ret.."<br />"..get_config_option_name("endpoint_fxso",k,kk).." += "..get_config_option_value("endpoint_fxso",k,kk,vv[ii])
+							end
+						else
+							ret=ret.."<br />"..get_config_option_name("endpoint_fxso",k,kk).." = "..get_config_option_value("endpoint_fxso",k,kk,vv)
+						end
+					else
+						ret=ret.."<br /><del>"..get_config_option_name("endpoint_fxso",k,kk).."</del>"
+					end
+
+					local port=kk:match("_(%d)_") or kk:match("_(%d)$")
+					if "1"==port or not port then
+						if #port_1_s == 0 then
+							if "fxs" == port_map[k]["type"] then
+								port_1_s="<br /><strong><br />"..translate("FXS Extension").." / "..port_map[k]["1"].." / "..translate("Edit").."</strong>"
+							else
+								port_1_s="<br /><strong><br />"..translate("FXO Trunk").." / "..port_map[k]["1"].." / "..translate("Edit").."</strong>"
+							end
+						end
+						port_1_s=port_1_s..ret
+					end
+					if "2"==port or not port then
+						if #port_2_s == 0 then
+							if "fxs" == port_map[k]["type"] then
+								port_2_s="<br /><strong><br />"..translate("FXS Extension").." / "..port_map[k]["2"].." / "..translate("Edit").."</strong>"
+							else
+								port_2_s="<br /><strong><br />"..translate("FXO Trunk").." / "..port_map[k]["2"].." / "..translate("Edit").."</strong>"
+							end
+						end
+						port_2_s=port_2_s..ret
+					end
+				end
+			end
+			s=s..port_1_s..port_2_s
+		end
+	end
+	return s
+end
+
 function get_config_name(cfg_name,section)
 	if section then
 		local t = uci:get_all(cfg_name) or {}
@@ -1542,7 +1693,7 @@ function get_config_option_value(cfg_name,section,option,value)
 	elseif "dhcp" == cfg_name and ("start" == option or "limit" == option or "dhcp_option" == option) and value then
 		return parse_dhcp_server_value(option,value)
 	elseif "route" == cfg_name and ("custom_from" == option or "from" == option or "successDestination" == option or "failDestination" == option) and value and value > '0' then
-		return get_endpoint_name(value)
+		return get_endpoint_name(value,"from")
 	elseif ("endpoint_ringgroup" == cfg_name or "endpoint_routegroup" == cfg_name) and "members_select" == option and value then
 		return get_endpoint_name(value)
 	elseif "network" == cfg_name and "wan2" == section then

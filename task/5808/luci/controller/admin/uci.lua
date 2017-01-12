@@ -304,10 +304,10 @@ function action_apply()
 			apply_param.sipendpoint = "on"
 			apply_param.firewall = "on"
 
-			if tbl.wan_dns or tbl.lan_dns or tbl.wan_peerdns or tbl.lan_peerdns then
+			if tbl.network.wan_dns or tbl.network.lan_dns or tbl.network.wan_peerdns or tbl.network.lan_peerdns then
 				apply_param.dns = "on"
 			end
-
+			
 			if tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask then
 				if drv_str == "rt2860v2_ap" and uci:get("wireless","wifi0","mode") == "ap" then
 					os.execute("echo network >>/tmp/require_reboot")

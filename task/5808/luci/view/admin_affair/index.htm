@@ -135,6 +135,7 @@ function change_signal_view(id,val)
 		sig_id.src = "/luci-static/resources/signal0.png"
 }
 var sta_disconnected = 0
+var sta_status = ""
 function refresh_wireless_stat(wifi_info)
 {
 	var status_id = document.getElementById("wireless.status");
@@ -160,16 +161,21 @@ function refresh_wireless_stat(wifi_info)
 	if (wifi_info.mode == "sta") {
 		if (wifi_info.status == "Connected") {
 			sta_disconnected = 0;
-			status_id.innerHTML = "连接成功";
+			sta_status = "连接成功";
 		} else {
 			sta_disconnected = sta_disconnected + 1;
-			if (sta_disconnected > 20)
-				sta_disconnected = 5;
-			if (sta_disconnected > 4)
-				status_id.innerHTML = "连接失败";
-			else
-				status_id.innerHTML = "连接成功";
+			if (sta_disconnected > 5)
+				sta_disconnected = 3;
+			if (sta_disconnected > 2) {
+				sta_status = "连接失败";
+			} else {
+				if (sta_status == "" || sta_status == "连接失败")
+					sta_status = "连接失败"
+				else
+					sta_status = "连接异常"
+			}
 		}
+		status_id.innerHTML = sta_status;
 		mode_id.innerHTML = "客户端模式";
 		sig_id.style.display = "";
 		change_signal_view("wireless.signal",wifi_info.signal);

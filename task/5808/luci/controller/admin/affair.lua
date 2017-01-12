@@ -10,7 +10,6 @@ function index()
 	if luci.http.getenv("SERVER_PORT") == 80 or luci.http.getenv("SERVER_PORT") == 443 or luci.http.getenv("SERVER_PORT") == 8848 then
 		entry({"admin","affair"},alias("admin","affair","overview"),"状态",81).index = true
 		entry({"admin","affair","overview"},call("action_overview"),"总览",10).leaf = true
-		--entry({"admin","affair","overview"},template("admin_affair/index_empty"),"总览",11).leaf = true
 		entry({"admin","affair","service_log"},template("admin_affair/service_state"),"服务日志",11).leaf = true
 		entry({"admin","affair","get_service_log"},call("action_get_service_log"))
 	end

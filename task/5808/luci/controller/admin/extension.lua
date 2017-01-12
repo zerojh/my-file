@@ -292,88 +292,90 @@ function fxs()
 	for i=1,MAX_FXS_EXTENSION do
 		for k,v in pairs(endpoint) do
 			if v.index and v.name and i == tonumber(v.index) and "fxs" == v['.type']then
-				cnt = cnt + 1
-				local tmp = {}
-				tmp[1] = v.number_1 or ""
-				tmp[2] = v.did_1 or ""
-				tmp[3] = i18n.translate((("on" == v.port_1_reg) and "On" or "Off"))
-				tmp[4] = (v.waiting_1 == "Activate") and i18n.translate("On") or i18n.translate("Off")
-				tmp[5] = (v.notdisturb_1 == "Activate") and i18n.translate("On") or i18n.translate("Off")
-				
-				if v.forward_uncondition_1 ~= "Deactivate" or (v.forward_busy_1 and v.forward_busy_1 ~= "Deactivate") or (v.forward_noreply_1 and v.forward_noreply_1 ~= "Deactivate") then
-					tmp[6] = i18n.translate("On")
-				else
-					tmp[6] = i18n.translate("Off")
-				end
-				tmp[7] = ""
-				for x,y in pairs(profile) do
-					if y.index and y.name and v.profile and y.index == v.profile then
-						tmp[7] = v.profile .. "-< " .. y.name .. " >"
-						break
+				for port=1,luci.version.license.fxs do
+					cnt = cnt + 1
+					local tmp = {}
+					tmp[1] = v["number_"..port] or ""
+					tmp[2] = v["did_"..port] or ""
+					tmp[3] = i18n.translate((("on" == v["port_"..port.."_reg"]) and "On" or "Off"))
+					tmp[4] = (v["waiting_"..port] == "Activate") and i18n.translate("On") or i18n.translate("Off")
+					tmp[5] = (v["notdisturb_"..port] == "Activate") and i18n.translate("On") or i18n.translate("Off")
+					
+					if v["forward_uncondition_"..port] ~= "Deactivate" or (v["forward_busy_"..port] and v["forward_busy_"..port] ~= "Deactivate") or (v["forward_noreply_"..port] and v["forward_noreply_"..port] ~= "Deactivate") then
+						tmp[6] = i18n.translate("On")
+					else
+						tmp[6] = i18n.translate("Off")
 					end
-				end
-				tmp[7] = "" ~= tmp[7] and tmp[7] or "Error"
-				tmp[8] = i18n.translate(v.status or "")
-
-				more_info[cnt] = ""
-				if "on" == v.port_1_reg and (v.port_1_server_1 or v.port_1_server_2 or v.authuser_1) then
-					if v.port_1_server_1 == "0" then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..":"..i18n.translate("Not Config").."<br>"
-					end
-					if v.port_1_server_1 ~= "0" or v.port_1_server_2 ~= "0" then
-						if v.port_1_server_1 ~= "0" then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..":"..uci.get_siptrunk_server(v.port_1_server_1).."<br>"
-						end
-						if v.port_1_server_2 ~= "0" then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..uci.get_siptrunk_server(v.port_1_server_2).."<br>"
+					tmp[7] = ""
+					for x,y in pairs(profile) do
+						if y.index and y.name and v.profile and y.index == v.profile then
+							tmp[7] = v.profile .. "-< " .. y.name .. " >"
+							break
 						end
 					end
-					if v.port_1_server_2 == "0" then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..i18n.translate("Not Config").."<br>"
-					end
-					more_info[cnt] = more_info[cnt]..i18n.translate("Username")..": "..(v.username_1 or v.number_1).."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Auth Username")..": "..(v.authuser_1 or v.user_name1 or v.number_1).."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Specify Transport Protocol on Register URL")..": "..( i18n.translate(v.reg_url_with_transport_1 == "on" and "On" or "Off")).."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Expire Seconds")..": "..(v.expire_seconds_1 or "1800").."<br>"
-					more_info[cnt] = more_info[cnt]..i18n.translate("Retry Seconds")..": "..(v.retry_seconds_1 or "60").."<br>"
-				end
+					tmp[7] = "" ~= tmp[7] and tmp[7] or "Error"
+					tmp[8] = i18n.translate(v.status or "")
 
-				if v.hotline_1 and "on" == v.hotline_1 then
-					more_info[cnt] = more_info[cnt]..i18n.translate("Hot Line")..":"..v.hotline_1_number.." / "..(("10"==v.hotline_1_time) and i18n.translate("Immediately") or i18n.translatef("%d Second",tonumber(v.hotline_1_time)/1000)).."</br>"
-				else
-					more_info[cnt] = more_info[cnt]..i18n.translate("Hot Line")..":"..i18n.translate("Off").."</br>"
-				end
-				
-				if v.forward_uncondition_1 and "Deactivate" ~= v.forward_uncondition_1 then
-					more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_uncondition_1,v.forward_uncondition_dst_1).."<br>"
-				elseif "Deactivate" == v.forward_uncondition_1 then
-					more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional")..":"..i18n.translate("Off").."<br>"
-					if v.forward_busy_1 and "Deactivate" == v.forward_busy_1 then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy")..":"..i18n.translate("Off").."<br>"
-					elseif v.forward_busy_1 then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_busy_1,v.forward_busy_dst_1).."<br>"
+					more_info[cnt] = ""
+					if "on" == v["port_"..port.."_reg"] and (v["port_"..port.."_server_1"] or v["port_"..port.."_server_2"] or v["authuser_"..port]) then
+						if v["port_"..port.."_server_1"] == "0" then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..":"..i18n.translate("Not Config").."<br>"
+						end
+						if v["port_"..port.."_server_1"] ~= "0" or v["port_"..port.."_server_2"] ~= "0" then
+							if v["port_"..port.."_server_1"] ~= "0" then
+								more_info[cnt] = more_info[cnt]..i18n.translate("Master Server")..":"..uci.get_siptrunk_server(v["port_"..port.."_server_1"]).."<br>"
+							end
+							if v["port_"..port.."_server_2"] ~= "0" then
+								more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..uci.get_siptrunk_server(v["port_"..port.."_server_2"]).."<br>"
+							end
+						end
+						if v["port_"..port.."_server_2"] == "0" then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Slave Server")..":"..i18n.translate("Not Config").."<br>"
+						end
+						more_info[cnt] = more_info[cnt]..i18n.translate("Username")..": "..(v["username_"..port] or v["number_"..port]).."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Auth Username")..": "..(v["authuser_"..port] or v["user_name_"..port] or v["number_"..port]).."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Specify Transport Protocol on Register URL")..": "..( i18n.translate(v["reg_url_with_transport_"..port] == "on" and "On" or "Off")).."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Expire Seconds")..": "..(v["expire_seconds_"..port] or "1800").."<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Retry Seconds")..": "..(v["retry_seconds_"..port] or "60").."<br>"
+					end
+
+					if v["hotline_"..port] and "on" == v["hotline_"..port] then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Hot Line")..":"..v["hotline_"..port.."_number"].." / "..(("10"==v["hotline_"..port.."_time"]) and i18n.translate("Immediately") or i18n.translatef("%d Second",tonumber(v["hotline_"..port.."_time"])/1000)).."</br>"
+					else
+						more_info[cnt] = more_info[cnt]..i18n.translate("Hot Line")..":"..i18n.translate("Off").."</br>"
 					end
 					
-					if v.forward_noreply_1 and "Deactivate" == v.forward_noreply_1 then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply")..":"..i18n.translate("Off").."<br>"
-					else
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_noreply_1,v.forward_noreply_dst_1)
-						if v.forward_noreply_timeout_1 then
-							more_info[cnt] = more_info[cnt].."/"..v.forward_noreply_timeout_1.."<br>"
+					if v["forward_uncondition_"..port] and "Deactivate" ~= v["forward_uncondition_"..port] then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_uncondition_"..port],v["forward_uncondition_dst_"..port]).."<br>"
+					elseif "Deactivate" == v["forward_uncondition_"..port] then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional")..":"..i18n.translate("Off").."<br>"
+						if v["forward_busy_"..port] and "Deactivate" == v["forward_busy_"..port] then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy")..":"..i18n.translate("Off").."<br>"
+						elseif v["forward_busy_"..port] then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_busy_"..port],v["forward_busy_dst_"..port]).."<br>"
+						end
+						
+						if v["forward_noreply_"..port] and "Deactivate" == v["forward_noreply_"..port] then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply")..":"..i18n.translate("Off").."<br>"
 						else
-							more_info[cnt] = more_info[cnt].."<br>"
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply")..":"..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_noreply_"..port],v["forward_noreply_dst_"..port])
+							if v["forward_noreply_timeout_"..port] then
+								more_info[cnt] = more_info[cnt].."/"..v["forward_noreply_timeout_"..port].."<br>"
+							else
+								more_info[cnt] = more_info[cnt].."<br>"
+							end
 						end
 					end
+					more_info[cnt] = more_info[cnt]..i18n.translate("Input Gain")..":"..(v["dsp_input_gain_"..port] or "0").."dB".."<br>"
+					more_info[cnt] = more_info[cnt]..i18n.translate("Output Gain")..":"..(v["dsp_output_gain_"..port] or "0").."dB".."<br>"
+					more_info[cnt] = more_info[cnt]..i18n.translate("Work Mode")..":"..("1" == v.work_mode and "POS" or i18n.translate("Voice")).."<br>"
+					status[cnt] = v.status
+					edit[cnt] = ds.build_url("admin","extension","fxs","fxs",k,"edit",tostring(port))
+					delchk[cnt] = "return true;"
+					uci_cfg[cnt] = "endpoint_fxso." .. k
+					table.insert(content,tmp)
+					break
 				end
-				more_info[cnt] = more_info[cnt]..i18n.translate("Input Gain")..":"..(v.dsp_input_gain_1 or "0").."dB".."<br>"
-				more_info[cnt] = more_info[cnt]..i18n.translate("Output Gain")..":"..(v.dsp_output_gain_1 or "0").."dB".."<br>"
-				more_info[cnt] = more_info[cnt]..i18n.translate("Work Mode")..":"..("1" == v.work_mode and "POS" or i18n.translate("Voice")).."<br>"
-				status[cnt] = v.status
-				edit[cnt] = ds.build_url("admin","extension","fxs","fxs",k,"edit")
-				delchk[cnt] = "return true;"
-				uci_cfg[cnt] = "endpoint_fxso." .. k
-				table.insert(content,tmp)
-				break
 			end
 		end
 	 end

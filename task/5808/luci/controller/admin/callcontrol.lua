@@ -346,7 +346,6 @@ end
 function routegroup()
 	local MAX_ROUTE_GRP = 32
 	local uci = require "luci.model.uci".cursor()
-	local freeswitch = require "luci.scripts.fs_server"
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
 
@@ -357,7 +356,7 @@ function routegroup()
 	uci:check_cfg("endpoint_mobile")
 	uci:check_cfg("route")
 
-	local freeswitch = require "luci.scripts.fs_server"
+	local interface=uci:get("system","main","interface") or ""
 
 	local del_target = luci.http.formvaluetable("Delete")
 	if next(del_target) then
@@ -393,16 +392,20 @@ function routegroup()
 					if v:match("^SIPP") or v:match("^SIPT") or v:match("^GSM") or v:match("^CDMA") then
 						vtype,index = v:match("^(%u+)%-(%d+)")
 					else
-						vtype,index,port = v:match("^(%u+)%-(%d+)(/%d)")
+						vtype,index,port = v:match("^(%u+)%-(%d+)/(%d)")
 					end
 					if vtype == "SIPP" then
-						v = tostring(i18n.translate("SIP Extension")).."-< "..get_name_by_cfgtype_id(vtype,index).." >"..port
+						v = tostring(i18n.translate("SIP Extension")).."-< "..get_name_by_cfgtype_id(vtype,index).." >"
 					elseif vtype == "SIPT" then
-						v = tostring(i18n.translate("SIP Trunk")).."-< "..get_name_by_cfgtype_id(vtype,index).." >"..port
+						v = tostring(i18n.translate("SIP Trunk")).."-< "..get_name_by_cfgtype_id(vtype,index).." >"
 					elseif vtype == "FXS" then
 						v = tostring(i18n.translate("FXS Extension"))
 					elseif vtype == "FXO" then
-						v = tostring(i18n.translate("FXO Trunk"))
+						if interface:match("1O") then
+							v = tostring(i18n.translate("FXO Trunk"))
+						else
+							v = tostring(i18n.translate("FXO Trunk").." / "..i18n.translate("Port").." "..port)
+						end
 					elseif vtype == "GSM" then
 						v = tostring(i18n.translate("GSM Trunk"))
 					elseif vtype == "CDMA" then
@@ -446,6 +449,7 @@ function route()
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
+	local interface = uci:get("system","main","interface") or ""
 
 	uci:check_cfg("route")
 	uci:check_cfg("endpoint_siptrunk")
@@ -501,7 +505,25 @@ function route()
 					Source = v.from
 					local stype,index = Source:match("(%w+)%-(%d+)")
 					if stype == "FXS" or stype == "FXO" then
-						Source = stype
+						local tmp_index,tmp_port = Source:match("FX[SO]%-([0-9]+)%-([0-9]+)")
+						for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+							if v.index == tmp_index and "fxs" == v[".type"] and stype == "FXS" then
+								if interface:match("1S") then
+									Source = "FXS"
+								else
+									Source = "FXS / "..v["number_"..tmp_port]
+								end
+								break
+							end
+							if v.index == tmp_index and "fxo" == v[".type"] and stype == "FXO" then
+								if interface:match("1O") then
+									Source = "FXO"
+								else
+									Source = "FXO / "..i18n.translate("Port").." "..(tonumber(tmp_port)-1)
+								end
+								break
+							end
+						end
 					else
 						Source = get_name_by_cfgtype_id(stype,index)
 						Source = "" ~= Source and Source or "Error"
@@ -553,7 +575,25 @@ function route()
 					dest =  v.successDestination
 					local dtype,index = dest:match("(%w+)%-(%d+)")
 					if dtype == "FXS" or dtype == "FXO" then
-						dest = dtype
+						local tmp_index,tmp_port = dest:match("FX[SO]%-([0-9]+)%-([0-9]+)")
+						for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+							if v.index == tmp_index and "fxs" == v[".type"] and dtype == "FXS" then
+								if interface:match("1S") then
+									dest = "FXS"
+								else
+									dest = "FXS / "..v["number_"..tmp_port]
+								end
+								break
+							end
+							if v.index == tmp_index and "fxo" == v[".type"] and dtype == "FXO" then
+								if interface:match("1O") then
+									dest = "FXO"
+								else
+									dest = "FXO / "..i18n.translate("Port").." "..(tonumber(tmp_port)-1)
+								end
+								break
+							end
+						end
 					elseif dtype == "Hangup" then
 						dest = string.gsub(dtype,"Hangup",tostring(i18n.translate("Hangup")))
 					elseif dtype == "Extension" then
@@ -585,7 +625,25 @@ function route()
 					dest =  v.failDestination
 					local dtype,index = dest:match("(%w+)%-(%d+)")
 					if dtype == "FXS" or dtype == "FXO" then
-						dest= dtype
+						local tmp_index,tmp_port = dest:match("FX[SO]%-([0-9]+)%-([0-9]+)")
+						for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+							if v.index == tmp_index and "fxs" == v[".type"] and dtype == "FXS" then
+								if interface:match("1S") then
+									dest = "FXS"
+								else
+									dest = "FXS / "..v["number_"..tmp_port]
+								end
+								break
+							end
+							if v.index == tmp_index and "fxo" == v[".type"] and dtype == "FXO" then
+								if interface:match("1O") then
+									dest = "FXO"
+								else
+									dest = "FXO / "..i18n.translate("Port").." "..(tonumber(tmp_port)-1)
+								end
+								break
+							end
+						end
 					elseif dtype == "IVR" then
 						dest = "IVR"
 					else
