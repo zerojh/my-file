@@ -77,6 +77,19 @@ if [ -f /tmp/prov/etc/luci ]; then
 	cp /tmp/prov/etc/luci /etc/config
 fi
 
+#if [ -f /tmp/lucid_setting ]; then
+#	uci_http_address=`head -n 1 /tmp/lucid_setting`
+#	uci set lucid.http.address=${uci_http_address}
+#	
+#	uci_https_address=`tail -n 1 /tmp/lucid_setting`
+#	if [ ${uci_https_address} ] && [ ${uci_https_address} != ${uci_http_address} ]; then
+#		uci set lucid.https.address=${uci_https_address}
+#	fi
+#
+#	uci commit lucid
+#	rm -f /tmp/lucid_setting
+#fi
+
 if [ -f /tmp/lucid_setting ]; then
 	uci_http_address=`head -n 1 /tmp/lucid_setting`
 	if [ ! -z "${uci_http_address}" ]; then
