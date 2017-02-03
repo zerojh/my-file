@@ -1,0 +1,36 @@
+#!/bin/sh
+cp /tmp/firmware_upgrading_temp/oem/etc/config/* /usr/lib/lua/luci/scripts/default_config/
+cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -rf
+
+kernelver=`cat /proc/kernelversion`
+kernelver=${kernelver%%.*}
+wifiver=`cat /proc/wifiversion`
+wifiver=${wifiver%%.*}
+if [ "$kernelver" = "6" ] && [ "$wifiver" = "4" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/lib/netifd/wireless/mt7620a.sh /lib/netifd/wireless/mt7620a.sh
+fi
+
+if [ -f "/usr/lib/lua/luci/controller/mini/index.lua" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/etc/config/* /etc/config/
+	rm /etc/config/custom_reset.sh
+	local mac=`readmac | awk -F: '{print $4$5$6}' | tr '[a-f]' '[A-F]'`
+	uci set endpoint_sipphone.@sip[0].password="Wavephone$mac"
+	uci commit endpoint_sipphone
+fi
+if [ -n "`cmp /bin/network_watch /tmp/firmware_upgrading_temp/oem/network_watch`" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/network_watch /bin/network_watch
+fi
+if [ -n "`cmp /bin/restore_default /tmp/firmware_upgrading_temp/oem/restore_default`" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/restore_default /bin/restore_default
+fi
+cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
+cp /tmp/firmware_upgrading_temp/oem/bluewave_logo.png /www/luci-static/resources/
+
+echo "/www/luci-static/resources/bluewave_logo.png" > /usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/scripts/default_config/custom_reset.sh" >>/usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/scripts/default_config/endpoint_sipphone" >>/usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/scripts/default_config/endpoint_ringgroup" >>/usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/view/admin_network/ssid.htm" >>/usr/lib/opkg/info/oem.list
+echo "/usr/lib/lua/luci/view/admin_network/wlan_sta.htm" >>/usr/lib/opkg/info/oem.list
+#reinit something by license via lucid
+/etc/init.d/lucid restart&

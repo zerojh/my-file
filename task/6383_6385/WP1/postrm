@@ -1,0 +1,56 @@
+#!/bin/sh
+cp /rom/bin/network_watch /bin/network_watch
+cp /rom/bin/restore_default /bin/restore_default
+
+wifi_mode=`uci get wireless.wifi0.mode`
+if [ ! -z "$wifi_mode" ] && [ "$wifi_mode" = "sta" ]; then
+	rm /etc/config/wireless -rf
+
+	macaddr=$(readwifimac)
+	if [ -z "$macaddr" ]; then
+		macaddr=$(cat /sys/class/net/ra0/address)
+	fi
+	myssid=${macaddr//:/}
+	myssid=${myssid:6}
+	echo > /etc/config/wireless
+	cat > /etc/config/wireless <<EOF
+config wifi-device  ra0
+	option type     mt7620a
+	option channel  11
+	option hwmode   11bgn
+	option htmode HT20/HT40
+	option isolate 0
+	option txpower 50
+	option wdsmode disable
+	option wps     off
+	# REMOVE THIS LINE TO ENABLE WIFI:
+	option disabled 0
+
+config wifi-iface wifi0
+	option device   ra0
+	option ifname	ra0
+	option index	1
+	option network  lan
+	option mode     ap
+	option wmm      0
+	option isolate  0
+	option ssid     domain_$myssid
+	option encryption none
+EOF
+	rm /etc/config/network_tmp -rf
+	cp /usr/lib/lua/luci/scripts/default_config/network /etc/config/network
+	mv /usr/lib/lua/luci/scripts/change_wireless_dat.sh /tmp/
+	sh /tmp/change_wireless_dat.sh
+else
+	rm /usr/lib/lua/luci/scripts/change_wireless_dat.sh -rf
+	uci delete network_tmp.network.access_mode -q
+	uci commit network_tmp -q
+fi
+
+kernelver=`cat /proc/kernelversion`
+kernelver=${kernelver%%.*}
+wifiver=`cat /proc/wifiversion`
+wifiver=${wifiver%%.*}
+if [ "$kernelver" = "6" ] && [ "$wifiver" = "4" ]; then
+	cp /rom/lib/netifd/wireless/mt7620a.sh /lib/netifd/wireless/mt7620a.sh
+fi
