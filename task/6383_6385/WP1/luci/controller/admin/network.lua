@@ -24,9 +24,9 @@ function index()
 		else
 			entry({"admin","network","wlan","wlan_config"},call("action_wlan"),_("WLAN Config"),20)
 			entry({"admin","network","wlan","wlan_config","edit"},cbi("admin_network/wlan_edit"),nil,21).leaf = true
-			entry({"admin","network","wps"},call("action_wps"))
-			entry({"admin","network","aplist"},call("action_get_wireless"))
 		end
+		entry({"admin","network","wps"},call("action_wps"))
+		entry({"admin","network","aplist"},call("action_get_wireless"))
 	end
 	
 	--@ LTE License
