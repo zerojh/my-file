@@ -1,0 +1,326 @@
+<div class="cbi-value<% if self.last_child then %> cbi-value-last<% end %>" <% if #self.deps > 0  then  %>style="display:none"<%end%> id="cbi-<%=self.config.."-"..section.."-"..self.option%>"
+>
+<div class="cbi-value-title"><label style="margin-left:<%=self.margin%>;"><%-=self.title or ""-%></label></div><div class="cbi-value-field" style="width:58%;">
+<%if self.widget == "select" then
+	local value_list = {{[1]="SIPP-1",[2]="2",whole="SIPP-1::2"},{[1]="SIPP-2",[2]="1",whole="SIPP-2::1"},{[1]="SIPP-3",[2]="1",whole="SIPP-3::1"}}
+	self.f_keylist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4"}
+	self.f_vallist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4"}
+	self.s_keylist = {"1","2","3"}
+	self.s_vallist = {"1","2","3"}
+	--local value_list = self:cfgvalue(section);
+	if "table" == type(value_list) then
+		for k,v in pairs(value_list) do%>
+		<div><select class="cbi-input-select" style="width:10em;" onclick="return true;" onchange="return true;"<%=attr("id",cbid.."-select_0")..attr("name",cbid.."-select_0")..attr("size","1")%>>
+			<% for i, key in pairs(self.f_keylist) do -%>
+			<option id="select_0"<%=attr("value",key)..ifattr(v[1]==key,"selected","selected")%>><%=striptags(self.f_vallist[i])%></option>
+			<%end%>
+		</select>&nbsp;&nbsp;<%=self.description or ""%>&nbsp;&nbsp;<select class="cbi-input-select" style="width:7em;" onchange="return true;"<%=attr("id",cbid.."-select_1")..attr("name",cbid.."-select_1")..ifattr("size","1")%>>
+			<% for i, key in pairs(self.s_keylist) do -%>
+			<option id="select_1"<%=attr("value",key)..ifattr(v[2]==key,"selected","selected")%>><%=striptags(self.s_vallist[i])%></option>
+			<%end%>
+		</select><input class="cbi-input-text" type="text"<%=attr("value",v.whole)..attr("id",cbid)..attr("name",cbid)%> style="display:none;"/><br/></div>
+		<% end
+	elseif "nil" == type(value_list) then%>
+		<div><select class="cbi-input-select" style="width:10em;" onclick="return true;" onchange="return true;"<%=attr("id",cbid.."-select_0")..attr("name",cbid.."-select_0")..ifattr("size","1")%>>
+			<% for i, key in pairs(self.f_keylist) do -%>
+			<option id="select_0"<%=attr("value",key)%>><%=striptags(self.f_vallist[i])%></option>
+			<%end%>
+		</select>&nbsp;&nbsp;<%=self.description or ""%>&nbsp;&nbsp;<select class="cbi-input-select" style="width:7em;" onchange="return true;"<%=attr("id",cbid.."-select_1")..attr("name",cbid.."-select_1")..ifattr("size","1")%>>
+			<% for i, key in pairs(self.s_keylist) do -%>
+			<option id="select_1"<%=attr("value",key)%>><%=striptags(self.s_vallist[i])%></option>
+			<%end%>
+		</select><input class="cbi-input-text" type="text"<%=attr("id",cbid)..attr("name",cbid)%> style="display:none;"/><br/></div>
+	<%end
+end%>
+<script type="text/javascript">
+
+function cbi_dyndblsellist_init(name, respath)
+{
+	function cbi_dyndblsellist_update()
+	{
+		var objs = document.getElementsByName(name);
+		for (var i = 0; i < objs.length; i++) {
+			var n2 = objs[i].nextSibling.nextSibling;
+			var p = objs[i].nextSibling.nextSibling.nextSibling;
+			p.value = (objs[i].value && n2.value) ? objs[i].value + '::' + n2.value : '';
+		}
+	}
+
+	function cbi_dyndblsellist_renumber(e)
+	{
+		/* in a perfect world, we could just getElementsByName() - but not if
+		 * MSIE is involved... */
+
+		var objs = [ ]; // = document.getElementsByName(name);
+		for (var i = 0; i < e.parentNode.childNodes.length; i++)
+			if (e.parentNode.childNodes[i].name == name)
+				objs.push(e.parentNode.childNodes[i]);
+
+		var selobjs = document.getElementsByName(name);
+		var options_len = objs[0].options.length;
+		for (var i = 0; i < objs.length && i < options_len; i++)
+		{
+			objs[i].id = name + '.' + (i + 1);
+			objs[i].nextSibling.nextSibling.nextSibling.nextSibling.src = respath + (((i+1) < selobjs.length || (i+1) == options_len) ? '/cbi/remove.png' : '/cbi/add.png');
+		}
+
+		if(objs.length < options_len)
+		{
+			if(objs.length > 1 && "br" == objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.tagName.toLowerCase())
+			{
+				var btn = document.createElement('img');
+					btn.className = 'cbi-image-button';
+					btn.src = respath + '/cbi/remove.png'
+
+				objs[objs.length-1].parentNode.insertBefore(btn, objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling);
+
+				cbi_bind(btn,        'click',    cbi_dyndblsellist_btnclick);
+			}
+			if(objs.length > 1 && "img" == objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.tagName.toLowerCase())
+			{
+				objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling.src = respath + '/cbi/remove.png'
+			}
+			if(1 == objs.length && "img" == objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.tagName.toLowerCase())
+				objs[objs.length-1].parentNode.removeChild(objs[objs.length-1].nextSibling.nextSibling.nextSibling.nextSibling.nextSibling)
+
+		}
+		e.focus();
+	}
+
+	function cbi_dyndblsellist_keypress(ev)
+	{
+		ev = ev ? ev : window.event;
+
+		var se = ev.target ? ev.target : ev.srcElement;
+
+		if (se.nodeType == 3)
+			se = se.parentNode;
+
+		switch (ev.keyCode)
+		{
+			/* backspace, delete */
+			case 8:
+			case 46:
+				if (se.value.length == 0)
+				{
+					if (ev.preventDefault)
+						ev.preventDefault();
+
+					return false;
+				}
+
+				return true;
+
+			/* enter, arrow up, arrow down */
+			case 13:
+			case 38:
+			case 40:
+				if (ev.preventDefault)
+					ev.preventDefault();
+
+				return false;
+		}
+
+		return true;
+	}
+
+	function cbi_dyndblsellist_keydown(ev)
+	{
+
+		ev = ev ? ev : window.event;
+
+		var se = ev.target ? ev.target : ev.srcElement;
+
+		if (se.nodeType == 3)
+			se = se.parentNode;
+
+		var prev = se.previousSibling;
+		while (prev && prev.name != name)
+			prev = prev.previousSibling;
+
+		var next = se.nextSibling;
+		while (next && next.name != name)
+			next = next.nextSibling;
+
+		switch (ev.keyCode)
+		{
+			/* backspace, delete */
+			case 8:
+			case 46:
+				var jump = (ev.keyCode == 8)
+					? (prev || next) : (next || prev);
+				if (jump)
+				{
+					if("img" == se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.tagName.toLowerCase())
+						se.parentNode.removeChild(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling);
+					se.parentNode.removeChild(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling);
+					se.parentNode.removeChild(se.nextSibling.nextSibling.nextSibling.nextSibling);
+					se.parentNode.removeChild(se.nextSibling.nextSibling.nextSibling);
+					se.parentNode.removeChild(se.nextSibling.nextSibling);
+					se.parentNode.removeChild(se.nextSibling);
+					se.parentNode.removeChild(se);
+
+					cbi_dyndblsellist_renumber(jump);
+
+					if (ev.preventDefault)
+						ev.preventDefault();
+
+					/* IE Quirk, needs double focus somehow */
+					jump.focus();
+
+					return false;
+				}
+
+				break;
+
+			/* enter */
+			case 13:
+				var n1 = document.createElement('select');
+					n1.className  = se.className;
+					n1.name       = se.name;
+					n1.id         = se.id;
+
+				var selobjs = document.getElementsByName(name);
+				var selobj = document.getElementById(selobjs[selobjs.length-1].id);
+
+				var selected_index = 0;
+
+				for( var i = 0; i < selobjs.length; i++)
+				{
+					var index = selobjs[i].selectedIndex;
+					selected_index |= 1 << index;
+				}
+
+				var selected_setflag = 0;
+
+				for( var i = 0; i < selobj.length; i++ )
+				{
+					n1.options[i] = new Option(selobj.options[i].text, selobj.options[i].value);
+					n1.options[i].id = selobj.options[i].id;
+
+					if(0 == selected_setflag && !((1 << i) & selected_index))
+					{
+						n1.options[i].selected = true;
+						selected_setflag = 1;
+					}
+				}
+
+				var s = se.nextSibling.cloneNode(true);
+				var n2 = se.nextSibling.nextSibling.cloneNode(true);
+				n2.value = n2.options[0].value
+
+				var p = se.nextSibling.nextSibling.nextSibling.cloneNode(true);
+				var b = document.createElement('img');
+
+				cbi_bind(b, 'click',    cbi_dyndblsellist_btnclick);
+
+				if (next)
+				{
+					se.parentNode.insertBefore(n1, next);
+					se.parentNode.insertBefore(s, next);
+					se.parentNode.insertBefore(n2, next);
+					se.parentNode.insertBefore(p, next);
+					se.parentNode.insertBefore(b, next);
+					se.parentNode.insertBefore(document.createElement('br'), next);
+				}
+				else
+				{
+					if("img" == se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling.tagName.toLowerCase())
+						se.parentNode.removeChild(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling);
+					se.parentNode.appendChild(n1);
+					se.parentNode.appendChild(s);
+					se.parentNode.appendChild(n2);
+					se.parentNode.appendChild(p);
+					se.parentNode.appendChild(b);
+					se.parentNode.appendChild(document.createElement('br'));
+				}
+
+				var dt = se.nextSibling.nextSibling.nextSibling.getAttribute('cbi_datatype');
+				var op = se.nextSibling.nextSibling.nextSibling.getAttribute('cbi_optional') == 'true';
+
+				if (dt)
+					cbi_validate_field(p, op, dt);
+
+				cbi_bind(n1,'change',   cbi_dyndblsellist_update);
+				cbi_bind(n2,'change',   cbi_dyndblsellist_update);
+				cbi_dyndblsellist_update();
+				cbi_dyndblsellist_renumber(n1);
+				break;
+
+			/* arrow up */
+			case 38:
+				if (prev)
+					prev.focus();
+
+				break;
+
+			/* arrow down */
+			case 40:
+				if (next)
+					next.focus();
+
+				break;
+		}
+
+		return true;
+	}
+
+	function cbi_dyndblsellist_btnclick(ev)
+	{
+		ev = ev ? ev : window.event;
+
+		var se = ev.target ? ev.target : ev.srcElement;
+
+		if (se.src.indexOf('remove') > -1) /*click del*/
+		{
+			cbi_dyndblsellist_keydown({
+				target:  se.previousSibling.previousSibling.previousSibling.previousSibling,
+				keyCode: 8
+			});
+		}
+		else  /* click add*/
+		{
+			var objs = document.getElementsByName(name);
+			if(1 == objs.length)
+				cbi_dyndblsellist_keydown({target:  se.previousSibling.previousSibling.previousSibling.previousSibling,keyCode: 13});
+			else
+				cbi_dyndblsellist_keydown({target:  se.previousSibling.previousSibling.previousSibling.previousSibling.previousSibling,keyCode: 13});
+		}
+
+		return false;
+	}
+
+	var selobjs = document.getElementsByName(name);
+	if(selobjs.length > 0)
+		var options_len = document.getElementById(selobjs[selobjs.length-1].id).length;
+
+	for( var i = 0; i < selobjs.length; i++ )
+	{
+		var btn = document.createElement('img');
+			btn.className = 'cbi-image-button';
+
+		if(options_len > 1)
+			btn.src = respath + ((((i+1) < selobjs.length) || ((i+1) >= options_len))  ? '/cbi/remove.png' : '/cbi/add.png');
+
+		selobjs[i].parentNode.insertBefore(btn, selobjs[i].nextSibling.nextSibling.nextSibling.nextSibling);
+		cbi_bind(btn,        'click',    cbi_dyndblsellist_btnclick);
+		cbi_bind(selobjs[i], 'change',   cbi_dyndblsellist_update);
+		cbi_bind(selobjs[i].nextSibling.nextSibling,  'change',    cbi_dyndblsellist_update);
+	}
+	cbi_dyndblsellist_update();
+
+	if(selobjs.length > 1 && selobjs.length < options_len)
+	{
+		var btn = document.createElement('img');
+			btn.className = 'cbi-image-button';
+			btn.src = respath + '/cbi/remove.png'
+
+		selobjs[selobjs.length-1].parentNode.insertBefore(btn, selobjs[selobjs.length-1].nextSibling.nextSibling.nextSibling.nextSibling);
+
+		cbi_bind(btn,        'click',    cbi_dyndblsellist_btnclick);
+	}
+}
+
+cbi_dyndblsellist_init('<%=cbid%>-select_0','<%=resource%>');
+</script>
+<%+cbi/valuefooter%>
