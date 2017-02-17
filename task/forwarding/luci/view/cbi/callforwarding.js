@@ -2,57 +2,104 @@
 
 <div class="cbi-value-title"><label style="margin-left:<%=self.margin%>;"><%-=self.title or ""-%></label></div>
 <div class="cbi-value-field" style="width:45%;">
-<%
+<%-
 	--local value_list = {{[1]="1004",[2]="1",whole="1004::1"},{[1]="1003",[2]="1",whole="1003::1"},{[1]="SIPP-1",[2]="2",[3]="1001",whole="SIPP-1::2::1001"},{[1]="SIPP-2",[2]="1",[3]="1002"},{[1]="SIPP-3",[2]="1",[3]="1003",whole="SIPP-3::1::1003"},{[1]="SIPP-4",[2]="2",[3]="1004",whole="SIPP-4::2::1004"},{[1]="SIPP-5",[2]="3",[3]="1005",whole="SIPP-5::3::1005"}}
-	local value_list = {{[1]="Deactivate",whole="Deactivate"}}
-	local value_list = {{[1]="1004",whole="1004"}}
+	--local value_list = {{[1]="Deactivate",whole="Deactivate"}}
+	--local value_list = {{[1]="1004",whole="1004"}}
 	--local value_list = {{[1]="1004",[2]="1",whole="1004::1"}}
+	local value_list = {{[1]="SIPP-1",[2]="2",[3]="1003",whole="SIPP-1::2::1003"},{[1]="SIPP-2",[2]="3",[3]="1004",whole="SIPP-2::3::1004"}}
 
 	self.f_keylist = {"Deactivate","1003","1004","SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	self.f_vallist = {translate("Off"),"1003","1004","SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
-	self.s_keylist = {"1","2","3",""}
-	self.s_vallist = {"1","2","3",translate("Alaway")}
+	self.s_keylist = {"","1","2","3"}
+	self.s_vallist = {translate("Alaway"),"1","2","3"}
+	self.id_vallist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	--local value_list = self:cfgvalue(section);
 
 	if "table" == type(value_list) then
-		for k,v in pairs(value_list) do%>
+		for k,v in pairs(value_list) do %>
 		<div>
-			<select class="cbi-input-select" style="width:115px;" size="1"<%=attr("id",cbid)..attr("name",cbid.."-select0")%>>
+			<select class="cbi-input-select" style="width:28%;" size="1"<%=attr("id",cbid)..attr("name",cbid.."-select0")%>>
 			<%- for i, key in pairs(self.f_keylist) do %>
-				<option "option0"<%=attr("value",key)..ifattr(v[1]==key,"selected","selected")%>><%=striptags(self.f_vallist[i])%></option>
+				<option id="option0"<%=attr("value",key)..ifattr(v[1]==key,"selected","selected")%>><%=striptags(self.f_vallist[i])%></option>
 			<%- end %>
 			</select>
-			<%- if v[1] and v[1] ~= "Deactivate" then -%>
-				<label style="display:;">
-				</label><select class="cbi-input-select" style="width:75px;display:;" size="1"<%=attr("id",cbid.."-select1")%>>
-				<%- for i, key in pairs(self.s_keylist) do %>
-					<option id="option1"<%=attr("value",key)..ifattr(v[2]==key,"selected","selected")%>><%=striptags(self.s_vallist[i])%></option>
-				<%- end %>
-				</select><label style="display:;">
-					&nbsp;<%:Dest Number%>
-				</label><input class="cbi-input-text" type="text" style="width:5em;display:;"<%=ifattr(v[3],"value")..attr("id",cbid.."-input."..k)%>>
-			<%- end -%>
-			<input type="text" style="display:none;"<%=ifattr(v[whole],"value")..attr("name",cbid)%>>
+			<label <%=(v[1] and v[1] ~= "Deactivate") and '' or 'style="display:none;"'%>>&nbsp;</label>
+			<select class="cbi-input-select" style="width:17%;<%=(v[1] and v[1] ~= "Deactivate") and "" or "display:none;"%>" size="1"<%=attr("id",cbid.."-select1")%>>
+			<%- for i, key in pairs(self.s_keylist) do %>
+				<option id="option1"<%=attr("value",key)..ifattr(v[2]==key,"selected","selected")%>><%=striptags(self.s_vallist[i])%></option>
+			<%- end %>
+			</select>
+			<%-
+				local flag = false;
+				if self.id_vallist then
+					if type(self.id_vallist) == "string" then
+						if v[1] == self.vallist then
+							flag = true
+						end
+					elseif type(self.id_vallist) == "table" and next(self.id_vallist) then
+						for _,j in pairs(self.id_vallist) do
+							if v[1] == j then
+								flag = true
+							end
+						end
+					end
+				end
+				if flag then
+			%>
+			<label style="display:;">&nbsp;<%:Dest Number%>&nbsp;</label>
+			<input class="cbi-input-text" type="text" style="width:16%;"<%=ifattr(v[3],"value",v[3])..attr("id",cbid.."-input."..k)..attr("name",cbid.."-input")%>>
+			<%-else%>
+			<label style="display:none;">&nbsp;<%:Dest Number%>&nbsp;</label>
+			<input class="cbi-input-text" type="text" style="width:16%;display:none;"<%=attr("id",cbid.."-input."..k)..attr("name",cbid.."-input")%>>
+			<%-end%>
+			<input type="text" style="display:;width:5%;"<%=ifattr(v["whole"],"value",v["whole"])..attr("name",cbid)%>>
 		</div>
-		<% end
+		<%-end
 	elseif "nil" == type(value_list) then%>
-		<div <%=attr("class",cbid.."-class")%>><select class="cbi-input-select" style="width:115px;" onclick="return true;" onchange="return true;"<%=attr("id",cbid)..attr("name",cbid.."-select0.1")..ifattr(self.size,"size")%>>
+		<div <%=attr("class",cbid.."-class")%>><select class="cbi-input-select" style="width:28%;" onclick="return true;" onchange="return true;"<%=attr("id",cbid)..attr("name",cbid.."-select0.1")..ifattr(self.size,"size")%>>
 			<% for i, key in pairs(self.f_keylist) do -%>
 			<option id="select0"<%=attr("value",key)%>><%=striptags(self.f_vallist[i])%></option>
 			<%end%>
-			</select>&nbsp;<span><select class="cbi-input-select" style="width:75px;" onchange="return true;"<%=attr("id",cbid.."-select1.1")..attr("name",cbid.."-select1.1")..ifattr(self.size,"size")%>>
+			</select>&nbsp;<span><select class="cbi-input-select" style="width:17%;" onchange="return true;"<%=attr("id",cbid.."-select1.1")..attr("name",cbid.."-select1.1")..ifattr(self.size,"size")%>>
 			<% for i, key in pairs(self.s_keylist) do -%>
 			<option id="select1"<%=attr("value",key)%>><%=striptags(self.s_vallist[i])%></option>
 			<%end%>
 			</select></span><span<%=attr("id",cbid.."-span.1")%>>&nbsp;&nbsp;<%:Dest Number%>&nbsp;<input class="cbi-input-text" type="text" style="width:5em;"<%=attr("id",cbid.."-input.1")..attr("name",cbid.."-input.1")%>/>
 		</span><br/></div>
-	<% end %>
+	<%-end
+%>
 </div>
 <script type="text/javascript">
 
-function cbi_callforwarding_init(name, respath)
+function cbi_callforwarding_init(name, respath, input_depends)
 {
-	function cbi_callforwarding_renumber(delete_img)
+	function cbi_callforwarding_tip_check(name)
+	{
+		var grp = document.getElementsByName(name);
+		if (grp.length > 0) {
+			if (document.createEvent) {
+				var et = document.createEvent("HTMLEvents");
+				et.initEvent("blur", false, true);
+				grp[0].dispatchEvent(et);
+			} else if (document.createEventObject) {
+				grp[0].fireEvent("onblur");
+			}
+		} else {
+			var tip_obj = document.getElementById(name + ".tip");
+			tip_obj.style.display = "none";
+		}
+	}
+
+	function cbi_callforwarding_input_check(v)
+	{
+		ev = ev ? ev : window.event;
+		var se = ev.target ? ev.target : ev.srcElement;
+		if (se.flag && cbi_validators["phonenumber"]) {
+		}
+	}
+
+	function cbi_callforwarding_renumber()
 	{
 		var selobjs = document.getElementsByName(name);
 		var options_len = selobjs[0].options.length;
@@ -61,71 +108,26 @@ function cbi_callforwarding_init(name, respath)
 			var c5 = p.childNodes[4];
 			if (c5 && c5.nodeName.toLowerCase() == "input")
 				c5.id = c5.id.replace(/\d+$/,i+1);
-			if (delete_img != true) {
-				p.lastChild.src = respath + (((i+1) < selobjs.length || (i+1) == options_len) ? '/cbi/remove.png' : '/cbi/add.png');
-			} else {
-				if (p.lastChild.nodeName.toLowerCase() == "img")
-					p.removeChild(p.lastChild);
-				if (p.lastChild.nodeName.toLowerCase() == "img")
-					p.removeChild(p.lastChild);
-			}
+			p.lastChild.src = respath + (((i+1) < selobjs.length || (i+1) == options_len) ? '/cbi/remove.png' : '/cbi/add.png');
 		}
 
-		if(delete_img != true && selobjs.length < options_len) {
+		if(selobjs.length < options_len) {
 			var n = selobjs[selobjs.length-1].parentNode;
 
-			if(selobjs.length > 1 && "img" != n.lastChild.previousSibling.nodeName.toLowerCase()) {
+			if (selobjs.length > 1 && "img" != n.lastChild.previousSibling.nodeName.toLowerCase()) {
 				var btn = document.createElement('img');
 					btn.className = 'cbi-image-button';
 					btn.src = respath + '/cbi/remove.png';
 
 				n.insertBefore(btn, n.lastChild);
-
 				cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
 			}
-			if(selobjs.length > 1 && "img" == n.lastChild.previousSibling.nodeName.toLowerCase()) {
+			if (selobjs.length > 1 && "img" == n.lastChild.previousSibling.nodeName.toLowerCase()) {
 				n.lastChild.previousSibling.src = respath + '/cbi/remove.png';
 			}
-			if(1 == selobjs.length && "img" == n.lastChild.previousSibling.nodeName.toLowerCase())
+			if (1 == selobjs.length && "img" == n.lastChild.previousSibling.nodeName.toLowerCase())
 				n.removeChild(n.lastChild.previousSibling);
-
 		}
-	}
-
-	function cbi_callforwarding_keypress(ev)
-	{
-		ev = ev ? ev : window.event;
-
-		var se = ev.target ? ev.target : ev.srcElement;
-
-		if (se.nodeType == 3)
-			se = se.parentNode;
-
-		switch (ev.keyCode) {
-			/* backspace, delete */
-			case 8:
-			case 46:
-				if (se.value.length == 0)
-				{
-					if (ev.preventDefault)
-						ev.preventDefault();
-
-					return false;
-				}
-
-				return true;
-
-			/* enter, arrow up, arrow down */
-			case 13:
-			case 38:
-			case 40:
-				if (ev.preventDefault)
-					ev.preventDefault();
-
-				return false;
-		}
-
-		return true;
 	}
 
 	function cbi_callforwarding_keydown(ev)
@@ -140,69 +142,67 @@ function cbi_callforwarding_init(name, respath)
 			case 8:
 			case 46:
 				var length = se.parentNode.children.length;
+				var c5_name = se.childNodes[4].name != "null" ? se.childNodes[4].name : se.childNodes[4].name1;
 
 				if (length > 1) {
 					se.parentNode.removeChild(se);
-
+					cbi_callforwarding_tip_check(c5_name);
 					cbi_callforwarding_renumber();
 				}
 				break;
 
 			/* enter */
 			case 13:
-				var n = se.cloneNode(true);
-
 				var selobjs = document.getElementsByName(name);
-				var selobj = document.getElementById(selobjs[selobjs.length-1].id);
+				var n = se.cloneNode(true);
+				var c1 = n.firstChild;
+				var c2 = c1.nextSibling;
+				var c3 = c2.nextSibling;
+				var c4 = c3.nextSibling;
+				var c5 = c4.nextSibling;
+				var c6 = c5.nextSibling;
+				n.input_depends = input_depends;
 
 				/* first child */
-				var c1 = n.firstChild;
 				var selected_index = 0;
-				var selected_index1 = 0;
+				c1.options[c1.selectedIndex].removeAttribute("selected")
 				for (var i = 0; i < selobjs.length; i++) {
 					var index = selobjs[i].selectedIndex;
 					selected_index |= 1 << index;
 				}
 				for (var i = 0; i < c1.options.length; i++) {
 					if (c1.options[i].value == "Deactivate")
-						selected_index1 |= 1 << i;
+						selected_index |= 1 << i;
 				}
-				selected_index |= selected_index1;
 
-				var selected_setflag = 0;
-
-				for (var i = 0; i < selobj.length; i++) {
-					if(0 == selected_setflag && !((1 << i) & selected_index)) {
-						var div_tmp = document.createElement("div");
-						div_tmp.innerHTML="<select><option value="+selobj.options[i].value+" selected>"+selobj.options[i].text+"</select>"
-						c1.replaceChild(div_tmp.firstChild.firstChild,c1.options[i])
-						c1.options[i].id = selobj.options[i].id;
-						selected_setflag = 1;
-					} else {
-						c1.options[i] = new Option(selobj.options[i].text, selobj.options[i].value);
-						c1.options[i].id = selobj.options[i].id;
+				for (var i = 0; i < c1.options.length; i++) {
+					if(!((1 << i) & selected_index)) {
+						c1.options[i].selected = true;
+						c1.options[i].defaultSelected = true;
+						break;
 					}
 				}
-				cbi_bind(c1, 'change',   cbi_callforwarding_select0_update);
-				cbi_bind(c1, 'click',   cbi_callforwarding_select0_update);
 
 				/* third child */
-				var c3 = c1.nextSibling.nextSibling;
+				c3.options[c3.selectedIndex].removeAttribute("selected")
 				for (var i = 0; i < c3.options.length; i++) {
 					if (c3.options[i].value != "") {
-						c3.value = c3.options[i].value;
+						c3.options[i].selected = true;
+						c3.options[i].defaultSelected = true;
 						break;
 					}
 				}
 				cbi_bind(c3, 'change',   cbi_callforwarding_select1_update);
 				cbi_bind(c3, 'click',   cbi_callforwarding_select1_update);
 
-				/* fifth child */
-				var c5 = c3.nextSibling.nextSibling;
+				/* forth,fifth child */
+				c5.defaultValue = "";
 				c5.value = "";
+				c5.name = n.childNodes[4].name;
+				c5.name1 = n.childNodes[4].name1 != "null" ? n.childNodes[4].name1 : n.childNodes[4].name;
+				c5.className = c5.className.replace(/ cbi-input-invalid/g, "");
 
 				/* sixth child */
-				var c6 = c5.nextSibling.nextSibling;
 				c6.value = c1.value;
 				if (c3.value && c3.value != "") {
 					c6.value = c6.value + "::" + c3.value;
@@ -213,24 +213,35 @@ function cbi_callforwarding_init(name, respath)
 				/* remove img child*/
 				if (se.lastChild.previousSibling.nodeName.toLowerCase() == "img")
 					se.removeChild(se.lastChild);
-				if (n.lastChild.previousSibling.nodeName.toLowerCase() == "img")
+				if (n.lastChild.nodeName.toLowerCase() == "img")
 					n.removeChild(n.lastChild);
-				cbi_bind(n.lastChild,        'click',    cbi_callforwarding_btnclick);
+				if (n.lastChild.nodeName.toLowerCase() == "img")
+					n.removeChild(n.lastChild);
+				var img_obj = document.createElement('img');
+				cbi_bind(img_obj, 'click', cbi_callforwarding_btnclick);
+				n.appendChild(img_obj);
 
 				/* append */
 				se.parentNode.appendChild(n);
 
-				/*
-				var dt = se.nextSibling.nextSibling.nextSibling.getAttribute('cbi_datatype');
-				var op = se.nextSibling.nextSibling.nextSibling.getAttribute('cbi_optional') == 'true';
+				/* bind */
+				cbi_bind(c1, 'change',   cbi_callforwarding_select0_update);
+				cbi_bind(c1, 'click',   cbi_callforwarding_select0_update);
+				cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
+				cbi_validate_field(c5, false, "phonenumber");
 
-				if (dt)
-					cbi_validate_field(p, op, dt);
+				/* can do after appending*/
+				var dp_c45 = false;
+				if (input_depends && input_depends.length > 0) {
+					for (var i = 0; i < n.input_depends.length; i++) {
+						if (c1.value == n.input_depends[i]) {
+							dp_c45 = true;
+							break;
+						}
+					}
+				}
+				cbi_callforwarding_display_c45(c5, dp_c45);
 
-				cbi_bind(n1,'change',   cbi_dyndblsellist_update);
-				cbi_bind(n2,'change',   cbi_dyndblsellist_update);
-				cbi_dyndblsellist_update();
-				*/
 				cbi_callforwarding_renumber();
 				break;
 
@@ -277,7 +288,7 @@ function cbi_callforwarding_init(name, respath)
 		}
 	}
 
-	function cbi_callforwarding_cleartextnode()
+	function cbi_callforwarding_delete_text_node()
 	{
 		var s = document.getElementsByName(name);
 		for (var i = 0; i < s.length; i++) {
@@ -292,7 +303,7 @@ function cbi_callforwarding_init(name, respath)
 		}
 	}
 
-	function cbi_callforwarding_cleardivnode()
+	function cbi_callforwarding_delete_invalid_node()
 	{
 		var selobjs = document.getElementsByName(name);
 		var obj;
@@ -310,7 +321,6 @@ function cbi_callforwarding_init(name, respath)
 				}
 			}
 		}
-
 		if (obj)
 			cbi_callforwarding_delete_all_siblingnode(obj);
 	}
@@ -322,64 +332,130 @@ function cbi_callforwarding_init(name, respath)
 				object.parentNode.removeChild(object.previousSibling);
 			while (object.nextSibling)
 				object.parentNode.removeChild(object.nextSibling);
-
 		}
-		cbi_callforwarding_renumber(true);
+	}
+
+	function cbi_callforwarding_display_c23(c3,flag)
+	{
+		if (flag) {
+			if (c3.style.display == "none") {
+				c3.value = "";
+				c3.style.display = "";
+				c3.previousSibling.style.display = "";
+			}
+		} else {
+			if (c3.style.display == "") {
+				c3.style.display = "none";
+				c3.value = "";
+				c3.previousSibling.style.display = "none";
+			}
+		}
+	}
+
+	function cbi_callforwarding_display_c45(c5,flag)
+	{
+		if (flag) {
+			if (c5.style.display == "none") {
+
+				c5.value = "";
+				c5.name = c5.name1 != "null" ? c5.name1 : c5.name;
+				c5.style.display = "";
+				c5.previousSibling.style.display = "";
+				cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
+				cbi_validate_field(c5, false, "phonenumber");
+			}
+		} else {
+			if (c5.style.display == "") {
+				var c = c5.cloneNode(true);
+				var c5_name = c.name;
+
+				c.name1 = c.name;
+				c.name = null;
+				c.style.display = "none";
+				c.value = "";
+				c.className = c.className.replace(/ cbi-input-invalid/g, "");
+				c5.parentNode.replaceChild(c, c5);
+				c.previousSibling.style.display = "none";
+				cbi_callforwarding_tip_check(c5_name);
+			}
+		}
+	}
+
+	function cbi_callforwarding_display_img(parnode,flag)
+	{
+		if (flag) {
+			var selobjs = document.getElementsByName(name);
+			var option_len = selobjs[0].options.length;
+			if (selobjs.length == 1 && selobjs.length < option_len && parnode.lastChild.nodeName.toLowerCase() != "img") {
+				var btn = document.createElement('img');
+				btn.className = 'cbi-image-button';
+				btn.src = respath + '/cbi/add.png';
+				parnode.appendChild(btn);
+				cbi_bind(btn,'click',cbi_callforwarding_btnclick);
+			}
+		} else {
+			if (parnode.lastChild.nodeName.toLowerCase() == "img")
+				parnode.removeChild(parnode.lastChild);
+			if (parnode.lastChild.nodeName.toLowerCase() == "img")
+				parnode.removeChild(parnode.lastChild);
+		}
 	}
 
 	function cbi_callforwarding_select0_update(ev)
 	{
 		ev = ev ? ev : window.event;
-
 		var se = ev.target ? ev.target : ev.srcElement;
-		console.log("select0",se.value);
-		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling)
+		var dp_c23_ = false;
+		var dp_c45 = false;
+		var dp_img = false;
+		if (console_flag)
+			console.log("select0",se.value);
 
 		if (se.value == "Deactivate") {
 			cbi_callforwarding_delete_all_siblingnode(se.parentNode);
+			dp_c23 = false;
+			dp_c45 = false;
+			dp_img = false;
 		} else {
-			var selobjs = document.getElementsByName(name);
-			var option_len = selobjs[0].options.length;
-			if (selobjs.length == 1 && selobjs.length < option_len) {
-				var lastchild = se.parentNode.lastChild;
-				if (lastchild.nodeName.toLowerCase() != "img") {
-					var btn = document.createElement('img');
+			var input_depends = se.parentNode.input_depends;
 
-					btn.className = 'cbi-image-button';
-					btn.src = respath + '/cbi/add.png';
-					se.parentNode.appendChild(btn);
-					cbi_bind(btn,'click',cbi_callforwarding_btnclick);
+			dp_c23 = true;
+			if (input_depends && input_depends.length > 0) {
+				for (var i = 0; i < input_depends.length; i++) {
+					if (se.value == input_depends[i]) {
+						dp_c45 = true;
+						break;
+					}
 				}
 			}
+			if (se.nextSibling.nextSibling.value != "")
+				dp_img = true;
 		}
+
+		cbi_callforwarding_display_c23(se.nextSibling.nextSibling, dp_c23);
+		cbi_callforwarding_display_c45(se.nextSibling.nextSibling.nextSibling.nextSibling, dp_c45);
+		cbi_callforwarding_display_img(se.parentNode, dp_img);
+		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling);
 	}
 
 	function cbi_callforwarding_select1_update(ev)
 	{
 		ev = ev ? ev : window.event;
-
 		var se = ev.target ? ev.target : ev.srcElement;
-		console.log("select1",se.value)
-		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling)
+		var dp_img = false;
+		if (console_flag)
+			console.log("select1",se.value);
 
 		if (se.value == "") {
 			cbi_callforwarding_delete_all_siblingnode(se.parentNode);
+			dp_img = false;
 		} else {
-			var selobjs = document.getElementsByName(name);
-			var option_len = selobjs[0].options.length;
-			if (selobjs.length == 1 && selobjs.length < option_len) {
-				var lastchild = se.parentNode.lastChild;
-				if (lastchild.nodeName.toLowerCase() != "img") {
-					var btn = document.createElement('img');
-
-					btn.className = 'cbi-image-button';
-					btn.src = respath + '/cbi/add.png';
-					se.parentNode.appendChild(btn);
-					cbi_bind(btn,'click',cbi_callforwarding_btnclick);
-				}
-			}
+			if (se.previousSibling.previousSibling.value != "Deactivate")
+				dp_img = true;
 		}
 
+		cbi_callforwarding_display_img(se.parentNode, dp_img);
+		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling);
 	}
 
 	function cbi_callforwarding_input_update(ev)
@@ -387,58 +463,82 @@ function cbi_callforwarding_init(name, respath)
 		ev = ev ? ev : window.event;
 
 		var se = ev.target ? ev.target : ev.srcElement;
-		console.log("input",se.value)
+		if (console_flag)
+			console.log("input",se.value);
 		cbi_callforwarding_whole_update(se.nextSibling)
 	}
 
 	function cbi_callforwarding_whole_update(obj)
 	{
-		console.log("whole",obj.value)
+		obj.value = obj.previousSibling.value;
+		if (console_flag)
+			console.log("whole",obj.value);
 	}
 
-	cbi_callforwarding_cleartextnode();
+	cbi_callforwarding_delete_text_node();
 
+	var console_flag = true;
+	var userAgent = navigator.userAgent;
+	if (userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1)
+		console_flag = false;
 	var selobjs = document.getElementsByName(name);
-	if(selobjs.length > 0)
+	if (selobjs.length > 0)
 		var options_len = document.getElementById(selobjs[selobjs.length-1].id).length;
 
-	var child = selobjs[0];
-	var sibling_count = child.parentNode.children.length;
-	if (selobjs.length != 1 || ((sibling_count != 2 || child.value != "Deactivate") && ((sibling_count != 4 && sibling_count != 6) || child.nextSibling.nextSibling.value != ""))) {
-		for (var i = 0; i < selobjs.length; i++) {
+	for (var i = 0; i < selobjs.length; i++) {
+		var c1 = selobjs[i];
+		var c3 = c1.nextSibling.nextSibling;
+		var c5 = c3.nextSibling.nextSibling;
+
+		if (selobjs.length != 1 || (c1.value != "Deactivate" && c3.value != "")) {
 			var btn = document.createElement('img');
 				btn.className = 'cbi-image-button';
 
 			if(options_len > 1)
 				btn.src = respath + ((((i+1) < selobjs.length) || ((i+1) >= options_len))  ? '/cbi/remove.png' : '/cbi/add.png');
-
-			selobjs[i].parentNode.appendChild(btn);
-			cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
-			/* select0 bind event */
-			cbi_bind(selobjs[i], 'change',   cbi_callforwarding_select0_update);
-			cbi_bind(selobjs[i], 'click',   cbi_callforwarding_select0_update);
-			/* select1 bind event */
-			cbi_bind(selobjs[i].nextSibling.nextSibling, 'change',   cbi_callforwarding_select1_update);
-			cbi_bind(selobjs[i].nextSibling.nextSibling, 'click',   cbi_callforwarding_select1_update);
-			/* input bind event */
-			cbi_bind(selobjs[i].nextSibling.nextSibling.nextSibling.nextSibling, 'change',    cbi_callforwarding_input_update);
+			cbi_bind(btn, 'click', cbi_callforwarding_btnclick);
+			c1.parentNode.appendChild(btn);
 		}
+		/* select0 bind event */
+		cbi_bind(c1, 'change', cbi_callforwarding_select0_update);
+		cbi_bind(c1, 'click', cbi_callforwarding_select0_update);
+		/* select1 bind event */
+		cbi_bind(c3, 'change', cbi_callforwarding_select1_update);
+		cbi_bind(c3, 'click', cbi_callforwarding_select1_update);
+		/* input bind event */
+		cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
+		cbi_validate_field(c5, false, "phonenumber");
+		c1.parentNode.input_depends = input_depends;
+	}
 
-		if(selobjs.length > 1 && selobjs.length < options_len) {
-			var btn = document.createElement('img');
-				btn.className = 'cbi-image-button';
-				btn.src = respath + '/cbi/remove.png';
+	if(selobjs.length > 1 && selobjs.length < options_len) {
+		var btn = document.createElement('img');
+			btn.className = 'cbi-image-button';
+			btn.src = respath + '/cbi/remove.png';
 
-			selobjs[selobjs.length-1].parentNode.insertBefore(btn, selobjs[selobjs.length-1].parentNode.lastChild);
-			cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
-		}
+		selobjs[selobjs.length-1].parentNode.insertBefore(btn, selobjs[selobjs.length-1].parentNode.lastChild);
+		cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
 	}
 }
 
-cbi_callforwarding_init('<%=cbid%>-select0','<%=resource%>');
+cbi_callforwarding_init("<%=cbid%>-select0","<%=resource%>", [
+	<%-
+		if self.id_vallist then
+			if type(self.id_vallist) == "string" then -%>
+				<%-=self.id_vallist-%>
+		<%-
+			elseif type(self.id_vallist) == "table" and next(self.id_vallist) then
+				for k,v in pairs(self.id_vallist) do -%>
+					"<%-=v-%>"
+					<%-if k<#self.id_vallist then-%>,<%-end-%>
+				<%- end
+			end
+		end
+	-%>
+]);
 </script>
 
-<div <%=attr("id", cbid..".tip")%> class="cbi-input-tip" style="display:none;width:15%;margin-left:-10px;">
+<div <%=attr("id", cbid.."-input.tip")%> class="cbi-input-tip" style="display:none;width:15%;margin-left:-10px;">
 	<div style="display:table-cell;vertical-align:middle;">
 		<%- local datatype_tip = require "luci.cbi.datatypes".get_datatypes_tip("phonenumber") %>
 		<%=translate(tostring(datatype_tip))%>
