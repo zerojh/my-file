@@ -196,11 +196,29 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				cbi_bind(c3, 'click',   cbi_callforwarding_select1_update);
 
 				/* forth,fifth child */
+				var dp_c45 = false;
 				c5.defaultValue = "";
 				c5.value = "";
-				c5.name = n.childNodes[4].name;
-				c5.name1 = n.childNodes[4].name1 != "null" ? n.childNodes[4].name1 : n.childNodes[4].name;
+				c5.name1 = se.childNodes[4].name1;
 				c5.className = c5.className.replace(/ cbi-input-invalid/g, "");
+				if (input_depends && input_depends.length > 0) {
+					for (var i = 0; i < n.input_depends.length; i++) {
+						if (c1.value == n.input_depends[i]) {
+							dp_c45 = true;
+							break;
+						}
+					}
+				}
+				if (dp_c45) {
+					c4.style.display = "";
+					c5.name = c5.name1;
+					c5.style.display = "";
+					cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
+				} else {
+					c4.style.display = "none";
+					c5.name = null;
+					c5.style.display = "none";
+				}
 
 				/* sixth child */
 				c6.value = c1.value;
@@ -227,20 +245,11 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				/* bind */
 				cbi_bind(c1, 'change',   cbi_callforwarding_select0_update);
 				cbi_bind(c1, 'click',   cbi_callforwarding_select0_update);
-				cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
-				cbi_validate_field(c5, false, "phonenumber");
 
 				/* can do after appending*/
-				var dp_c45 = false;
-				if (input_depends && input_depends.length > 0) {
-					for (var i = 0; i < n.input_depends.length; i++) {
-						if (c1.value == n.input_depends[i]) {
-							dp_c45 = true;
-							break;
-						}
-					}
-				}
-				cbi_callforwarding_display_c45(c5, dp_c45);
+				if (dp_c45)
+					cbi_validate_field(c5, false, "phonenumber");
+
 
 				cbi_callforwarding_renumber();
 				break;
@@ -358,7 +367,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 			if (c5.style.display == "none") {
 
 				c5.value = "";
-				c5.name = c5.name1 != "null" ? c5.name1 : c5.name;
+				c5.name = c5.name1;
 				c5.style.display = "";
 				c5.previousSibling.style.display = "";
 				cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
@@ -369,8 +378,8 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				var c = c5.cloneNode(true);
 				var c5_name = c.name;
 
-				c.name1 = c.name;
 				c.name = null;
+				c.name1 = c5.name1;
 				c.style.display = "none";
 				c.value = "";
 				c.className = c.className.replace(/ cbi-input-invalid/g, "");
@@ -463,16 +472,27 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		ev = ev ? ev : window.event;
 
 		var se = ev.target ? ev.target : ev.srcElement;
-		if (console_flag)
-			console.log("input",se.value);
 		cbi_callforwarding_whole_update(se.nextSibling)
 	}
 
 	function cbi_callforwarding_whole_update(obj)
 	{
-		obj.value = obj.previousSibling.value;
+		var c1 = obj.parentNode.firstNode;
+		var c3 = c1.nextSibling.nextSibling;
+		var c5 = c3.nextSibling.nextSibling;
+
+		if (c1.value == "Deactivate" || (c3.value == "" && c5.value == "")) {
+			obj.value = c1.value;
+		} else {
+			if (c3.value == "" && c5.value != "")
+				obj.value = c1.value + "::::" + c5.value;
+			else if (c3.value != "" && v5.value == "")
+				obj.value = c1.value + "::" + c3.vlaue;
+			else
+				obj.value = c1.value + "::" + c3.value + "::" + c5.value;
+		}
 		if (console_flag)
-			console.log("whole",obj.value);
+			console.log(obj.value);
 	}
 
 	cbi_callforwarding_delete_text_node();
@@ -499,6 +519,8 @@ function cbi_callforwarding_init(name, respath, input_depends)
 			cbi_bind(btn, 'click', cbi_callforwarding_btnclick);
 			c1.parentNode.appendChild(btn);
 		}
+		c5.name1 = c5.name;
+		c1.parentNode.input_depends = input_depends;
 		/* select0 bind event */
 		cbi_bind(c1, 'change', cbi_callforwarding_select0_update);
 		cbi_bind(c1, 'click', cbi_callforwarding_select0_update);
@@ -506,9 +528,12 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		cbi_bind(c3, 'change', cbi_callforwarding_select1_update);
 		cbi_bind(c3, 'click', cbi_callforwarding_select1_update);
 		/* input bind event */
-		cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
-		cbi_validate_field(c5, false, "phonenumber");
-		c1.parentNode.input_depends = input_depends;
+		if (c5.style.display == "") {
+			cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
+			cbi_validate_field(c5, false, "phonenumber");
+		} else {
+			c5.name = null;
+		}
 	}
 
 	if(selobjs.length > 1 && selobjs.length < options_len) {
