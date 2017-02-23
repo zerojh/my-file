@@ -9,11 +9,11 @@ local endpoint_interface = {}
 --@ endpoint_fxso or endpoint_sipphone
 local call_waiting_status = "Deactivate"
 local call_notdisturb_status = "Deactivate"
-local call_forward_unregister_value = "Deactivate"
-local call_forward_uncondition_value = "Deactivate"
-local call_forward_busy_value = "Deactivate"
-local call_forward_noreply_value = "Deactivate"
-local call_foread_noreply_timeout = "20"
+local call_forward_unregister_status = "Deactivate"
+local call_forward_uncondition_status = "Deactivate"
+local call_forward_busy_status = "Deactivate"
+local call_forward_noreply_status = "Deactivate"
+--local call_foread_noreply_timeout = "20"
 local sip_extension_reg_status_query=""
 
 --@ feature_code
@@ -34,35 +34,20 @@ local bridge_type = bridge_str:match("([a-z]+)/.*")
 if bridge_type == "freetdm" then
 	local slot,port = bridge_str:match("freetdm/([0-9]+)/([0-9]+)/")
 	if fxs_ex_tb[slot] then
-		local cfgtb = fxs_ex_tb[slot]
 		if port == "1" then
-			call_waiting_status = cfg_tb["waiting_1"] or "Deactivate"
-			call_notdisturb_status = cfg_tb["notdisturb_1"] or "Deactivate"
-			call_forward_uncondition_status = cfg_tb["forward_uncondition_1"] or "Deactivate"
+			call_waiting_status = fxs_ex_tb[slot]["waiting_1"] or "Deactivate"
+			call_notdisturb_status = fxs_ex_tb[slot]["notdisturb_1"] or "Deactivate"
+			call_forward_uncondition_status = fxs_ex_tb[slot]["forward_uncondition_1"] or "Deactivate"
 			call_forward_busy_status = fxs_ex_tb[slot]["forward_busy_1"] or "Deactivate"
 			call_forward_noreply_status = fxs_ex_tb[slot]["forward_noreply_1"] or "Deactivate"
 			--call_foread_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_1"] or "20"
 		else
 			call_waiting_status = fxs_ex_tb[slot]["waiting_2"] or "Deactivate"
 			call_notdisturb_status = fxs_ex_tb[slot]["notdisturb_2"] or "Deactivate"
-			if fxs_ex_tb[slot]["forward_uncondition_dst_2"] then
-				call_forward_uncondition_value = fxs_ex_tb[slot]["forward_uncondition_2"].."/"..fxs_ex_tb[slot]["forward_uncondition_dst_2"]
-			else
-				call_forward_uncondition_value = fxs_ex_tb[slot]["forward_uncondition_2"] or "Deactivate"
-			end
-			if fxs_ex_tb[slot]["forward_busy_dst_2"] then
-				call_forward_busy_value = fxs_ex_tb[slot]["forward_busy_2"].."/"..fxs_ex_tb[slot]["forward_busy_dst_2"]
-			elseif fxs_ex_tb[slot]["forward_busy_2"] then
-				call_forward_busy_value = fxs_ex_tb[slot]["forward_busy_2"] or "Deactivate"
-			end
-			if fxs_ex_tb[slot]["forward_noreply_dst_2"] then
-				call_forward_noreply_value = fxs_ex_tb[slot]["forward_noreply_2"].."/"..fxs_ex_tb[slot]["forward_noreply_dst_2"]
-			else
-				call_forward_noreply_value = fxs_ex_tb[slot]["forward_noreply_2"] or "Deactivate"
-			end
-			if fxs_ex_tb[slot]["forward_noreply_timeout_2"] then
-				call_foread_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_2"] or "20"
-			end
+			call_forward_uncondition_status = fxs_ex_tb[slot]["forward_uncondition_2"] or "Deactivate"
+			call_forward_busy_status = fxs_ex_tb[slot]["forward_busy_2"] or "Deactivate"
+			call_forward_noreply_status = fxs_ex_tb[slot]["forward_noreply_2"] or "Deactivate"
+			--call_foread_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_2"] or "20"
 		end
 	end
 elseif bridge_str:match("user/")  then
@@ -70,30 +55,12 @@ elseif bridge_str:match("user/")  then
 	if sip_ex_tb[user] then
 		call_waiting_status = sip_ex_tb[user]["waiting"] or "Deactivate"
 		call_notdisturb_status = sip_ex_tb[user]["notdisturb"] or "Deactivate"
-		sip_extension_reg_status_query = sip_ex_tb[user]["reg_query"] or ""
-		if sip_ex_tb[user]["forward_uncondition_dst"] then
-			call_forward_uncondition_value = sip_ex_tb[user]["forward_uncondition"].."/"..sip_ex_tb[user]["forward_uncondition_dst"]
-		else
-			call_forward_uncondition_value = sip_ex_tb[user]["forward_uncondition"] or "Deactivate"
-		end
-		if sip_ex_tb[user]["forward_unregister_dst"] then
-			call_forward_unregister_value = sip_ex_tb[user]["forward_unregister"].."/"..sip_ex_tb[user]["forward_unregister_dst"]
-		else
-			call_forward_unregister_value = sip_ex_tb[user]["forward_unregister"] or "Deactivate"
-		end
-		if sip_ex_tb[user]["forward_busy_dst"] then
-			call_forward_busy_value = sip_ex_tb[user]["forward_busy"].."/"..sip_ex_tb[user]["forward_busy_dst"]
-		elseif sip_ex_tb[user]["forward_busy"] then
-			call_forward_busy_value = sip_ex_tb[user]["forward_busy"] or "Deactivate"
-		end
-		if sip_ex_tb[user]["forward_noreply_dst"] then
-			call_forward_noreply_value = sip_ex_tb[user]["forward_noreply"].."/"..sip_ex_tb[user]["forward_noreply_dst"]
-		else
-			call_forward_noreply_value = sip_ex_tb[user]["forward_noreply"] or "Deactivate"
-		end	
-		if sip_ex_tb[user]["forward_noreply_timeout"] then
-			call_foread_noreply_timeout = sip_ex_tb[user]["forward_noreply_timeout"] or "20"
-		end
+		--sip_extension_reg_status_query = sip_ex_tb[user]["reg_query"] or ""
+		call_forward_uncondition_status = sip_ex_tb[user]["forward_uncondition"] or "Deactivate"
+		call_forward_unregister_status = sip_ex_tb[user]["forward_unregister"] or "Deactivate"
+		call_forward_busy_status = sip_ex_tb[user]["forward_busy"] or "Deactivate"
+		call_forward_noreply_status = sip_ex_tb[user]["forward_noreply"] or "Deactivate"
+		--call_foread_noreply_timeout = sip_ex_tb[user]["forward_noreply_timeout"] or "20"
 	end
 end
 
@@ -146,31 +113,17 @@ function check_channel_idle_state(bridge_param)
 	return "false"
 end
 
---@ get sip trunk uci name
-function get_siptrunk_uci_name(param)
-	local uci_tb = uci:get_all("endpoint_siptrunk") or {}
-	local ret_name = "unknown"
-	
-	for k,v in pairs(uci_tb) do
-		if v.name and v.profile and v.index and v.profile.."_"..v.index == param then
-			ret_name = v.name
-		end
+if session:ready() then
+	local blind_transfer_val = session:getVariable("blind_transfer_val") or "false"
+	if blind_transfer_val == "true" then
+		session:execute("set","ringback=${hold_music}")
 	end
 
-	return ret_name
-end
+	session:execute("set","force_transfer_context=public")
+	session:execute("export","force_transfer_context=public")
+	session:execute("set","sip_redirect_context=public")
+	session:execute("export","sip_redirect_context=public")
 
-if session:ready() then
-    local blind_transfer_val = session:getVariable("blind_transfer_val") or "false"
-    if blind_transfer_val == "true" then
-            session:execute("set","ringback=${hold_music}")
-    end
-    
-    session:execute("set","force_transfer_context=public")
-    session:execute("export","force_transfer_context=public")
-    session:execute("set","sip_redirect_context=public")
-    session:execute("export","sip_redirect_context=public")
-    
 	session:setVariable("call_bypass_media_flag","false")
 	session:setVariable("call_fw_uncond_bypass_media_flag","false")
 	session:setVariable("call_fw_busy_bypass_media_flag","false")
@@ -244,8 +197,10 @@ if session:ready() then
 		end
 	end
 
+
 	--@ set call_timeout for forward_noreply
-	if call_forward_noreply_value ~= "Deactivate" then
+	if call_forward_noreply_status === "Activate" then
+		session:setVariable("my_fail_fw_noreply_flag","true")
 		if not session:getVariable("call_timeout") then
 			session:setVariable("call_timeout",call_foread_noreply_timeout)
 			session:setVariable("bridge_answer_timeout",call_foread_noreply_timeout)
@@ -270,50 +225,9 @@ if session:ready() then
 		--@ HERE IS ROUTING END
 	else
 		--@ take the first service,call_forward_uncondition
-		if "Deactivate" ~= call_forward_uncondition_value then
-			session:consoleLog("info","ROUTING:service of call_forward_uncondition - ["..call_forward_uncondition_value.."]")
-
-			local tmp_str = string.sub(call_forward_uncondition_value,1,3)
-			if tmp_str == "FXO" then
-				local slot,port,dst = call_forward_uncondition_value:match("FXO/([0-9]+)/([0-9]+)/([0-9]+)")
-				if slot and port and dst then
-					session:setVariable("my_fail_bridge_str_uncondition","T-freetdm/"..slot.."/"..port.."/"..dst)
-					session:setVariable("my_fail_bridge_channel_uncondition","FXO")
-				end
-			elseif tmp_str == "SIP" then
-				local gw_name,dst = call_forward_uncondition_value:match("SIPT%-([0-9%_]+)/([0-9]+)")
-				if gw_name and dst then
-					session:setVariable("my_fail_bridge_channel_uncondition",get_siptrunk_uci_name(gw_name))
-					--@ judge whether from SIP
-					-- if from:match("^sofia/") then
-					-- 	local from_name = from:match("^sofia/gateway/(.*)/") or from:match("^sofia/user/(%d+)") or "unknown"
-					-- 	if endpoint_interface[from_name] == endpoint_interface[gw_name] and "LAN" == endpoint_interface[from_name] then
-					-- 		session:setVariable("call_fw_uncond_bypass_media_flag","true")
-					-- 		session:setVariable("call_fw_uncond_proxy_media_flag","false")
-					-- 	else
-					-- 		session:setVariable("call_fw_uncond_bypass_media_flag","false")
-					-- 		session:setVariable("call_fw_uncond_proxy_media_flag","true")
-					-- 	end
-					-- else
-					-- 	session:setVariable("call_fw_unocnd_bypass_media_flag","false")
-					-- 	session:setVariable("call_fw_unocnd_proxy_media_flag","false")
-					-- end
-					session:setVariable("my_fail_bridge_str_uncondition","T-sofia/gateway/"..gw_name.."/"..dst)
-				end
-			elseif tmp_str == "gsm" then
-				local gsm_name,dst = call_forward_uncondition_value:match("gsmopen/([0-9a-zA-Z%-]+)/([0-9]+)")
-				if gsm_name and dst then
-					session:setVariable("my_fail_bridge_str_uncondition","T-gsmopen/"..gsm_name.."/"..dst)
-					session:setVariable("my_fail_bridge_channel_uncondition","GSM")
-				end
-			else
-				local ret_number = api:executeString("eval ${user_data("..call_forward_uncondition_value.."@${domain} attr id)}")
-				if ret_number == call_forward_uncondition_value then
-					session:setVariable("my_fail_transfer_str_uncondition","T-"..call_forward_uncondition_value.." XML extension")
-				else
-					session:setVariable("my_fail_transfer_str_uncondition","T-"..call_forward_uncondition_value.." XML public")
-				end
-			end
+		if "Activate" == call_forward_uncondition_status then
+			session:consoleLog("info","ROUTING:service of call_forward_uncondition")
+			session:setVariable("my_fail_fw_uncondition_flag","true")
 		else
 			--@ setting for dtmf
 			local sip_user_agent = session:getVariable("sip_user_agent") or ""
@@ -332,35 +246,8 @@ if session:ready() then
 			local channel_state_ret = check_channel_idle_state(bridge_str)
 
 			if channel_state_ret == "unregister" then
-				session:consoleLog("info","ROUTING:service of call_forward_unregister - ["..call_forward_unregister_value.."]")
-
-				local tmp_str = string.sub(call_forward_unregister_value,1,3)
-				if tmp_str == "FXO" then
-					local slot,port,dst = call_forward_unregister_value:match("FXO/([0-9]+)/([0-9]+)/([0-9]+)")
-					if slot and port and dst then
-						session:setVariable("my_fail_bridge_str_unregister","T-freetdm/"..slot.."/"..port.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_unregister","FXO")
-					end
-				elseif tmp_str == "SIP" then
-					local gw_name,dst = call_forward_unregister_value:match("SIPT%-([0-9%_]+)/([0-9]+)")
-					if gw_name and dst then
-						session:setVariable("my_fail_bridge_channel_unregister",get_siptrunk_uci_name(gw_name))
-						session:setVariable("my_fail_bridge_str_unregister","T-sofia/gateway/"..gw_name.."/"..dst)
-					end
-				elseif tmp_str == "gsm" then
-					local gsm_name,dst = call_forward_unregister_value:match("gsmopen/([0-9a-zA-Z%-]+)/([0-9]+)")
-					if gsm_name and dst then
-						session:setVariable("my_fail_bridge_str_unregister","T-gsmopen/"..gsm_name.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_unregister","GSM")
-					end
-				elseif call_forward_unregister_value ~= "Deactivate" then
-					local ret_number = api:executeString("eval ${user_data("..call_forward_unregister_value.."@${domain} attr id)}")
-					if ret_number == call_forward_unregister_value then
-						session:setVariable("my_fail_transfer_str_unregister","T-"..call_forward_unregister_value.." XML extension")
-					else
-						session:setVariable("my_fail_transfer_str_unregister","T-"..call_forward_unregister_value.." XML public")
-					end
-				end
+				session:consoleLog("info","ROUTING:service of call_forward_unregister")
+				session:setVariable("my_fail_fw_unregister_flag","true")
 			elseif channel_state_ret == "true" then
 				--@ Normal bridge action
 				session:setVariable("my_success_bridge_str","T-"..bridge_str)
@@ -385,103 +272,24 @@ if session:ready() then
 			--@ END
 
 			--@ USER_BUSY
-			if "Deactivate" ~= call_forward_busy_value then
+			if "Activate" == call_forward_busy_status then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "USER_BUSY"
 				end
 				session:setVariable("continue_on_fail",continue_on_fail_str)
-
-				local tmp_str = string.sub(call_forward_busy_value,1,3)
-				if tmp_str == "FXO" then
-					local slot,port,dst = call_forward_busy_value:match("FXO/([0-9]+)/([0-9]+)/([0-9]+)")
-					if slot and port and dst then
-						session:setVariable("my_fail_bridge_str_userbusy","T-freetdm/"..slot.."/"..port.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_userbusy","FXO")
-					end
-				elseif tmp_str == "SIP" then
-					local gw_name,dst = call_forward_busy_value:match("SIPT%-([0-9%_]+)/([0-9]+)")
-					if gw_name and dst then
-						session:setVariable("my_fail_bridge_channel_userbusy",get_siptrunk_uci_name(gw_name))
-						if from:match("^sofia/") then
-							if endpoint_interface[from_name] == endpoint_interface[gw_name] and "LAN" == endpoint_interface[from_name] then
-								session:setVariable("call_fw_busy_bypass_media_flag","true")
-								session:setVariable("call_fw_busy_proxy_media_flag","false")
-							else
-								session:setVariable("call_fw_busy_bypass_media_flag","false")
-								session:setVariable("call_fw_busy_proxy_media_flag","true")
-							end
-						else
-							session:setVariable("call_fw_busy_bypass_media_flag","false")
-							session:setVariable("call_fw_busy_proxy_media_flag","false")
-						end
-						session:setVariable("my_fail_bridge_str_userbusy","T-sofia/gateway/"..gw_name.."/"..dst)
-					end
-				elseif tmp_str == "gsm" then
-					local gsm_name,dst = call_forward_busy_value:match("gsmopen/([0-9a-zA-Z%-]+)/([0-9]+)")
-					if gsm_name and dst then
-						session:setVariable("my_fail_bridge_str_userbusy","T-gsmopen/"..gsm_name.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_userbusy","GSM")
-					end
-				else
-					local ret_number = api:executeString("eval ${user_data("..call_forward_busy_value.."@${domain} attr id)}")
-					if ret_number == call_forward_busy_value then
-						session:setVariable("my_fail_transfer_str_userbusy","T-"..call_forward_busy_value.." XML extension")
-					else
-						session:setVariable("my_fail_transfer_str_userbusy","T-"..call_forward_busy_value.." XML public")
-					end
-				end
+				session:setVariable("my_fail_fw_userbusy_flag","true")
 			end
 			--@ END
 
 			--@ NO_ANSWER or NO_USER_RESPONSE
-			if call_forward_noreply_value ~= "Deactivate" then
+			if call_forward_noreply_status == "Activate" then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "NO_ANSWER,NO_USER_RESPONSE"
 				else
 					continue_on_fail_str = continue_on_fail_str..",NO_ANSWER,NO_USER_RESPONSE"
 				end
 				session:setVariable("continue_on_fail",continue_on_fail_str)
-
-				local tmp_str = string.sub(call_forward_noreply_value,1,3)
-				if tmp_str == "FXO" then
-					local slot,port,dst = call_forward_noreply_value:match("FXO/([0-9]+)/([0-9]+)/([0-9]+)")
-					if slot and port and dst then
-						session:setVariable("my_fail_bridge_str_noreply","T-freetdm/"..slot.."/"..port.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_noreply","FXO")
-					end
-				elseif tmp_str == "SIP" then
-					local gw_name,dst = call_forward_noreply_value:match("SIPT%-([0-9%_]+)/([0-9]+)")
-					if gw_name and dst then
-						--# set dest_chan_name
-						session:setVariable("my_fail_bridge_channel_noreply",get_siptrunk_uci_name(gw_name))
-						if from:match("^sofia/") then
-							if endpoint_interface[from_name] == endpoint_interface[gw_name] and "LAN" == endpoint_interface[from_name] then
-								session:setVariable("call_fw_noreply_bypass_media_flag","true")
-								session:setVariable("call_fw_noreply_proxy_media_flag","false")
-							else
-								session:setVariable("call_fw_noreply_bypass_media_flag","false")
-								session:setVariable("call_fw_noreply_proxy_media_flag","true")
-							end
-						else
-							session:setVariable("call_fw_noreply_bypass_media_flag","false")
-							session:setVariable("call_fw_noreply_proxy_media_flag","false")
-						end
-						session:setVariable("my_fail_bridge_str_noreply","T-sofia/gateway/"..gw_name.."/"..dst)
-					end
-				elseif tmp_str == "gsm" then
-					local gsm_name,dst = call_forward_noreply_value:match("gsmopen/([0-9a-zA-Z%-]+)/([0-9]+)")
-					if gsm_name and dst then
-						session:setVariable("my_fail_bridge_str_noreply","T-gsmopen/"..gsm_name.."/"..dst)
-						session:setVariable("my_fail_bridge_channel_noreply","GSM")
-					end
-				else
-					local ret_number = api:executeString("eval ${user_data("..call_forward_noreply_value.."@${domain} attr id)}")
-					if ret_number == call_forward_noreply_value then
-						session:setVariable("my_fail_transfer_str_noreply","T-"..call_forward_noreply_value.." XML extension")
-					else
-						session:setVariable("my_fail_transfer_str_noreply","T-"..call_forward_noreply_value.." XML public")
-					end
-				end	
+				session:setVariable("my_fail_fw_noreply_flag","true")
 			end
 			--@ END
 
