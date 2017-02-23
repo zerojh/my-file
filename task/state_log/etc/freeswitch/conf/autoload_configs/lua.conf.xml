@@ -2,16 +2,17 @@
 	<settings>
 		<param name="module-directory" value="/usr/lib/lua/?.so"/>
 		<param name="startup-script" value="Event_Consumer.lua"/>
-		<hook event="CUSTOM" subclass="sofia::gateway_state_record" script="service_state_log.lua"/>
-		<hook event="CUSTOM" subclass="sofia::register" script="service_state_log.lua"/>
-		<hook event="CUSTOM" subclass="sofia::unregister" script="service_state_log.lua"/>
+		<!--<hook event="CUSTOM" subclass="sofia::gateway_state_record" script="service_state_log.lua"/>-->
+		<!--<hook event="CUSTOM" subclass="sofia::register" script="service_state_log.lua"/>-->
+		<!--<hook event="CUSTOM" subclass="sofia::unregister" script="service_state_log.lua"/>-->
+		<hook event="CUSTOM" subclass="pstn::dev_update_event" script="service_state_log.lua"/>
 		<!--<hook event="SWITCH_EVENT_CHANNEL_HANGUP_COMPLETE" script="service_state_log.lua"/>-->
 
-		<!--<hook event="switch_event_channel_destroy" script="service_state_log.lua"/>-->
-		<!--<hook event="switch_event_channel_uuid" script="service_state_log.lua"/>-->
-		<!--<hook event="switch_event_channel_create" script="service_state_log.lua"/>-->
-		<!--<hook event="switch_event_channel_answer" script="service_state_log.lua"/>-->
-		<!--<hook event="switch_event_channel_progress_media" script="service_state_log.lua"/>-->
+		<!--<hook event="SWITCH_EVENT_CHANNEL_DESTROY" script="service_state_log.lua"/>-->
+		<!--<hook event="SWITCH_EVENT_CHANNEL_UUID" script="service_state_log.lua"/>-->
+		<!--<hook event="SWITCH_EVENT_CHANNEL_CREATE" script="service_state_log.lua"/>-->
+		<!--<hook event="SWITCH_EVENT_CHANNEL_ANSWER" script="service_state_log.lua"/>-->
+		<!--<hook event="SWITCH_EVENT_CHANNEL_PROGRESS_MEDIA" script="service_state_log.lua"/>-->
 		<!--<hook event="SWITCH_EVENT_CHANNEL_UNHOLD" script="service_state_log.lua"/>-->
 		<!--<hook event="SWITCH_EVENT_CHANNEL_EXECUTE" script="service_state_log.lua"/>-->
 		<!--<hook event="SWITCH_EVENT_CHANNEL_ORIGINATE" script="service_state_log.lua"/>-->

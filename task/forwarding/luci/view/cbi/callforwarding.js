@@ -3,16 +3,16 @@
 <div class="cbi-value-title"><label style="margin-left:<%=self.margin%>;"><%-=self.title or ""-%></label></div>
 <div class="cbi-value-field" style="width:45%;">
 <%-
-	--local value_list = {{[1]="1004",[2]="1",whole="1004::1"},{[1]="1003",[2]="1",whole="1003::1"},{[1]="SIPP-1",[2]="2",[3]="1001",whole="SIPP-1::2::1001"},{[1]="SIPP-2",[2]="1",[3]="1002"},{[1]="SIPP-3",[2]="1",[3]="1003",whole="SIPP-3::1::1003"},{[1]="SIPP-4",[2]="2",[3]="1004",whole="SIPP-4::2::1004"},{[1]="SIPP-5",[2]="3",[3]="1005",whole="SIPP-5::3::1005"}}
+	local value_list = {{[1]="1004",[2]="1",whole="1004::1"},{[1]="1003",[2]="1",whole="1003::1"},{[1]="SIPP-1",[2]="2",[3]="1001",whole="SIPP-1::2::1001"},{[1]="SIPP-2",[2]="1",[3]="1002",whole="SIPP-2::1::1002"},{[1]="SIPP-3",[2]="1",[3]="1003",whole="SIPP-3::1::1003"},{[1]="SIPP-4",[2]="2",[3]="1004",whole="SIPP-4::2::1004"},{[1]="SIPP-5",[2]="3",[3]="1005",whole="SIPP-5::3::1005"},{[1]="SIPP-6",[2]="2",[3]="1004",whole="SIPP-6::2::1004"},{[1]="SIPP-7",[2]="3",[3]="1005",whole="SIPP-7::3::1005"}}
 	--local value_list = {{[1]="Deactivate",whole="Deactivate"}}
 	--local value_list = {{[1]="1004",whole="1004"}}
 	--local value_list = {{[1]="1004",[2]="1",whole="1004::1"}}
-	local value_list = {{[1]="SIPP-1",[2]="2",[3]="1003",whole="SIPP-1::2::1003"},{[1]="SIPP-2",[2]="3",[3]="1004",whole="SIPP-2::3::1004"}}
+	--local value_list = {{[1]="SIPP-1",[2]="2",[3]="1003",whole="SIPP-1::2::1003"},{[1]="SIPP-2",[2]="3",[3]="1004",whole="SIPP-2::3::1004"}}
 
 	self.f_keylist = {"Deactivate","1003","1004","SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	self.f_vallist = {translate("Off"),"1003","1004","SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
-	self.s_keylist = {"","1","2","3"}
-	self.s_vallist = {translate("Alaway"),"1","2","3"}
+	self.s_keylist = {"","1","2","3","addnew_profile_time/extension-sip-cfg18aa11-edit"}
+	self.s_vallist = {translate("Alaway"),"1","2","3",translate("< Add New ...>")}
 	self.id_vallist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	--local value_list = self:cfgvalue(section);
 
@@ -25,7 +25,7 @@
 			<%- end %>
 			</select>
 			<label <%=(v[1] and v[1] ~= "Deactivate") and '' or 'style="display:none;"'%>>&nbsp;</label>
-			<select class="cbi-input-select" style="width:17%;<%=(v[1] and v[1] ~= "Deactivate") and "" or "display:none;"%>" size="1"<%=attr("id",cbid.."-select1")%>>
+			<select class="cbi-input-select" style="width:17%;<%=(v[1] and v[1] ~= "Deactivate") and "" or "display:none;"%>" size="1"<%=attr("id",cbid.."-select1."..k)%>>
 			<%- for i, key in pairs(self.s_keylist) do %>
 				<option id="option1"<%=attr("value",key)..ifattr(v[2]==key,"selected","selected")%>><%=striptags(self.s_vallist[i])%></option>
 			<%- end %>
@@ -53,20 +53,26 @@
 			<label style="display:none;">&nbsp;<%:Dest Number%>&nbsp;</label>
 			<input class="cbi-input-text" type="text" style="width:16%;display:none;"<%=attr("id",cbid.."-input."..k)..attr("name",cbid.."-input")%>>
 			<%-end%>
-			<input type="text" style="display:;width:5%;"<%=ifattr(v["whole"],"value",v["whole"])..attr("name",cbid)%>>
+			<input type="text" style="width:5%;display:none;"<%=ifattr(v["whole"],"value",v["whole"])..attr("name",cbid)%>>
 		</div>
 		<%-end
 	elseif "nil" == type(value_list) then%>
-		<div <%=attr("class",cbid.."-class")%>><select class="cbi-input-select" style="width:28%;" onclick="return true;" onchange="return true;"<%=attr("id",cbid)..attr("name",cbid.."-select0.1")..ifattr(self.size,"size")%>>
-			<% for i, key in pairs(self.f_keylist) do -%>
-			<option id="select0"<%=attr("value",key)%>><%=striptags(self.f_vallist[i])%></option>
-			<%end%>
-			</select>&nbsp;<span><select class="cbi-input-select" style="width:17%;" onchange="return true;"<%=attr("id",cbid.."-select1.1")..attr("name",cbid.."-select1.1")..ifattr(self.size,"size")%>>
+		<div>
+			<select class="cbi-input-select" style="width:28%;" size="1"<%=attr("id",cbid)..attr("name",cbid.."-select0")%>>
+			<%- for i, key in pairs(self.f_keylist) do %>
+				<option id="option0"<%=attr("value",key)%>><%=striptags(self.f_vallist[i])%></option>
+			<%- end %>
+			</select>
+			<label style="display:none;">&nbsp;</label>
+			<select class="cbi-input-select" style="width:17%;display:none;" size="1"<%=attr("id",cbid.."-select1.1")%>>
 			<% for i, key in pairs(self.s_keylist) do -%>
-			<option id="select1"<%=attr("value",key)%>><%=striptags(self.s_vallist[i])%></option>
+				<option id="option1"<%=attr("value",key)%>><%=striptags(self.s_vallist[i])%></option>
 			<%end%>
-			</select></span><span<%=attr("id",cbid.."-span.1")%>>&nbsp;&nbsp;<%:Dest Number%>&nbsp;<input class="cbi-input-text" type="text" style="width:5em;"<%=attr("id",cbid.."-input.1")..attr("name",cbid.."-input.1")%>/>
-		</span><br/></div>
+			</select>
+			<label style="display:none;">&nbsp;<%:Dest Number%>&nbsp;</label>
+			<input class="cbi-input-text" type="text" style="width:16%;display:none;"<%=attr("id",cbid.."-input.1")..attr("name",cbid.."-input")%>>
+			<input type="text" style="width:5%;display:none;"<%=attr("name",cbid)%>>
+		</div>
 	<%-end
 %>
 </div>
@@ -91,27 +97,22 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		}
 	}
 
-	function cbi_callforwarding_input_check(v)
-	{
-		ev = ev ? ev : window.event;
-		var se = ev.target ? ev.target : ev.srcElement;
-		if (se.flag && cbi_validators["phonenumber"]) {
-		}
-	}
-
 	function cbi_callforwarding_renumber()
 	{
 		var selobjs = document.getElementsByName(name);
 		var options_len = selobjs[0].options.length;
 		for (var i = 0; i < selobjs.length; i++) {
 			var p = selobjs[i].parentNode;
+			var c3 = p.childNodes[2];
 			var c5 = p.childNodes[4];
+			if (c3 && c3.nodeName.toLowerCase() == "select")
+				c3.id = c3.id.replace(/\d+$/,i+1);
 			if (c5 && c5.nodeName.toLowerCase() == "input")
 				c5.id = c5.id.replace(/\d+$/,i+1);
-			p.lastChild.src = respath + (((i+1) < selobjs.length || (i+1) == options_len) ? '/cbi/remove.png' : '/cbi/add.png');
+			p.lastChild.src = respath + (((i+1) < selobjs.length || (i+1+deactivate_num) == options_len) ? '/cbi/remove.png' : '/cbi/add.png');
 		}
 
-		if(selobjs.length < options_len) {
+		if(selobjs.length + deactivate_num < options_len) {
 			var n = selobjs[selobjs.length-1].parentNode;
 
 			if (selobjs.length > 1 && "img" != n.lastChild.previousSibling.nodeName.toLowerCase()) {
@@ -132,7 +133,6 @@ function cbi_callforwarding_init(name, respath, input_depends)
 
 	function cbi_callforwarding_keydown(ev)
 	{
-
 		ev = ev ? ev : window.event;
 
 		var se = ev.target ? ev.target : ev.srcElement;
@@ -417,8 +417,6 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		var dp_c23_ = false;
 		var dp_c45 = false;
 		var dp_img = false;
-		if (console_flag)
-			console.log("select0",se.value);
 
 		if (se.value == "Deactivate") {
 			cbi_callforwarding_delete_all_siblingnode(se.parentNode);
@@ -452,8 +450,6 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		ev = ev ? ev : window.event;
 		var se = ev.target ? ev.target : ev.srcElement;
 		var dp_img = false;
-		if (console_flag)
-			console.log("select1",se.value);
 
 		if (se.value == "") {
 			cbi_callforwarding_delete_all_siblingnode(se.parentNode);
@@ -465,6 +461,10 @@ function cbi_callforwarding_init(name, respath, input_depends)
 
 		cbi_callforwarding_display_img(se.parentNode, dp_img);
 		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling);
+
+		if (se.value.indexOf("addnew_") >= 0) {
+			select_click(se.id);
+		}
 	}
 
 	function cbi_callforwarding_input_update(ev)
@@ -477,30 +477,27 @@ function cbi_callforwarding_init(name, respath, input_depends)
 
 	function cbi_callforwarding_whole_update(obj)
 	{
-		var c1 = obj.parentNode.firstNode;
+		var c1 = obj.parentNode.firstChild;
 		var c3 = c1.nextSibling.nextSibling;
 		var c5 = c3.nextSibling.nextSibling;
 
 		if (c1.value == "Deactivate" || (c3.value == "" && c5.value == "")) {
 			obj.value = c1.value;
 		} else {
-			if (c3.value == "" && c5.value != "")
+			if (c3.value.indexOf("addnew_") >= 0)
+				obj.value = "";
+			else if (c3.value == "" && c5.value != "")
 				obj.value = c1.value + "::::" + c5.value;
-			else if (c3.value != "" && v5.value == "")
+			else if (c3.value != "" && c5.value == "")
 				obj.value = c1.value + "::" + c3.vlaue;
 			else
 				obj.value = c1.value + "::" + c3.value + "::" + c5.value;
 		}
-		if (console_flag)
-			console.log(obj.value);
 	}
 
 	cbi_callforwarding_delete_text_node();
 
-	var console_flag = true;
-	var userAgent = navigator.userAgent;
-	if (userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1)
-		console_flag = false;
+	var deactivate_num = 1;
 	var selobjs = document.getElementsByName(name);
 	if (selobjs.length > 0)
 		var options_len = document.getElementById(selobjs[selobjs.length-1].id).length;
@@ -515,17 +512,15 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				btn.className = 'cbi-image-button';
 
 			if(options_len > 1)
-				btn.src = respath + ((((i+1) < selobjs.length) || ((i+1) >= options_len))  ? '/cbi/remove.png' : '/cbi/add.png');
+				btn.src = respath + ((((i+1) < selobjs.length) || ((i+1+deactivate_num) >= options_len))  ? '/cbi/remove.png' : '/cbi/add.png');
 			cbi_bind(btn, 'click', cbi_callforwarding_btnclick);
 			c1.parentNode.appendChild(btn);
 		}
 		c5.name1 = c5.name;
 		c1.parentNode.input_depends = input_depends;
 		/* select0 bind event */
-		cbi_bind(c1, 'change', cbi_callforwarding_select0_update);
 		cbi_bind(c1, 'click', cbi_callforwarding_select0_update);
 		/* select1 bind event */
-		cbi_bind(c3, 'change', cbi_callforwarding_select1_update);
 		cbi_bind(c3, 'click', cbi_callforwarding_select1_update);
 		/* input bind event */
 		if (c5.style.display == "") {
@@ -536,7 +531,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		}
 	}
 
-	if(selobjs.length > 1 && selobjs.length < options_len) {
+	if(selobjs.length > 1 && selobjs.length + deactivate_num < options_len) {
 		var btn = document.createElement('img');
 			btn.className = 'cbi-image-button';
 			btn.src = respath + '/cbi/remove.png';
