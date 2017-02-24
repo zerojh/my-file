@@ -1747,6 +1747,7 @@ function CallForwarding.__init__(self, ...)
 	self.s1_vallist = {}
 	self.s2_keylist = {}
 	self.s2_vallist = {}
+	self.id_keylist = {}
 end
 
 function CallForwarding.reset_values(self)
@@ -1756,13 +1757,20 @@ function CallForwarding.reset_values(self)
 	self.s2_vallist = {}
 end
 
-function CallForwarding.s1_value(self, key, val, ...)
+function CallForwarding.s1_value(self, key, val)
 	val = val or key
 	table.insert(self.s1_keylist, tostring(key))
 	table.insert(self.s1_vallist, tostring(val))
 end
 
-function CallForwarding.s2_value(self, key, val, ...)
+function CallForwarding.s1_depvalue(self, key, val)
+	val = val or key
+	table.insert(self.s1_keylist, tostring(key))
+	table.insert(self.s1_vallist, tostring(val))
+	table.insert(self.id_keylist, tostring(key))
+end
+
+function CallForwarding.s2_value(self, key, val)
 	val = val or key
 	table.insert(self.s2_keylist, tostring(key))
 	table.insert(self.s2_vallist, tostring(val))
@@ -1804,6 +1812,7 @@ function CallForwarding.cfgvalue(self, section)
 	return value
 end
 
+--[[
 function CallForwarding.formvalue(self, section)
 	local tb0 = self.map:formvalue(self:cbid(section)) or ""
 	local tb1 = self.map:formvalue(self:cbid(section).."-select1") or ""
@@ -1840,6 +1849,7 @@ function CallForwarding.formvalue(self, section)
 
 	return value
 end
+]]--
 
 function CallForwarding.write(self, section, value)
 	local t = { }

@@ -1,4 +1,4 @@
-<div class="cbi-value<% if self.last_child then %> cbi-value-last<% end %>" <% if #self.deps > 0  then  %>style="display:none"<%end%> id="cbi-<%=self.config.."-"..section.."-"..self.option%>">
+<div class="cbi-value<% if self.last_child then %> cbi-value-last<% end %>" <% if #self.deps > 0  then	%>style="display:none"<%end%> id="cbi-<%=self.config.."-"..section.."-"..self.option%>">
 
 <div class="cbi-value-title"><label style="margin-left:<%=self.margin%>;"><%-=self.title or ""-%></label></div>
 <div class="cbi-value-field" style="width:45%;">
@@ -13,7 +13,7 @@
 	self.f_vallist = {translate("Off"),"1003","1004","SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	self.s_keylist = {"","1","2","3","addnew_profile_time/extension-sip-cfg18aa11-edit"}
 	self.s_vallist = {translate("Alaway"),"1","2","3",translate("< Add New ...>")}
-	self.id_vallist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
+	self.id_keylist = {"SIPP-1","SIPP-2","SIPP-3","SIPP-4","SIPP-5","SIPP-6","SIPP-7"}
 	--local value_list = self:cfgvalue(section);
 
 	if "table" == type(value_list) then
@@ -32,13 +32,13 @@
 			</select>
 			<%-
 				local flag = false;
-				if self.id_vallist then
-					if type(self.id_vallist) == "string" then
+				if self.id_keylist then
+					if type(self.id_keylist) == "string" then
 						if v[1] == self.vallist then
 							flag = true
 						end
-					elseif type(self.id_vallist) == "table" and next(self.id_vallist) then
-						for _,j in pairs(self.id_vallist) do
+					elseif type(self.id_keylist) == "table" and next(self.id_keylist) then
+						for _,j in pairs(self.id_keylist) do
 							if v[1] == j then
 								flag = true
 							end
@@ -121,7 +121,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 					btn.src = respath + '/cbi/remove.png';
 
 				n.insertBefore(btn, n.lastChild);
-				cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
+				cbi_bind(btn,		 'click',	 cbi_callforwarding_btnclick);
 			}
 			if (selobjs.length > 1 && "img" == n.lastChild.previousSibling.nodeName.toLowerCase()) {
 				n.lastChild.previousSibling.src = respath + '/cbi/remove.png';
@@ -192,8 +192,8 @@ function cbi_callforwarding_init(name, respath, input_depends)
 						break;
 					}
 				}
-				cbi_bind(c3, 'change',   cbi_callforwarding_select1_update);
-				cbi_bind(c3, 'click',   cbi_callforwarding_select1_update);
+				cbi_bind(c3, 'change',	 cbi_callforwarding_select1_update);
+				cbi_bind(c3, 'click',	cbi_callforwarding_select1_update);
 
 				/* forth,fifth child */
 				var dp_c45 = false;
@@ -243,8 +243,8 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				se.parentNode.appendChild(n);
 
 				/* bind */
-				cbi_bind(c1, 'change',   cbi_callforwarding_select0_update);
-				cbi_bind(c1, 'click',   cbi_callforwarding_select0_update);
+				cbi_bind(c1, 'change',	 cbi_callforwarding_select0_update);
+				cbi_bind(c1, 'click',	cbi_callforwarding_select0_update);
 
 				/* can do after appending*/
 				if (dp_c45)
@@ -443,6 +443,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		cbi_callforwarding_display_c45(se.nextSibling.nextSibling.nextSibling.nextSibling, dp_c45);
 		cbi_callforwarding_display_img(se.parentNode, dp_img);
 		cbi_callforwarding_whole_update(se.nextSibling.nextSibling.nextSibling.nextSibling.nextSibling);
+		cbi_d_update(se.id);
 	}
 
 	function cbi_callforwarding_select1_update(ev)
@@ -519,7 +520,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		c5.name1 = c5.name;
 		c1.parentNode.input_depends = input_depends;
 		/* select0 bind event */
-		cbi_bind(c1, 'click', cbi_callforwarding_select0_update);
+		cbi_bind(c1,'click',cbi_callforwarding_select0_update);
 		/* select1 bind event */
 		cbi_bind(c3, 'click', cbi_callforwarding_select1_update);
 		/* input bind event */
@@ -537,20 +538,20 @@ function cbi_callforwarding_init(name, respath, input_depends)
 			btn.src = respath + '/cbi/remove.png';
 
 		selobjs[selobjs.length-1].parentNode.insertBefore(btn, selobjs[selobjs.length-1].parentNode.lastChild);
-		cbi_bind(btn,        'click',    cbi_callforwarding_btnclick);
+		cbi_bind(btn,		 'click',	 cbi_callforwarding_btnclick);
 	}
 }
 
 cbi_callforwarding_init("<%=cbid%>-select0","<%=resource%>", [
 	<%-
-		if self.id_vallist then
-			if type(self.id_vallist) == "string" then -%>
-				<%-=self.id_vallist-%>
+		if self.id_keylist then
+			if type(self.id_keylist) == "string" then -%>
+				<%-=self.id_keylist-%>
 		<%-
-			elseif type(self.id_vallist) == "table" and next(self.id_vallist) then
-				for k,v in pairs(self.id_vallist) do -%>
+			elseif type(self.id_keylist) == "table" and next(self.id_keylist) then
+				for k,v in pairs(self.id_keylist) do -%>
 					"<%-=v-%>"
-					<%-if k<#self.id_vallist then-%>,<%-end-%>
+					<%-if k<#self.id_keylist then-%>,<%-end-%>
 				<%- end
 			end
 		end
