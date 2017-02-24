@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<include>
+	<context name="extension-service">
+		<extension name="Extension-Blind-transfer-call" continue="true">
+			<condition field="${blind_transfer_call}" expression="^true$">
+				<action application="pre_answer"/>
+				<action application="set" data="ringback=${hold_music}"/>
+			</condition>
+		</extension>
+		<extension name="Extension-Service-options-analysis">
+			<condition field="destination_number" expression="^ExtensionService$">
+				<action application="set" data="destination_number=${my_dst_number}"/>
+				<action application="lua" data="Extension-Service.lua ${my_exten_bridge_param}"/>
+			</condition>
+		</extension>
+
+		<extension name="Extension-Service-bridge">
+			<condition field="destination_number" expression="^ExtensionServiceBridge$">
+				<action application="set" data="destination_number=${my_dst_number}"/>
+			</condition>
+			<!--transfer uncondition-->
+			<condition field="${my_fail_fw_uncondition_flag}" expression="^true" break="on-true">
+				<action application="lua" data="Followme.lua ${my_exten_bridge_param} uncondition"/>
+			</condition>
+			<!--transfer unregister-->
+			<condition field="${my_fail_fw_unregister_flag}" expression="^true" break="on-true">
+				<action application="lua" data="Followme.lua ${my_exten_bridge_param} unregister"/>
+			</condition>
+			<!--normal bridge-->
+			<condition field="${my_success_bridge_str}" expression="^T-(.*)" break="on-true" require-nested="false">
+				<condition field="${my_success_bridge_str}" expression="user/([0-9a-zA-Z]+)@" break="never">
+					<action application="limit" data="hash sofia_extension max_call 8 !USER_BUSY"/>
+					<action application="export" data="nolocal:session_in_hangup_hook=true"/>
+					<action application="export" data="nolocal:api_on_answer=hash insert/currentcall/${1}/1"/>
+					<action application="export" data="nolocal:api_hangup_hook=hash delete/currentcall/${1}"/>
+					<action application="export" data="nolocal:api_reporting_hook=hash delete/currentcall/${1}"/>
+				</condition>
+				<!--close for sip extension transfer service-->
+				<!--<action application="set" data="bypass_media=${call_bypass_media_flag}"/>-->
+				<!--<action application="set" data="proxy_media=${call_proxy_media_flag}"/>-->
+				<action application="set" data="bypass_media=false"/>
+				<action application="set" data="proxy_media=false"/>
+				<action application="set" data="dest_chan_name=${my_bridge_channel}"/>
+				<action application="lua" data="set_sip_param.lua ${1}"/>
+				<action application="bridge" data="${1}"/>
+				<action application="lua" data="continue_by_hangup_cause.lua Extension"/>
+			</condition>
+			<!--transfer callwaiting-->
+			<condition field="${my_fail_transfer_str_callwaiting}" expression="^T-(.*)" break="on-true">
+				<action application="lua" data="call_waiting_proc.lua $1"/>
+			</condition>
+			<!--transfer userbusy-->
+			<condition field="${my_fail_transfer_str_userbusy}" expression="^T-(.*)" break="on-true">
+				<action application="set" data="bypass_media=${call_fw_busy_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_busy_proxy_media_flag}"/>
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="transfer" data="${1}"/>
+			</condition>
+			<condition field="${my_fail_bridge_str_userbusy}" expression="^T-(.*)" break="on-true">
+				<action application="set" data="bypass_media=${call_fw_busy_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_busy_proxy_media_flag}"/>
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="set" data="dest_chan_name=${my_fail_bridge_channel_userbusy}"/>
+				<action application="lua" data="check_line_is_busy.lua ${1}"/>
+				<action application="lua" data="set_sip_param.lua ${1}"/>
+				<action application="bridge" data="${1}"/>
+			</condition>
+			<!--transfer failroute-->
+			<condition field="${my_fail_transfer_str_failroute}" expression="^T-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="transfer" data="${1}"/>
+			</condition>
+			<!--hangup-->
+			<condition break="on-true">
+				<action application="lua" data="check_line_is_busy.lua"/>
+			</condition>
+		</extension>
+
+		<extension name="Extension-Service-continue">
+			<condition field="destination_number" expression="^ExtensionServiceContinue">
+				<action application="set" data="destination_number=${my_dst_number}"/>
+			</condition>
+			<!--transfer callwaiting-->
+			<condition field="${originate_disposition}${my_fail_transfer_str_callwaiting}" expression="^USER_BUSYT-(.*)" break="on-true">
+				<action application="lua" data="call_waiting_proc.lua $1"/>
+			</condition>
+			<!--transfer noreply-->
+			<condition field="${originate_disposition}${my_fail_transfer_str_noreply}" expression="^^NO_ANSWERT-(.*)|^NO_USER_RESPONSET-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="set" data="bypass_media=${call_fw_noreply_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_noreply_proxy_media_flag}"/>
+				<action application="transfer" data="${1}"/>
+			</condition>
+			<condition field="${originate_disposition}${my_fail_bridge_str_noreply}" expression="^NO_ANSWERT-(.*)|^NO_USER_RESPONSET-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="set" data="bypass_media=${call_fw_noreply_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_noreply_proxy_media_flag}"/>
+				<action application="set" data="dest_chan_name=${my_fail_bridge_channel_noreply}"/>
+				<action application="lua" data="check_line_is_busy.lua ${1}"/>
+				<action application="lua" data="set_sip_param.lua ${1}"/>
+				<action application="bridge" data="${1}"/>
+			</condition>
+			<!--transfer userbusy-->
+			<condition field="${originate_disposition}${my_fail_transfer_str_userbusy}" expression="^USER_BUSYT-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="set" data="bypass_media=${call_fw_busy_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_busy_proxy_media_flag}"/>
+				<action application="transfer" data="${1}"/>
+			</condition>
+			<condition field="${originate_disposition}${my_fail_bridge_str_userbusy}" expression="^USER_BUSYT-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55"/>
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="set" data="bypass_media=${call_fw_busy_bypass_media_flag}"/>
+				<action application="set" data="proxy_media=${call_fw_busy_proxy_media_flag}"/>
+				<action application="set" data="dest_chan_name=${my_fail_bridge_channel_userbusy}"/>
+				<action application="lua" data="check_line_is_busy.lua ${1}"/>
+				<action application="lua" data="set_sip_param.lua ${1}"/>
+				<action application="bridge" data="${1}"/>
+			</condition>
+			<!--transfer failroute-->
+			<condition field="${my_fail_transfer_str_failroute}" expression="^T-(.*)" break="on-true">
+				<action application="set" data="call_timeout=55" />
+				<action application="set" data="bridge_answer_timeout=55"/>
+				<action application="transfer" data="${1}" />
+			</condition>
+
+		</extension>
+	</context>
+</include>

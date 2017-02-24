@@ -14,7 +14,6 @@ local call_forward_uncondition_status = "Deactivate"
 local call_forward_busy_status = "Deactivate"
 local call_forward_noreply_status = "Deactivate"
 --local call_foread_noreply_timeout = "20"
-local sip_extension_reg_status_query=""
 
 --@ feature_code
 local bind_transfer_dtmf = ""
@@ -40,14 +39,12 @@ if bridge_type == "freetdm" then
 			call_forward_uncondition_status = fxs_ex_tb[slot]["forward_uncondition_1"] or "Deactivate"
 			call_forward_busy_status = fxs_ex_tb[slot]["forward_busy_1"] or "Deactivate"
 			call_forward_noreply_status = fxs_ex_tb[slot]["forward_noreply_1"] or "Deactivate"
-			--call_foread_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_1"] or "20"
 		else
 			call_waiting_status = fxs_ex_tb[slot]["waiting_2"] or "Deactivate"
 			call_notdisturb_status = fxs_ex_tb[slot]["notdisturb_2"] or "Deactivate"
 			call_forward_uncondition_status = fxs_ex_tb[slot]["forward_uncondition_2"] or "Deactivate"
 			call_forward_busy_status = fxs_ex_tb[slot]["forward_busy_2"] or "Deactivate"
 			call_forward_noreply_status = fxs_ex_tb[slot]["forward_noreply_2"] or "Deactivate"
-			--call_foread_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_2"] or "20"
 		end
 	end
 elseif bridge_str:match("user/")  then
@@ -55,12 +52,10 @@ elseif bridge_str:match("user/")  then
 	if sip_ex_tb[user] then
 		call_waiting_status = sip_ex_tb[user]["waiting"] or "Deactivate"
 		call_notdisturb_status = sip_ex_tb[user]["notdisturb"] or "Deactivate"
-		--sip_extension_reg_status_query = sip_ex_tb[user]["reg_query"] or ""
 		call_forward_uncondition_status = sip_ex_tb[user]["forward_uncondition"] or "Deactivate"
 		call_forward_unregister_status = sip_ex_tb[user]["forward_unregister"] or "Deactivate"
 		call_forward_busy_status = sip_ex_tb[user]["forward_busy"] or "Deactivate"
 		call_forward_noreply_status = sip_ex_tb[user]["forward_noreply"] or "Deactivate"
-		--call_foread_noreply_timeout = sip_ex_tb[user]["forward_noreply_timeout"] or "20"
 	end
 end
 
@@ -119,42 +114,27 @@ if session:ready() then
 		session:execute("set","ringback=${hold_music}")
 	end
 
+	--@ variable used in freeswitch
 	session:execute("set","force_transfer_context=public")
 	session:execute("export","force_transfer_context=public")
 	session:execute("set","sip_redirect_context=public")
 	session:execute("export","sip_redirect_context=public")
 
 	session:setVariable("call_bypass_media_flag","false")
-	session:setVariable("call_fw_uncond_bypass_media_flag","false")
-	session:setVariable("call_fw_busy_bypass_media_flag","false")
-	session:setVariable("call_fw_noreply_bypass_media_flag","false")
-
 	session:setVariable("call_proxy_media_flag","false")
-	session:setVariable("call_fw_uncond_proxy_media_flag","false")
-	session:setVariable("call_fw_busy_proxy_media_flag","false")
-	session:setVariable("call_fw_noreply_proxy_media_flag","false")
 
 	session:setVariable("my_success_bridge_str","false")
 	
-	session:setVariable("my_fail_transfer_str_unregister","false")
-	session:setVariable("my_fail_bridge_str_unregister","false")
-
-	session:setVariable("my_fail_transfer_str_uncondition","false")
-	session:setVariable("my_fail_bridge_str_uncondition","false")
-	
-	session:setVariable("my_fail_transfer_str_noreply","false")
-	session:setVariable("my_fail_bridge_str_noreply","false")
-	
-	session:setVariable("my_fail_transfer_str_userbusy","false")
-	session:setVariable("my_fail_bridge_str_userbusy","false")	
+	session:setVariable("my_fail_fw_uncondition_flag","false")
+	session:setVariable("my_fail_fw_unregister_flag","false")
+	session:setVariable("my_fail_fw_userbusy_flag","false")	
+	session:setVariable("my_fail_fw_noreply_flag","false")
 	
 	session:setVariable("my_fail_transfer_str_failroute","false")
-	--@ END 
 
 	session:setVariable("dest_chan_name",session:getVariable("my_bridge_channel") or "Unknown")
 	
 	--@ Set Fail_route cause
-	local hangup_real_cause
 	local fail_route_cause_str = session:getVariable("fail_route_cause")
 	if not fail_route_cause_str then
 		fail_route_cause_str = session:getVariable("continue_on_fail")
@@ -197,17 +177,6 @@ if session:ready() then
 		end
 	end
 
-
-	--@ set call_timeout for forward_noreply
-	if call_forward_noreply_status === "Activate" then
-		session:setVariable("my_fail_fw_noreply_flag","true")
-		if not session:getVariable("call_timeout") then
-			session:setVariable("call_timeout",call_foread_noreply_timeout)
-			session:setVariable("bridge_answer_timeout",call_foread_noreply_timeout)
-		end
-	end
-	--@ END
-	
 	--@ service of call_notdisturb 
 	if call_notdisturb_status == "Activate" then
 		session:consoleLog("info","ROUTING:service of call_notdisturb")	
@@ -231,7 +200,6 @@ if session:ready() then
 		else
 			--@ setting for dtmf
 			local sip_user_agent = session:getVariable("sip_user_agent") or ""
-
 			if session:getVariable("my_flag_from_sip_reg") ~= "true" or (not sip_user_agent:match("%/[0-9]+%.[0-9]+%.[0-9]+%.[0-9]+%s*[0-9]+%-[0-9]+%-[0-9]+%s*[0-9:]+")) then
 				if bind_transfer_dtmf ~= "" then
 					session:execute("bind_meta_app",bind_transfer_dtmf.." b is execute_extension::blind_transfer XML transfer")
@@ -305,7 +273,7 @@ if session:ready() then
 				
 				session:consoleLog("debug","ROUTING:service of call_failed_routing - ["..tmp.."]")
 				session:setVariable("my_fail_transfer_str_failroute","T-"..tmp.." XML failroute")
-			elseif channel_state_ret == "unregister" and call_forward_unregister_value == "Deactivate" then
+			elseif channel_state_ret == "unregister" and call_forward_unregister_status == "Deactivate" then
 				session:consoleLog("err","Extension not registered ! Ready to hangup !")
 				session:hangup("USER_NOT_REGISTERED")
 			end
