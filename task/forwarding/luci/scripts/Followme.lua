@@ -174,13 +174,13 @@ if session:ready() then
 					dial_string = "gsmopen/"..gsm_name.."/"..dst
 				end
 			else
-				local tmp_string = api:executeString("eval ${user_data("..destination.."@${domain} param dial_string)}")
+				local tmp_string = api:executeString("eval ${user_data("..destination.."@${domain} param dial_string)}") or ""
+				local domain = api:executeString("eval ${domain}") or ""
 				if tmp_string:match("user/") then
-					tmp_string = tmp_string:match("(user/%d+)")
-					if tmp_string then
-						dial_string = tmp_string.."@"
-					end
+					call_forwarding_str = tmp_string:match("(user/%d+)").."@"..domain
 				elseif tmp_string:match("freedtm") then
+					local callee_number = session:getvariable("my_dst_number") or ""
+					call_forwarding_str = tmp_string:match("(freetdm/%d+/%d+/)")..callee_number
 				end
 			end
 

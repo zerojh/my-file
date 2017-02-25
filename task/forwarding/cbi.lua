@@ -1677,7 +1677,7 @@ DynListValue = class(AbstractValue)
 function DynListValue.__init__(self, ...)
 	AbstractValue.__init__(self, ...)
 	self.template  = "cbi/dynlvalue"
-    self.cast = "table"
+	self.cast = "table"
 	self.keylist = {}
 	self.vallist = {}
 	self.size   = 1
@@ -1738,7 +1738,6 @@ function DynListValue.write(self, section, value)
 end
 
 CallForwarding = class(AbstractValue)
-
 function CallForwarding.__init__(self, ...)
 	AbstractValue.__init__(self, ...)
 	self.template  = "cbi/callforwarding"
@@ -1796,6 +1795,7 @@ function CallForwarding.cfgvalue(self, section)
 		for k,v in pairs(tmp_value) do
 			local tmp_tb = {}
 
+			tmp_tb["whole"] = v
 			tmp_tb[1],tmp_tb[2],tmp_tb[3] = v:match("([^:]*)::([^:]*)::([^:]*)")
 			if not tmp_tb[1] or not tmp_tb[2] or not tmp_tb[3]then
 				tmp_tb[3] = ""

@@ -9,6 +9,7 @@ uci:check_cfg("endpoint_sipphone")
 uci:check_cfg("endpoint_siptrunk")
 uci:check_cfg("endpoint_fxso")
 uci:check_cfg("endpoint_mobile")
+uci:check_cfg("profile_time")
 
 local current_section = arg[1]
 
@@ -510,17 +511,115 @@ status.rmempty = false
 status:value("Enabled",translate("Enable"))
 status:value("Disabled",translate("Disable"))
 
-abtest = s:option(DynListValue, "test", translate("Call Forward Unconditional").." / "..translate("Time Profile"),"Second")
-abtest.rmempty = false
-abtest.datatype = "phonenumber"
-abtest.template = "cbi/callforwarding"
-function abtest.parse(...)
+-- @ test uncondition
+test_uncondition = s:option(CallForwarding, "test_uncondition", translate("Call Forward Unconditional").." / "..translate("Time Profile"))
+test_uncondition.datatype = "phonenumber"
+test_uncondition:s1_value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	test_uncondition:s1_value(v.index, v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	test_uncondition:s1_depvalue(v.index, v.name)
+end
+test_uncondition:s2_value("",translate("Alaways"))
+local profile_time = uci:get_all("profile_time") or {}
+for k,v in pairs(profile_time) do
+	if v.index and v.name then
+		test_uncondition:s2_value(v.index, v.name)
+	end
+end
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+test_uncondition:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+-- @ end
+
+-- @ test unregister
+test_unregister = s:option(CallForwarding, "test_unregister", translate("Call Forward Unregister").." / "..translate("Time Profile"))
+test_unregister:depends({waiting="Deactivate",test_uncondition="Deactivate"})
+test_unregister.datatype = "phonenumber"
+test_unregister:s1_value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	test_unregister:s1_value(v.index, v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	test_unregister:s1_depvalue(v.index, v.name)
+end
+test_unregister:s2_value("",translate("Alaways"))
+local profile_time = uci:get_all("profile_time") or {}
+for k,v in pairs(profile_time) do
+	if v.index and v.name then
+		test_unregister:s2_value(v.index, v.name)
+	end
+end
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+test_unregister:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+-- @ end
+
+-- @ test userbusy
+test_userbusy = s:option(CallForwarding, "test_userbusy", translate("Call Forward Busy").." / "..translate("Time Profile"))
+test_userbusy:depends({waiting="Deactivate",test_uncondition="Deactivate"})
+test_userbusy.datatype = "phonenumber"
+test_userbusy:s1_value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	test_userbusy:s1_value(v.index, v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	test_userbusy:s1_depvalue(v.index, v.name)
+end
+test_userbusy:s2_value("",translate("Alaways"))
+local profile_time = uci:get_all("profile_time") or {}
+for k,v in pairs(profile_time) do
+	if v.index and v.name then
+		test_userbusy:s2_value(v.index, v.name)
+	end
+end
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+test_userbusy:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+-- @ end
+
+-- @ test noreply
+test_noreply = s:option(CallForwarding, "test_noreply", translate("Call Forward No Reply").." / "..translate("Time Profile"))
+test_noreply:depends("test_uncondition","Deactivate")
+test_noreply.datatype = "phonenumber"
+test_noreply:s1_value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	test_noreply:s1_value(v.index, v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	test_noreply:s1_depvalue(v.index, v.name)
+end
+test_noreply:s2_value("",translate("Alaways"))
+local profile_time = uci:get_all("profile_time") or {}
+for k,v in pairs(profile_time) do
+	if v.index and v.name then
+		test_noreply:s2_value(v.index, v.name)
+	end
+end
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+test_noreply:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+-- @ end
+
+-- @ test noreply timeout
+test_noreply_timeout = s:option(Value,"test_noreply_timeout",translate("Call Timeout(s)"))
+test_noreply_timeout.default = "20"
+test_noreply_timeout.margin = "30px"
+test_noreply_timeout.datatype = "range(1,3600)"
+test_noreply_timeout.rmempty = "false"
+for k,v in pairs(forward_extension_dst) do
+	test_noreply_timeout:depends("test_noreply",v.index)
+end
+for k,v in pairs(forward_trunk_dst) do
+	test_noreply_timeout:depends("test_noreply",v.index)
 end
 
---[[
-abtest = s:option(CallForwarding, "test", "")
-abtest.rmempty = false
-abtest.first_name = ""
-]]--
+function test_noreply_timeout.validate(self, value)
+	local tmp = m:get(arg[1],"test_noreply")
+	if not tmp or tmp == "Deactivate" or tmp == "" then
+		m:del(arg[1],"test_noreply_timeout")
+		return value or ""
+	else
+		return Value.validate(self, value)
+	end
+end
+-- @ end
 
 return m
