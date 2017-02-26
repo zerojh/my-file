@@ -1,9 +1,0 @@
-config 'oem' 'general'
-	option 'lang' 'cn'
-	option 'brand' 'dchy'
-
-config 'brand' 'dchy'
-	option 'hostname' 'DC1000'
-	option 'model' 'DC1000'
-	option 'timezone' 'CST-8'
-	option 'zonename' 'Asia/Beijing'
