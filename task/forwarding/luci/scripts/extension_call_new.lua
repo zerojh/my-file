@@ -68,9 +68,16 @@ local users_include = mxml.newnode(users_root,"include")
 
 local codec = {}
 local codec_str = ""
-local sip_ex_tb = ""
-local fxs_ex_tb = ""
-local fm_tb = ""
+local es_sip_ex_tb = ""
+local es_fxs_ex_tb = ""
+
+local fm_ex_tb = ""
+local fm_fw_uncondition_tb = ""
+local fm_fw_unregister_tb = ""
+local fm_fw_busy_tb = ""
+local fm_fw_noreply_tb = ""
+local fm_fw_timeout_tb = ""
+
 local profile_interface = {}
 local endpoint_interface = ""
 
@@ -96,19 +103,44 @@ for k,v in pairs(sipphone_cfg) do
 		if v.notdisturb then
 			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..(v.notdisturb or "").."\","
 		end
-		if v.forward_uncondition then
-			if type(v.forwarding_uncondition) == "string" then
-				local tmp_tb = {}
-				table.insert(tmp_tb, v.forwarding_uncondition)
-				v.forwarding_uncondition = tmp_tb
-			end
-			if type(v.forwarding_uncondition) == "table" and next(v.forwarding_uncondition) then
-				local tmp_str = "[\"forwarding_uncondition\"]=\""
-				for k,v in pairs(v.forwarding_uncondition) do
+
+		local fw_str_tb = {"forward_uncondition","forward_unregister","forward_busy","forward_noreply"}
+		for _,j in pairs(fw_str_tb) do
+			if v[j] then
+				if type(v[j]) == "string" then
+					local tmp_tb = {}
+					table.insert(tmp_tb, v[j])
+					v[j] = tmp_tb
+				end
+				if type(v[j]) == "table" and next(v[j]) then
+					if v[j][1] == "" or v[j][1] == "Deactivate" then
+						sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\"Deactivate\","
+					else
+						sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\"Activate\","
+						for _,i in pairs(v[j]) do
+							local dest,time,number = i:match("([^:]*)::([^:]*)::([^:]*)")
+							if not dest or not time or not number then
+								dest,time = i:match("([^:]*)::([^:]*)")
+								if not dest then
+									dest = v
+								end
+							end
+							if dest then
+								fm_tb = fm_tb .. "{\""..dest.."\""
+								if time then
+									fm_tb = fm_tb .. ",\""..time.."\""
+									if number then
+										fm_tb = fm_tb ..",\""..number.."\""
+									end
+								end
+								fm_tb = fm_tb .. "},"
+							end
+						end
+					end
 				end
 			end
-			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\""..(v.forward_uncondition or "").."\","
 		end
+		--[[
 		if v.forward_unregister then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister\"]=\""..(v.forward_unregister or "").."\","
 		end
@@ -118,8 +150,10 @@ for k,v in pairs(sipphone_cfg) do
 		if v.forward_noreply then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply\"]=\""..(v.forward_noreply or "").."\","
 		end
+		]]--
 		if v.forward_noreply_timeout then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_timeout\"]=\""..(v.forward_noreply_timeout or "").."\","
+			fm_tb = fm_tb .. "[\""..v.user.."\"]={"
+			forwarding_noreply_timeout_tb = forwarding_noreply_timeout_tb .."[\""..v.user.."\"]=\""..v.forward_noreply_timeout.."\","
 		end
 		sip_ex_tb = sip_ex_tb .. "},"
 	end
@@ -861,99 +895,99 @@ function generate_01_extension_call_xml()
 end
 
 -- function generate_z_98_default_autodial_xml()
--- 	local xml = mxml:newxml()
--- 	local include = mxml.newnode(xml,"include")
--- 	local extension = mxml.newnode(include,"extension")
--- 	mxml.setattr(extension,"name","Default_Autodial")
+--	local xml = mxml:newxml()
+--	local include = mxml.newnode(xml,"include")
+--	local extension = mxml.newnode(include,"extension")
+--	mxml.setattr(extension,"name","Default_Autodial")
 	
--- 	local dst_condition = mxml.newnode(extension,"condition")
--- 	mxml.setattr(dst_condition,"field","destination_number")
--- 	mxml.setattr(dst_condition,"expression","^IVRDIAL$")
+--	local dst_condition = mxml.newnode(extension,"condition")
+--	mxml.setattr(dst_condition,"field","destination_number")
+--	mxml.setattr(dst_condition,"expression","^IVRDIAL$")
 
--- 	local chan_name_tb = {}
--- 	local to_ivr_chan_tb = {}
+--	local chan_name_tb = {}
+--	local to_ivr_chan_tb = {}
 	
--- 	for k,v in pairs(fxso_cfg) do
--- 		if v.index and v.status == "Enabled" and v.slot_type and v.slot_type:match("FXO") then
--- 			--table.insert(chan_name_tb,"^FreeTDM/"..v.index..":1")
--- 			table.insert(chan_name_tb,"^FreeTDM/"..v.index..":2")
--- 		end
--- 	end
--- 	for k,v in pairs(mobile_cfg) do
--- 		if v.index and v.status == "Enabled" and v.slot_type then
--- 			table.insert(chan_name_tb,"^gsmopen/"..v.slot_type)
--- 		end
--- 	end
--- 	for k,v in pairs(route_cfg) do
--- 		if v.index and v.successDestination and v.successDestination:match("^IVR") and v.from then
--- 			if v.from == "-1" and v.custom_from and type(v.custom_from) == "table" then
--- 				for k2,v2 in pairs(v.custom_from) do
--- 					if v2:match("^FXO") then
--- 						local slot,port = v2:match("FXO%-([0-9]+)%-([0-9]+)")
--- 						if slot and port then
--- 							table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":"..port)
--- 						end
--- 					elseif v2:match("^GSM|^CDMA") then
--- 						local name,slot = v2:match("([A-Z]+)%-([0-9]+)") 
--- 						if name and slot then
--- 							table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)		
--- 						end
--- 					else
--- 					end
--- 				end
--- 			elseif v.from:match("^FXO") then
--- 				local slot = v.from:match("FXO%-([0-9]+)")
--- 				if slot and v.from_channel_number then
--- 					if v.from_channel_number == "1" then
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
--- 					elseif v.from_channel_number == "2" then
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
--- 					else
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
--- 					end
--- 				end
--- 			elseif v.from:match("^GSM|^CDMA") then
--- 				local name,slot = v.from:match("([A-Z]+)%-([0-9]+)")
--- 				if name and slot then
--- 					table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)
--- 				end
--- 			else
--- 			end
--- 		end
--- 	end
--- 	local chan_name_str = ""
--- 	for k,v in pairs(chan_name_tb) do
--- 		local tmp_flag = true
+--	for k,v in pairs(fxso_cfg) do
+--		if v.index and v.status == "Enabled" and v.slot_type and v.slot_type:match("FXO") then
+--			--table.insert(chan_name_tb,"^FreeTDM/"..v.index..":1")
+--			table.insert(chan_name_tb,"^FreeTDM/"..v.index..":2")
+--		end
+--	end
+--	for k,v in pairs(mobile_cfg) do
+--		if v.index and v.status == "Enabled" and v.slot_type then
+--			table.insert(chan_name_tb,"^gsmopen/"..v.slot_type)
+--		end
+--	end
+--	for k,v in pairs(route_cfg) do
+--		if v.index and v.successDestination and v.successDestination:match("^IVR") and v.from then
+--			if v.from == "-1" and v.custom_from and type(v.custom_from) == "table" then
+--				for k2,v2 in pairs(v.custom_from) do
+--					if v2:match("^FXO") then
+--						local slot,port = v2:match("FXO%-([0-9]+)%-([0-9]+)")
+--						if slot and port then
+--							table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":"..port)
+--						end
+--					elseif v2:match("^GSM|^CDMA") then
+--						local name,slot = v2:match("([A-Z]+)%-([0-9]+)") 
+--						if name and slot then
+--							table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)		
+--						end
+--					else
+--					end
+--				end
+--			elseif v.from:match("^FXO") then
+--				local slot = v.from:match("FXO%-([0-9]+)")
+--				if slot and v.from_channel_number then
+--					if v.from_channel_number == "1" then
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
+--					elseif v.from_channel_number == "2" then
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
+--					else
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
+--					end
+--				end
+--			elseif v.from:match("^GSM|^CDMA") then
+--				local name,slot = v.from:match("([A-Z]+)%-([0-9]+)")
+--				if name and slot then
+--					table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)
+--				end
+--			else
+--			end
+--		end
+--	end
+--	local chan_name_str = ""
+--	for k,v in pairs(chan_name_tb) do
+--		local tmp_flag = true
 		
--- 		for k2,v2 in pairs(to_ivr_chan_tb) do
--- 			if v == v2 then
--- 				tmp_flag = false
--- 				break
--- 			end
--- 		end
+--		for k2,v2 in pairs(to_ivr_chan_tb) do
+--			if v == v2 then
+--				tmp_flag = false
+--				break
+--			end
+--		end
 
--- 		if tmp_flag then
--- 			if chan_name_str == "" then
--- 				chan_name_str = v
--- 			else
--- 				chan_name_str = chan_name_str.."|"..v
--- 			end
--- 		end
--- 	end
+--		if tmp_flag then
+--			if chan_name_str == "" then
+--				chan_name_str = v
+--			else
+--				chan_name_str = chan_name_str.."|"..v
+--			end
+--		end
+--	end
 
--- 	if chan_name_str ~= "" then
--- 		local chan_condition = mxml.newnode(extension,"condition")
--- 		mxml.setattr(chan_condition,"field","chan_name")
--- 		mxml.setattr(chan_condition,"expression",chan_name_str)
+--	if chan_name_str ~= "" then
+--		local chan_condition = mxml.newnode(extension,"condition")
+--		mxml.setattr(chan_condition,"field","chan_name")
+--		mxml.setattr(chan_condition,"expression",chan_name_str)
 
--- 		add_action(chan_condition,"lua","autodial.lua")
--- 		add_action(chan_condition,"transfer","${destination_number} XML public")
+--		add_action(chan_condition,"lua","autodial.lua")
+--		add_action(chan_condition,"transfer","${destination_number} XML public")
 
--- 		mxml.savefile(xml,autodial_call_z98)
--- 	end
+--		mxml.savefile(xml,autodial_call_z98)
+--	end
 
--- 	mxml.release(xml)
+--	mxml.release(xml)
 -- end
 function add_fax_param(parent_node,sip_app,pstn_app)
 	local a = mxml.newnode(parent_node,"action")
