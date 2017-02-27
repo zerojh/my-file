@@ -1,25 +1,27 @@
 
-local time_tb = {["aa"]={["wday"]="123457",["date"]={"2017-02-10~2017-02-11","2017-02-18~2017-02-24"},["time"]={"00:30~12:30","12:31~20:59"}}}
-local time_check_tb = {}
+local profile_time_tb = {}
+local profile_time_check_tb = {}
+profile_time_tb["aa"] = {wday="12345",date={"2017-02-10~2017-02-11","2017-02-18~2017-02-24"},time={"00:30~12:30","12:31~20:59"}}
+profile_time_tb["bb"] = {wday="123",date={"2017-02-10~2017-02-11"},time={"00:30~12:30","12:31~20:59"}}
 
 local now_epoch = os.time()
-local now_tb = os.date("*t",now_epoch) or {}
-local now_minute = tonumber(now_tb.hour) * 60 + tonumber(now_tb.min)
+local now_time_tb = os.date("*t",now_epoch) or {}
+local now_minute = tonumber(now_time_tb.hour) * 60 + tonumber(now_time_tb.min)
 --print(now_epoch)
-function check_time(idx,tb)
+function check_date(idx,tb)
 	local ret = true
 
-	if not time_check_tb[idx] then
-		if ret and tb["wday"] then
-			local wday = tb["wday"]
-			if not wday:match(now_tb.wday) then
+	if not profile_time_check_tb[idx] then
+		if ret and tb.wday then
+			local wday = tb.wday
+			if not wday:match(now_time_tb.wday) then
 				ret = false
 			end
 		end
 
-		if ret and tb["date"] then
+		if ret and tb.date then
 			local check_flag = false
-			for k,v in pairs(tb["date"]) do
+			for k,v in pairs(tb.date) do
 				if v then
 					local min_y,min_m,min_d,max_y,max_m,max_d = v:match("(%d+)-(%d+)-(%d+)~(%d+)-(%d+)-(%d+)")
 					if min_y then
@@ -35,9 +37,9 @@ function check_time(idx,tb)
 			ret = check_flag
 		end
 
-		if ret and tb["time"] then
+		if ret and tb.time then
 			local check_flag = false
-			for k,v in pairs(tb["time"]) do
+			for k,v in pairs(tb.time) do
 				if v then
 					local min_h,min_m,max_h,max_m = v:match("(%d+):(%d+)~(%d+):(%d+)")
 					if min_h then
@@ -52,15 +54,10 @@ function check_time(idx,tb)
 			end
 			ret = check_flag
 		end
-
-		if ret then
-			time_check_tb[idx] = 1
-		else
-			time_check_tb[idx] = 0
-		end
+		profile_time_check_tb[idx] = tostring(ret)
 	end
 
-	return time_check_tb[idx]
+	return profile_time_check_tb[idx]
 end
 
 local tmp_idx = "aa"

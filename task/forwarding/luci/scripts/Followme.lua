@@ -2,22 +2,25 @@
 local api = freeswitch.API()
 local uci = require "uci".cursor()
 
+local now_epoch = os.time()
+local now_time_tb = os.date("*t",now_epoch) or {}
+local now_minute = tonumber(now_time_tb.hour) * 60 + tonumber(now_time_tb.min)
+
 local bridge_str = argv[1]
 local forwarding_type = argv[2]
---local fw_uncondition_tb = {}
-local fw_uncondition_tb = {["1001"]={{["1"]="1002"}}}
---local fw_uncondition_tb = {["1001"]={{["1"]="1002",["2"]="1"},{["1"]="1002",["2"]="2"},{["1"]="1003",["2"]="3"}}}
-local fw_unregister_tb = {}
-local fw_userbusy_tb = {}
-local fw_noreply_tb = {}
-local fw_noreplay_timeout_tb = {}
-local fw_tb = {}
+local forwarding_uncondition_tb = {["1001"]={{"1006","aa"},{"1007","bb"}}}
+local forwarding_unregister_tb = {["1001"]={{"1006","aa"},{"1007","bb"}}}
+local forwarding_busy_tb = {["1001"]={{"1006","aa"},{"1007","bb"}}}
+local forwarding_noreply = {["1001"]={{"1006","aa"},{"1007","bb"}}}
+local forwarding_noreply_timeout_tb = {["1001"]="20"}
+local sipuser_reg_query = {["1006"]="sofia status profile 1 reg 1006",["1007"]="sofia status profile 1 reg 1007"}
 local endpoint_interface = {}
-local time_tb = {["1"]={["wday"]="12345",["date"]={["1485878400"]="1485964800"},["time"]={["0"]="86399"}}}
---local time_tb = {["1"]={["wday"]="12345",["date"]={["1485878400"]="1485964800",["1486051200"]="1486137600"},["time"]={["0"]="86399"}}}
---local time_tb = {["1"]={["wday"]="12345",["date"]={["1485878400"]="1485964800",["1486051200"]="1486137600"},["time"]={["0"]="86399"}},["2"]={["wday"]="126",["date"]={["1486224000"]="1486310400",["1486396800"]="1486483200"},["time"]={["0"]="43199",["54000"]="82799"}},["3"]={["wday"]="345",["date"]={["1486569600"]="1486656000",["1486742400"]="1486828800"},["time"]={["0"]="86399"}}}
 --@ endpoint_fxso or endpoint_sipphone
-local sipuser_reg_query = {}
+
+local profile_time_tb = {}
+local profile_time_check_tb = {}
+profile_time_tb["aa"] = {wday="12345",date={"2017-02-10~2017-02-11","2017-02-18~2017-02-24"},time={"00:30~12:30","12:31~20:59"}}
+profile_time_tb["bb"] = {wday="123",date={"2017-02-10~2017-02-11"},time={"00:30~12:30","12:31~20:59"}}
 
 if not bridge_str or not forwarding_type then
 	--@ Error Log
@@ -39,25 +42,76 @@ elseif bridge_str:match("user/")  then
 	end
 end
 
+local current_forwarding_tb = {}
 if forwarding_type == "uncondition" then
-	fw_tb = fw_uncondition_tb[destidx]
+	current_forwarding_tb = forwarding_uncondition_tb[destidx]
 elseif forwarding_type == "unregister" then
-	fw_tb = fw_unregister_tb[destidx]
+	current_forwarding_tb = forwarding_unregister_tb[destidx]
 elseif forwarding_type == "userbusy" then
-	fw_tb = fw_busy_tb[destidx]
-elseif forwarding == "noreply" then
-	fw_tb = fw_noreply_tb[destidx]
+	current_forwarding_tb = forwarding_busy_tb[destidx]
 else
-	session:hangup()
-	return
+	current_forwarding_tb = forwarding_noreply_tb[destidx]
 end
 
-if forwarding_type == "noreplay" then
-	session:setVariable("call_timeout", fw_noreply_timeout_tb[destidx] or "20")
-	session:setVariable("bridge_answer_timeout", fw_noreply_timeout_tb[destidx] or "20")
+if forwarding_type == "noreply" then
+	session:setVariable("call_timeout", forwarding_noreply_timeout_tb[destidx] or "20")
+	session:setVariable("bridge_answer_timeout", forwarding_noreply_timeout_tb[destidx] or "20")
 else
 	session:setVariable("call_timeout", "55")
 	session:setVariable("bridge_answer_timeout", "55")
+end
+
+-- check date
+function check_date(idx,tb)
+	local ret = true
+
+	if not profile_time_check_tb[idx] then
+		if ret and tb.wday then
+			local wday = tb.wday
+			if not wday:match(now_time_tb.wday) then
+				ret = false
+			end
+		end
+
+		if ret and tb.date then
+			local check_flag = false
+			for k,v in pairs(tb.date) do
+				if v then
+					local min_y,min_m,min_d,max_y,max_m,max_d = v:match("(%d+)-(%d+)-(%d+)~(%d+)-(%d+)-(%d+)")
+					if min_y then
+						local min_epoch = os.time({year=min_y, month=min_m, day=min_d, hour="0", min="0", sec="0"})
+						local max_epoch = os.time({year=max_y, month=max_m, day=max_d, hour="23", min="59", sec="59"})
+						if now_epoch >= min_epoch and now_epoch <= max_epoch then
+							check_flag = true
+							break
+						end
+					end
+				end
+			end
+			ret = check_flag
+		end
+
+		if ret and tb.time then
+			local check_flag = false
+			for k,v in pairs(tb.time) do
+				if v then
+					local min_h,min_m,max_h,max_m = v:match("(%d+):(%d+)~(%d+):(%d+)")
+					if min_h then
+						local min_minute = tonumber(min_h) * 60 + tonumber(min_m)
+						local max_minute = tonumber(max_h) * 60 + tonumber(max_m)
+						if now_minute >= min_minute and now_minute <= max_minute then
+							check_flag = true
+							break
+						end
+					end
+				end
+			end
+			ret = check_flag
+		end
+		profile_time_check_tb[idx] = tostring(ret)
+	end
+
+	return profile_time_check_tb[idx]
 end
 
 --@ check
@@ -124,18 +178,19 @@ function get_siptrunk_uci_name(param)
 end
 
 if session:ready() then
-	local fw_proxy_media_flag = false
-	local fw_bypass_media_flag = false
 	local last_hangup_flag = true
 
-	for k,v in pairs(fw_tb) do
+	for k,v in pairs(current_forwarding_tb) do
 		local destination,time,number = v[1],v[2],v[3]
-		local flag = false
+		local continue_flag = false
+		local last_hangup_flag = false
 		if not time then
-			flag = true
+			last_hangup_flag = true
+		elseif check_date(time, profile_time_tb[time]) == "true" then
+			continue_flag = true
 		end
 
-		if flag then
+		if continue_flag or last_hangup_flag then
 			local tmp_str = string.sub(destination,1,3)
 			local dial_string
 			if tmp_str == "FXO"  then
@@ -178,9 +233,11 @@ if session:ready() then
 				local domain = api:executeString("eval ${domain}") or ""
 				if tmp_string:match("user/") then
 					call_forwarding_str = tmp_string:match("(user/%d+)").."@"..domain
+					session:setVariable("dest_chan_name","SIP Extension/"..destination)
 				elseif tmp_string:match("freedtm") then
 					local callee_number = session:getvariable("my_dst_number") or ""
 					call_forwarding_str = tmp_string:match("(freetdm/%d+/%d+/)")..callee_number
+					session:setVariable("dest_chan_name","FXS")
 				end
 			end
 
@@ -191,15 +248,14 @@ if session:ready() then
 				end
 
 				local hangup_cause = bridge_session:getVariable("hangup_cause")
-				if (hangup_cause == "USER_BUSY" or hangup_cause == "TIMEOUT" or hangup_cause == "NO_ANSWER" or hangup_cause == "NO_USER_RESPONSE" or hangup_cause == "ALLOTTED_TIMEOUT") and intercept == "false" then
-					--@ continue
-					last_hangup_flag = false
-				elseif hangup_cause == "PICKED_OFF" then
-					return
-				else
+				hangup_cause = ("" == hangup_cause) and bridge_session:hangupCause() or hangup_cause
+				if not (hangup_cause == "USER_BUSY" or hangup_cause == "TIMEOUT" or hangup_cause == "NO_ANSWER" or hangup_cause == "NO_USER_RESPONSE" or hangup_cause == "ALLOTTED_TIMEOUT") then
 					last_hangup_flag = true
-					break
 				end
+			end
+
+			if last_hangup_flag then
+				break
 			end
 		end
 	end

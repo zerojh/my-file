@@ -3,9 +3,9 @@ local api = freeswitch.API()
 local uci = require "uci".cursor()
 
 local bridge_str = argv[1]
-local sip_ex_tb = {}
+local sip_ex_tb = {["1001"]={["reg_query"]="sofia status profile 2 reg 1001",["forward_busy"]="Activate"}}
 local fxs_ex_tb = {}
-local endpoint_interface = {}
+local endpoint_interface = {["1001"]="WAN"}
 --@ endpoint_fxso or endpoint_sipphone
 local call_waiting_status = "Deactivate"
 local call_notdisturb_status = "Deactivate"
@@ -13,7 +13,7 @@ local call_forward_unregister_status = "Deactivate"
 local call_forward_uncondition_status = "Deactivate"
 local call_forward_busy_status = "Deactivate"
 local call_forward_noreply_status = "Deactivate"
---local call_foread_noreply_timeout = "20"
+local sipuser_reg_query = ""
 
 --@ feature_code
 local bind_transfer_dtmf = ""
@@ -50,6 +50,7 @@ if bridge_type == "freetdm" then
 elseif bridge_str:match("user/")  then
 	local user = bridge_str:match("user/([0-9]+)@")
 	if sip_ex_tb[user] then
+		sip_extension_reg_status_query = sip_ex_tb[user]["reg_query"] or ""
 		call_waiting_status = sip_ex_tb[user]["waiting"] or "Deactivate"
 		call_notdisturb_status = sip_ex_tb[user]["notdisturb"] or "Deactivate"
 		call_forward_uncondition_status = sip_ex_tb[user]["forward_uncondition"] or "Deactivate"
