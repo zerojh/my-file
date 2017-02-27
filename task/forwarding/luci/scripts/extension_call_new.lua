@@ -29,6 +29,7 @@ local extension_call_01 = "/etc/freeswitch/conf/dialplan/public/01_extension_cal
 local extension_call_z99 = "/etc/freeswitch/conf/dialplan/public/z_99_extension_call.xml"
 local extension_users_xml = "/etc/freeswitch/conf/directory/default/users.xml"
 local extension_service_script = "/usr/lib/lua/luci/scripts/Extension-Service.lua"
+local extension_followme_scripts = "/usr/lib/lua/luci/scripts/Followme.lua"
 local extension_callout_check_00 = "/etc/freeswitch/conf/dialplan/public/00_callout_check.xml"
 
 local fs_scripts_dir = "/etc/freeswitch/scripts"
@@ -69,6 +70,7 @@ local codec = {}
 local codec_str = ""
 local sip_ex_tb = ""
 local fxs_ex_tb = ""
+local fm_tb = ""
 local profile_interface = {}
 local endpoint_interface = ""
 
@@ -85,6 +87,7 @@ end
 
 for k,v in pairs(sipphone_cfg) do
 	if v.user then
+		fm_tb = fm_tb .. "[\""..v.user.."\"]={"
 		sip_ex_tb = sip_ex_tb .. "[\""..v.user.."\"]={"
 		sip_ex_tb = sip_ex_tb .. "[\"reg_query\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
 		if v.waiting then
@@ -93,30 +96,28 @@ for k,v in pairs(sipphone_cfg) do
 		if v.notdisturb then
 			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..(v.notdisturb or "").."\","
 		end
-		if v.forward_unregister_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister_dst\"]=\""..(v.forward_unregister_dst or "").."\","
+		if v.forward_uncondition then
+			if type(v.forwarding_uncondition) == "string" then
+				local tmp_tb = {}
+				table.insert(tmp_tb, v.forwarding_uncondition)
+				v.forwarding_uncondition = tmp_tb
+			end
+			if type(v.forwarding_uncondition) == "table" and next(v.forwarding_uncondition) then
+				local tmp_str = "[\"forwarding_uncondition\"]=\""
+				for k,v in pairs(v.forwarding_uncondition) do
+				end
+			end
+			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\""..(v.forward_uncondition or "").."\","
 		end
 		if v.forward_unregister then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister\"]=\""..(v.forward_unregister or "").."\","
 		end
-		if v.forward_uncondition_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition_dst\"]=\""..(v.forward_uncondition_dst or "").."\","
-		end
-		if v.forward_uncondition then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\""..(v.forward_uncondition or "").."\","
-		end
-		if v.forward_busy_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_busy_dst\"]=\""..(v.forward_busy_dst or "").."\","
-		end 
 		if v.forward_busy then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_busy\"]=\""..(v.forward_busy or "").."\","
-		end 
-		if v.forward_noreply_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_dst\"]=\""..(v.forward_noreply_dst or "").."\","
-		end 
+		end
 		if v.forward_noreply then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply\"]=\""..(v.forward_noreply or "").."\","
-		end 
+		end
 		if v.forward_noreply_timeout then
 			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_timeout\"]=\""..(v.forward_noreply_timeout or "").."\","
 		end
@@ -136,21 +137,12 @@ for k,v in pairs(fxso_cfg) do
 		if v.notdisturb_1 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_1\"]=\""..(v.notdisturb_1 or "").."\","
 		end
-		if v.forward_uncondition_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_1\"]=\""..(v.forward_uncondition_dst_1 or "").."\","
-		end
 		if v.forward_uncondition_1 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_1\"]=\""..(v.forward_uncondition_1 or "").."\","
 		end
-		if v.forward_busy_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_1\"]=\""..(v.forward_busy_dst_1 or "").."\","
-		end 
 		if v.forward_busy_1 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_1\"]=\""..(v.forward_busy_1 or "").."\","
-		end 
-		if v.forward_noreply_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_1\"]=\""..(v.forward_noreply_dst_1 or "").."\","
-		end 
+		end
 		if v.forward_noreply_1 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_1\"]=\""..(v.forward_noreply_1 or "").."\","
 		end
@@ -163,20 +155,11 @@ for k,v in pairs(fxso_cfg) do
 		if v.notdisturb_2 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_2\"]=\""..(v.notdisturb_2 or "").."\","
 		end
-		if v.forward_uncondition_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_2\"]=\""..(v.forward_uncondition_dst_2 or "").."\","
-		end
 		if v.forward_uncondition_2 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_2\"]=\""..(v.forward_uncondition_2 or "").."\","
 		end
-		if v.forward_busy_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_2\"]=\""..(v.forward_busy_dst_2 or "").."\","
-		end
 		if v.forward_busy_2 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_2\"]=\""..(v.forward_busy_2 or "").."\","
-		end
-		if v.forward_noreply_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_2\"]=\""..(v.forward_noreply_dst_2forward_noreply_dst_2 or "").."\","
 		end
 		if v.forward_noreply_2 then
 			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_2\"]=\""..(v.forward_noreply_2 or "").."\","
