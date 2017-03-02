@@ -17,6 +17,40 @@ function action_cdrs()
 	local fs  = require "luci.fs"
 	local sys = require "luci.sys"
 	local sqlite = require "luci.scripts.sqlite3_service"
+	local data_type = luci.http.formvalue("type") or "json"
+	local str = luci.http.formvalue("cmd") or ""
+	local query_str = ""
+
+	-- optional data
+	local cdr_caller_id_number
+	local cdr_destination_number
+	local cdr_source
+	local cdr_destination
+	local cdr_billsec
+	local cdr_start_epoch
+	local cdr_end_epoch
+	if str ~= "" then
+		local list = luci.util.split(str,",") or {}
+		for i,j in pairs(list) do
+			if j:match("caller_id_number%s*=") then
+				cdr_caller_id_number = j:match("caller_id_number%s*=%s*([^%s]+)")
+			elseif j:match("destination_number%s*=") then
+				cdr_destination_number = j:match("destination_number%s*=%s*([^%s]+)")
+			elseif j:match("source%s*=") then
+				cdr_source = j:match("source%s*=%s*([^%s]+)")
+			elseif j:match("destination%s*=") then
+				cdr_destination = j:match("destination%s*=%s*([^%s]+)")
+			elseif j:match("min_billsec%s*=") then
+				cdr_billsec = j:match("min_billsec%s*=%s*([^%s]+)")
+			elseif j:match("max_billsec%s*=") then
+				cdr_billsec = j:match("max_billsec%s*=%s*([^%s]+)")
+			elseif j:match("start_epoch%s*=") then
+				cdr_start_epoch = j:match("start_epoch%s*=%s*([^%s]+)")
+			elseif j:match("end_epoch%s=") then
+				cdr_end_epoch = j:match("end_epoch%s*=%s*([^%s]+)")
+			end
+		end
+	end
 	
 	local cdr_info = ""
 	local cdrs_file = "/tmp/CDRs"
@@ -92,14 +126,6 @@ function action_get_cdrs()
 	
 	cdr_info = sqlite.sqlite3_execute("/etc/freeswitch/cdr",sql_cmd)
 
-	for k,v in pairs(cdr_info) do
-		if v.start_epoch then
-			v.start_epoch = os.date("%Y-%m-%d %H:%M:%S", v.start_epoch)
-		end
-		if v.end_epoch then
-			v.end_epoch = os.date("%m-%d %H:%M:%S", v.end_epoch)
-		end
-	end	
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(cdr_info)
 	return
