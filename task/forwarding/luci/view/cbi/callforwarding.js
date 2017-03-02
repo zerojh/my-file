@@ -142,7 +142,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 			case 8:
 			case 46:
 				var length = se.parentNode.children.length;
-				var c5_name = se.childNodes[4].name != "null" ? se.childNodes[4].name : se.childNodes[4].name1;
+				var c5_name = se.childNodes[4].hasAttribute("name")? se.childNodes[4].name : se.childNodes[4].name1;
 
 				if (length > 1) {
 					se.parentNode.removeChild(se);
@@ -216,7 +216,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 					cbi_bind(c5, 'blur', cbi_callforwarding_input_update);
 				} else {
 					c4.style.display = "none";
-					c5.name = null;
+					c5.removeAttribute("name");
 					c5.style.display = "none";
 				}
 
@@ -367,7 +367,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 				var c = c5.cloneNode(true);
 				var c5_name = c.name;
 
-				c.name = null;
+				c.removeAttribute("name");
 				c.name1 = c5.name1;
 				c.style.display = "none";
 				c.value = "";
@@ -475,14 +475,18 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		if (c1.value == "Deactivate" || (c3.value == "" && c5.value == "")) {
 			obj.value = c1.value;
 		} else {
-			if (c3.value.indexOf("addnew_") >= 0)
+			if (c3.value.indexOf("addnew_") >= 0) {
 				obj.value = "";
-			else if (c3.value == "" && c5.value != "")
+				obj.removeAttribute("name");
+				c1.removeAttribute("name");
+				c5.removeAttribute("name");
+			} else if (c3.value == "" && c5.value != "") {
 				obj.value = c1.value + "::::" + c5.value;
-			else if (c3.value != "" && c5.value == "")
+			} else if (c3.value != "" && c5.value == "") {
 				obj.value = c1.value + "::" + c3.value;
-			else
+			} else {
 				obj.value = c1.value + "::" + c3.value + "::" + c5.value;
+			}
 		}
 	}
 
@@ -513,14 +517,16 @@ function cbi_callforwarding_init(name, respath, input_depends)
 		c1.parentNode.input_depends = input_depends;
 		/* select0 bind event */
 		cbi_bind(c1,'click',cbi_callforwarding_select0_update);
+		cbi_bind(c1,'change',cbi_callforwarding_select0_update);
 		/* select1 bind event */
 		cbi_bind(c3,'click',cbi_callforwarding_select1_update);
+		cbi_bind(c3,'change',cbi_callforwarding_select1_update);
 		/* input bind event */
 		if (c5.style.display == "") {
 			cbi_bind(c5,'blur',cbi_callforwarding_input_update);
 			cbi_validate_field(c5, false, "phonenumber");
 		} else {
-			c5.name = null;
+			c5.removeAttribute("name");
 		}
 	}
 

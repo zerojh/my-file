@@ -1813,43 +1813,56 @@ function CallForwarding.cfgvalue(self, section)
 end
 
 --[[
+function CallForwarding.validate_option(value)
+	if not value then
+		return "false"
+	else
+		local dest,time,number = val:match("([^:]+)::([^:]*)::([^:]+)")
+		if not dest or not time or not number then
+			dest,time = val:match("([^:]+)::([^:]*)")
+			if not dest then
+				dest = val
+			end
+		end
+		if not time or time == "" then
+			return "onlyone"
+		end
+	end
+	return "true"
+end
+]]--
+
 function CallForwarding.formvalue(self, section)
-	local tb0 = self.map:formvalue(self:cbid(section)) or ""
-	local tb1 = self.map:formvalue(self:cbid(section).."-select1") or ""
-	local tb2 = self.map:formvalue(self:cbid(section).."-input") or ""
+	local tmp_tb = self.map:formvalue(self:cbid(section)) or ""
 	local value = {}
 
-	function string_to_table(value)
-		if type(value) == "string" then
-			local x
-			local t = { }
-			for x in value:gmatch("%S+") do
-				t[#t+1] = x
-			end
-			value = t
+	if type(tmp_tb) == "string" then
+		local x
+		local t = { }
+		for x in tmp_tb:gmatch("%S+") do
+			t[#t+1] = x
 		end
-		return value
+		tmp_tb = t
 	end
 
-	tb0 = string_to_table(tb0)
-	tb1 = string_to_table(tb1)
-	tb2 = string_to_table(tb2)
-
-	for k,v in ipairs(tb0) do
-		local string = v
-
-		if tb1[k] and #tb1[k] > 0 then
-			string = string.."::"..tb1[k]
-			if tb2[k] and #tb2[k] > 0 then
-				string = string.."::"..tb2[k]
+	for _,val in ipairs(tmp_tb) do
+		local dest,time,number = val:match("([^:]+)::([^:]*)::([^:]+)")
+		if not dest or not time or not number then
+			dest,time = val:match("([^:]+)::([^:]*)")
+			if not dest then
+				dest = val
 			end
 		end
-		value[#value+1] = string
+		if not time or time == "" then
+			return {val}
+		end
+		if dest ~= "" then
+			table.insert(value,val)
+		end
 	end
 
 	return value
 end
-]]--
 
 function CallForwarding.write(self, section, value)
 	local t = { }

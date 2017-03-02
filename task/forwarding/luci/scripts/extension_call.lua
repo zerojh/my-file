@@ -5,7 +5,7 @@ require "luci.util"
 local fs = require "nixio.fs"
 local base64 = require "luci.base64"
 
-local cfgfilelist = {"system","profile_codec","profile_sip","endpoint_fxso","endpoint_siptrunk","endpoint_sipphone","endpoint_ringgroup","endpoint_mobile","callcontrol"}
+local cfgfilelist = {"system","profile_codec","profile_sip","endpoint_fxso","endpoint_siptrunk","endpoint_sipphone","endpoint_ringgroup","endpoint_mobile","callcontrol","profile_time"}
 for k,v in ipairs(cfgfilelist) do
 	os.execute("cp /etc/config/"..v.." /tmp/config")
 end
@@ -22,13 +22,29 @@ local siptrunk_cfg = uci:get_all("endpoint_siptrunk") or {}
 local sip_profile_cfg = uci:get_all("profile_sip") or {}
 local callcontrol_cfg = uci:get_all("callcontrol","route")
 local number_profile_cfg = uci:get_all("profile_number") or {}
+local time_cfg = uci:get_all("profile_time") or {}
 
+--[[
+local did_call_00 = "/tmp/etc/freeswitch/conf/dialplan/public/00_did_call.xml"
+local extension_call_00 = "/tmp/etc/freeswitch/conf/dialplan/public/00_extension_call.xml"
+local extension_call_01 = "/tmp/etc/freeswitch/conf/dialplan/public/01_extension_call.xml"
+local extension_call_z99 = "/tmp/etc/freeswitch/conf/dialplan/public/z_99_extension_call.xml"
+local extension_users_xml = "/tmp/etc/freeswitch/conf/directory/default/users.xml"
+local extension_service_script = "/usr/lib/lua/luci/scripts/Extension-Service.lua"
+local extension_followme_script = "/usr/lib/lua/luci/scripts/Followme.lua"
+local extension_callout_check_00 = "/tmp/etc/freeswitch/conf/dialplan/public/00_callout_check.xml"
+
+local fs_scripts_dir = "/tmp/etc/freeswitch/scripts"
+local sip_extension_dir = "/tmp/etc/freeswitch/conf/directory/default"
+local pstn_extension_dir = "/tmp/etc/freeswitch/conf/dialplan/extension"
+]]--
 local did_call_00 = "/etc/freeswitch/conf/dialplan/public/00_did_call.xml"
 local extension_call_00 = "/etc/freeswitch/conf/dialplan/public/00_extension_call.xml"
 local extension_call_01 = "/etc/freeswitch/conf/dialplan/public/01_extension_call.xml"
 local extension_call_z99 = "/etc/freeswitch/conf/dialplan/public/z_99_extension_call.xml"
 local extension_users_xml = "/etc/freeswitch/conf/directory/default/users.xml"
 local extension_service_script = "/usr/lib/lua/luci/scripts/Extension-Service.lua"
+local extension_followme_script = "/usr/lib/lua/luci/scripts/Followme.lua"
 local extension_callout_check_00 = "/etc/freeswitch/conf/dialplan/public/00_callout_check.xml"
 
 local fs_scripts_dir = "/etc/freeswitch/scripts"
@@ -66,9 +82,13 @@ local users_root = mxml:newxml()
 local users_include = mxml.newnode(users_root,"include")
 
 local codec = {}
-local codec_str = ""
 local sip_ex_tb = ""
 local fxs_ex_tb = ""
+
+local fm_ex_tb = {forward_uncondition="",forward_unregister="",forward_busy="",forward_noreply="",forward_noreply_timeout=""}
+local fm_sipuser_reg_query = ""
+local fm_profile_time_tb = ""
+
 local profile_interface = {}
 local endpoint_interface = ""
 
@@ -85,40 +105,55 @@ end
 
 for k,v in pairs(sipphone_cfg) do
 	if v.user then
-		sip_ex_tb = sip_ex_tb .. "[\""..v.user.."\"]={"
-		sip_ex_tb = sip_ex_tb .. "[\"reg_query\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
+		sip_ex_tb = sip_ex_tb .. "[\""..v.user.."\"]={[\"reg_query\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
+		fm_sipuser_reg_query = fm_sipuser_reg_query .. "[\""..v.user.."\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
 		if v.waiting then
-			sip_ex_tb = sip_ex_tb .. "[\"waiting\"]=\""..(v.waiting or "").."\","
+			sip_ex_tb = sip_ex_tb .. "[\"waiting\"]=\""..v.waiting.."\","
 		end
 		if v.notdisturb then
-			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..(v.notdisturb or "").."\","
+			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..v.notdisturb.."\","
 		end
-		if v.forward_unregister_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister_dst\"]=\""..(v.forward_unregister_dst or "").."\","
+
+		local forward_option_tb = {"forward_uncondition","forward_unregister","forward_busy","forward_noreply"}
+		for _,forward_option in ipairs(forward_option_tb) do
+			if v[forward_option] then
+				if type(v[forward_option]) == "string" then
+					local tmp_tb = {}
+					table.insert(tmp_tb, v[forward_option])
+					v[forward_option] = tmp_tb
+				end
+				if type(v[forward_option]) == "table" and next(v[forward_option]) then
+					if v[forward_option][1] == "" or v[forward_option][1] == "Deactivate" then
+						sip_ex_tb = sip_ex_tb .. "[\""..forward_option.."\"]=\"Deactivate\","
+					else
+						local tmp_str = ""
+						sip_ex_tb = sip_ex_tb .. "[\""..forward_option.."\"]=\"Activate\","
+						for _,val in ipairs(v[forward_option]) do
+							local dest,time,number = val:match("([^:]+)::([^:]*)::([^:]+)")
+							if not dest or not time or not number then
+								dest,time = val:match("([^:]+)::([^:]+)")
+								if not dest then
+									dest = val
+								end
+							end
+							if dest and time and number then
+								tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\",\""..number.."\"},"
+							elseif dest and time then
+								tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\"},"
+							elseif dest then
+								tmp_str = tmp_str .. "{\""..dest.."\"},"
+							end
+						end
+						if tmp_str ~= "" then
+							fm_ex_tb[forward_option] = fm_ex_tb[forward_option] .."[\""..v.user.."\"]={"..tmp_str.."},"
+						end
+						tmp_str = nil
+					end
+				end
+			end
 		end
-		if v.forward_unregister then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister\"]=\""..(v.forward_unregister or "").."\","
-		end
-		if v.forward_uncondition_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition_dst\"]=\""..(v.forward_uncondition_dst or "").."\","
-		end
-		if v.forward_uncondition then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\""..(v.forward_uncondition or "").."\","
-		end
-		if v.forward_busy_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_busy_dst\"]=\""..(v.forward_busy_dst or "").."\","
-		end 
-		if v.forward_busy then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_busy\"]=\""..(v.forward_busy or "").."\","
-		end 
-		if v.forward_noreply_dst then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_dst\"]=\""..(v.forward_noreply_dst or "").."\","
-		end 
-		if v.forward_noreply then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply\"]=\""..(v.forward_noreply or "").."\","
-		end 
-		if v.forward_noreply_timeout then
-			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_timeout\"]=\""..(v.forward_noreply_timeout or "").."\","
+		if v["forward_noreply"] and v["forward_noreply_timeout"] then
+			fm_ex_tb["forward_noreply_timeout"] = fm_ex_tb["forward_noreply_timeout"] .. "[\""..v.user.."\"]=\""..v["forward_noreply_timeout"].."\","
 		end
 		sip_ex_tb = sip_ex_tb .. "},"
 	end
@@ -131,58 +166,62 @@ for k,v in pairs(fxso_cfg) do
 	if v['.type'] == 'fxs' and v.index then
 		fxs_ex_tb = fxs_ex_tb .. "[\""..v.index.."\"]={"
 		if v.waiting_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_1\"]=\""..(v.waiting_1 or "").."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_1\"]=\""..v.waiting_1.."\","
 		end
 		if v.notdisturb_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_1\"]=\""..(v.notdisturb_1 or "").."\","
-		end
-		if v.forward_uncondition_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_1\"]=\""..(v.forward_uncondition_dst_1 or "").."\","
-		end
-		if v.forward_uncondition_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_1\"]=\""..(v.forward_uncondition_1 or "").."\","
-		end
-		if v.forward_busy_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_1\"]=\""..(v.forward_busy_dst_1 or "").."\","
-		end 
-		if v.forward_busy_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_1\"]=\""..(v.forward_busy_1 or "").."\","
-		end 
-		if v.forward_noreply_dst_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_1\"]=\""..(v.forward_noreply_dst_1 or "").."\","
-		end 
-		if v.forward_noreply_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_1\"]=\""..(v.forward_noreply_1 or "").."\","
-		end
-		if v.forward_noreply_timeout_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_timeout_1\"]=\""..(v.forward_noreply_timeout_1 or "").."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_1\"]=\""..v.notdisturb_1.."\","
 		end
 		if v.waiting_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_2\"]=\""..(v.waiting_2 or "").."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_2\"]=\""..v.waiting_2.."\","
 		end
 		if v.notdisturb_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_2\"]=\""..(v.notdisturb_2 or "").."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_2\"]=\""..v.notdisturb_2.."\","
 		end
-		if v.forward_uncondition_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_2\"]=\""..(v.forward_uncondition_dst_2 or "").."\","
-		end
-		if v.forward_uncondition_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_2\"]=\""..(v.forward_uncondition_2 or "").."\","
-		end
-		if v.forward_busy_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_2\"]=\""..(v.forward_busy_dst_2 or "").."\","
-		end
-		if v.forward_busy_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_2\"]=\""..(v.forward_busy_2 or "").."\","
-		end
-		if v.forward_noreply_dst_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_2\"]=\""..(v.forward_noreply_dst_2forward_noreply_dst_2 or "").."\","
-		end
-		if v.forward_noreply_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_2\"]=\""..(v.forward_noreply_2 or "").."\","
-		end
-		if v.forward_noreply_timeout_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_timeout_2\"]=\""..(v.forward_noreply_timeout_2 or "").."\","
+
+		local forward_option_tb = {"forward_uncondition","forward_busy","forward_noreply"}
+		local port_tb = {"1","2"}
+		for _,port_index in ipairs(port_tb) do
+			for _,forward_option in ipairs(forward_option_tb) do
+				local port_forward_option = forward_option.."_"..port_index
+				if v[port_forward_option] then
+					if type(v[port_forward_option]) == "string" then
+						local tmp_tb = {}
+						table.insert(tmp_tb, v[port_forward_option])
+						v[port_forward_option] = tmp_tb
+					end
+					if type(v[port_forward_option]) == "table" and next(v[port_forward_option]) then
+						if v[port_forward_option][1] == "" or v[port_forward_option][1] == "Deactivate" then
+							fxs_ex_tb = fxs_ex_tb .. "[\""..port_forward_option.."\"]=\"Deactivate\","
+						else
+							local tmp_str = ""
+							fxs_ex_tb = fxs_ex_tb .. "[\""..port_forward_option.."\"]=\"Activate\","
+							for _,val in ipairs(v[port_forward_option]) do
+								local dest,time,number = val:match("([^:]*)::([^:]*)::([^:]*)")
+								if not dest or not time or not number then
+									dest,time = val:match("([^:]*)::([^:]*)")
+									if not dest then
+										dest = val
+									end
+								end
+								if dest and time and number then
+									tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\",\""..number.."\"},"
+								elseif dest and time then
+									tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\"},"
+								elseif dest then
+									tmp_str = tmp_str .. "{\""..dest.."\"},"
+								end
+							end
+							if tmp_str ~= "" then
+								fm_ex_tb[forward_option] = fm_ex_tb[forward_option] .."[\""..v.index.."/"..port_index.."\"]={"..tmp_str.."},"
+							end
+							tmp_str = nil
+						end
+					end
+				end
+			end
+			if v["forward_noreply_"..port_index] and v["forward_noreply_timeout_"..port_index] then
+				fm_ex_tb["forward_noreply_timeout"] = fm_ex_tb["forward_noreply_timeout"] .. "[\""..v.index.."/"..port_index.."\"]=\""..v["forward_noreply_timeout_"..port_index].."\","
+			end
 		end
 		fxs_ex_tb = fxs_ex_tb .. "},"
 	end
@@ -194,12 +233,84 @@ for k,v in pairs(siptrunk_cfg) do
 	end
 end
 
+for k,v in pairs(time_cfg) do
+	if v.index and (v.weekday or v.date_options or v.time_options) then
+		fm_profile_time_tb = fm_profile_time_tb .."[\""..v.index.."\"]={"
+		if v.weekday then
+			fm_profile_time_tb = fm_profile_time_tb .."[\"wday\"]=\""
+			local tmp_str = v.weekday
+			local wday_str = ""
+			if tmp_str:match("Sun") then
+				wday_str = wday_str.."1"
+			end
+			if tmp_str:match("Mon") then
+				wday_str = wday_str.."2"
+			end
+			if tmp_str:match("Tue") then
+				wday_str = wday_str.."3"
+			end
+			if tmp_str:match("Wed") then
+				wday_str = wday_str.."4"
+			end
+			if tmp_str:match("Thu") then
+				wday_str = wday_str.."5"
+			end
+			if tmp_str:match("Fri") then
+				wday_str = wday_str.."6"
+			end
+			if tmp_str:match("Sat") then
+				wday_str = wday_str.."7"
+			end
+			fm_profile_time_tb = fm_profile_time_tb ..wday_str.."\","
+		end
+		if v.date_options and next(v.date_options) then
+			fm_profile_time_tb = fm_profile_time_tb .."[\"date\"]={"
+			local date_str = ""
+			for _,date_option in pairs(v.date_options) do
+				date_str = date_str.."\""..date_option.."\","
+			end
+			fm_profile_time_tb = fm_profile_time_tb ..date_str.."},"
+		end
+		if v.time_options and next(v.time_options) then
+			fm_profile_time_tb = fm_profile_time_tb .."[\"time\"]={"
+			local time_str = ""
+			for _,time_option in pairs(v.time_options) do
+				time_str = time_str.."\""..time_option.."\","
+			end
+			fm_profile_time_tb = fm_profile_time_tb ..time_str.."},"
+		end
+		fm_profile_time_tb = fm_profile_time_tb.. "},"
+	end
+end
+
+local cmd_str = ""
 sip_ex_tb=string.gsub(sip_ex_tb,"/","\\/")
 fxs_ex_tb=string.gsub(fxs_ex_tb,"/","\\/")
-os.execute("sed -i 's/^local sip_ex_tb = {.*}/local sip_ex_tb = {"..sip_ex_tb.."}/g' "..extension_service_script)
-os.execute("sed -i 's/^local fxs_ex_tb = {.*}/local fxs_ex_tb = {"..fxs_ex_tb.."}/g' "..extension_service_script)
-os.execute("sed -i 's/^local endpoint_interface = {.*}/local endpoint_interface = {"..endpoint_interface.."}/g' "..extension_service_script)
-os.execute("cp "..extension_service_script.." "..fs_scripts_dir)
+endpoint_interface=string.gsub(endpoint_interface,"/","\\/")
+fm_ex_tb.forward_uncondition=string.gsub(fm_ex_tb.forward_uncondition,"/","\\/")
+fm_ex_tb.forward_unregister=string.gsub(fm_ex_tb.forward_unregister,"/","\\/")
+fm_ex_tb.forward_busy=string.gsub(fm_ex_tb.forward_busy,"/","\\/")
+fm_ex_tb.forward_noreply=string.gsub(fm_ex_tb.forward_noreply,"/","\\/")
+fm_ex_tb.forward_noreply_timeout=string.gsub(fm_ex_tb.forward_noreply_timeout,"/","\\/")
+fm_sipuser_reg_query=string.gsub(fm_sipuser_reg_query,"/","\\/")
+fm_profile_time_tb=string.gsub(fm_profile_time_tb,"/","\\/")
+cmd_str = cmd_str.."sed -i 's/^local sip_ex_tb = {.*}/local sip_ex_tb = {"..sip_ex_tb.."}/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local fxs_ex_tb = {.*}/local fxs_ex_tb = {"..fxs_ex_tb.."}/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local endpoint_interface = {.*}/local endpoint_interface = {"..endpoint_interface.."}/g' "..extension_service_script..";"
+cmd_str = cmd_str.."cp "..extension_service_script.." "..fs_scripts_dir..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_uncondition_tb = {.*}/local forward_uncondition_tb = {"..fm_ex_tb.forward_uncondition.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_unregister_tb = {.*}/local forward_unregister_tb = {"..fm_ex_tb.forward_unregister.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_busy_tb = {.*}/local forward_busy_tb = {"..fm_ex_tb.forward_busy.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_noreply_tb = {.*}/local forward_noreply_tb = {"..fm_ex_tb.forward_noreply.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_noreply_timeout_tb = {.*}/local forward_noreply_timeout_tb = {"..fm_ex_tb.forward_noreply_timeout.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local sipuser_reg_query = {.*}/local sipuser_reg_query = {"..fm_sipuser_reg_query.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local endpoint_interface = {.*}/local endpoint_interface = {"..endpoint_interface.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local profile_time_tb = {.*}/local profile_time_tb = {"..fm_profile_time_tb.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."cp "..extension_followme_script.." "..fs_scripts_dir..";"
+os.execute(cmd_str)
+
+local fm_ex_tb = {forward_uncondition="",forward_unregister="",forward_busy="",forward_noreply="",forward_noreply_timeout=""}
+local fm_sipuser_reg_query = ""
 
 function add_action(parent_node,app,data)
 	if parent_node and app then
@@ -878,99 +989,99 @@ function generate_01_extension_call_xml()
 end
 
 -- function generate_z_98_default_autodial_xml()
--- 	local xml = mxml:newxml()
--- 	local include = mxml.newnode(xml,"include")
--- 	local extension = mxml.newnode(include,"extension")
--- 	mxml.setattr(extension,"name","Default_Autodial")
+--	local xml = mxml:newxml()
+--	local include = mxml.newnode(xml,"include")
+--	local extension = mxml.newnode(include,"extension")
+--	mxml.setattr(extension,"name","Default_Autodial")
 	
--- 	local dst_condition = mxml.newnode(extension,"condition")
--- 	mxml.setattr(dst_condition,"field","destination_number")
--- 	mxml.setattr(dst_condition,"expression","^IVRDIAL$")
+--	local dst_condition = mxml.newnode(extension,"condition")
+--	mxml.setattr(dst_condition,"field","destination_number")
+--	mxml.setattr(dst_condition,"expression","^IVRDIAL$")
 
--- 	local chan_name_tb = {}
--- 	local to_ivr_chan_tb = {}
+--	local chan_name_tb = {}
+--	local to_ivr_chan_tb = {}
 	
--- 	for k,v in pairs(fxso_cfg) do
--- 		if v.index and v.status == "Enabled" and v.slot_type and v.slot_type:match("FXO") then
--- 			--table.insert(chan_name_tb,"^FreeTDM/"..v.index..":1")
--- 			table.insert(chan_name_tb,"^FreeTDM/"..v.index..":2")
--- 		end
--- 	end
--- 	for k,v in pairs(mobile_cfg) do
--- 		if v.index and v.status == "Enabled" and v.slot_type then
--- 			table.insert(chan_name_tb,"^gsmopen/"..v.slot_type)
--- 		end
--- 	end
--- 	for k,v in pairs(route_cfg) do
--- 		if v.index and v.successDestination and v.successDestination:match("^IVR") and v.from then
--- 			if v.from == "-1" and v.custom_from and type(v.custom_from) == "table" then
--- 				for k2,v2 in pairs(v.custom_from) do
--- 					if v2:match("^FXO") then
--- 						local slot,port = v2:match("FXO%-([0-9]+)%-([0-9]+)")
--- 						if slot and port then
--- 							table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":"..port)
--- 						end
--- 					elseif v2:match("^GSM|^CDMA") then
--- 						local name,slot = v2:match("([A-Z]+)%-([0-9]+)") 
--- 						if name and slot then
--- 							table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)		
--- 						end
--- 					else
--- 					end
--- 				end
--- 			elseif v.from:match("^FXO") then
--- 				local slot = v.from:match("FXO%-([0-9]+)")
--- 				if slot and v.from_channel_number then
--- 					if v.from_channel_number == "1" then
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
--- 					elseif v.from_channel_number == "2" then
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
--- 					else
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
--- 						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
--- 					end
--- 				end
--- 			elseif v.from:match("^GSM|^CDMA") then
--- 				local name,slot = v.from:match("([A-Z]+)%-([0-9]+)")
--- 				if name and slot then
--- 					table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)
--- 				end
--- 			else
--- 			end
--- 		end
--- 	end
--- 	local chan_name_str = ""
--- 	for k,v in pairs(chan_name_tb) do
--- 		local tmp_flag = true
+--	for k,v in pairs(fxso_cfg) do
+--		if v.index and v.status == "Enabled" and v.slot_type and v.slot_type:match("FXO") then
+--			--table.insert(chan_name_tb,"^FreeTDM/"..v.index..":1")
+--			table.insert(chan_name_tb,"^FreeTDM/"..v.index..":2")
+--		end
+--	end
+--	for k,v in pairs(mobile_cfg) do
+--		if v.index and v.status == "Enabled" and v.slot_type then
+--			table.insert(chan_name_tb,"^gsmopen/"..v.slot_type)
+--		end
+--	end
+--	for k,v in pairs(route_cfg) do
+--		if v.index and v.successDestination and v.successDestination:match("^IVR") and v.from then
+--			if v.from == "-1" and v.custom_from and type(v.custom_from) == "table" then
+--				for k2,v2 in pairs(v.custom_from) do
+--					if v2:match("^FXO") then
+--						local slot,port = v2:match("FXO%-([0-9]+)%-([0-9]+)")
+--						if slot and port then
+--							table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":"..port)
+--						end
+--					elseif v2:match("^GSM|^CDMA") then
+--						local name,slot = v2:match("([A-Z]+)%-([0-9]+)") 
+--						if name and slot then
+--							table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)		
+--						end
+--					else
+--					end
+--				end
+--			elseif v.from:match("^FXO") then
+--				local slot = v.from:match("FXO%-([0-9]+)")
+--				if slot and v.from_channel_number then
+--					if v.from_channel_number == "1" then
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
+--					elseif v.from_channel_number == "2" then
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
+--					else
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":1")
+--						table.insert(to_ivr_chan_tb,"^FreeTDM/"..slot..":2")
+--					end
+--				end
+--			elseif v.from:match("^GSM|^CDMA") then
+--				local name,slot = v.from:match("([A-Z]+)%-([0-9]+)")
+--				if name and slot then
+--					table.insert(to_ivr_chan_tb,"^gsmopen/"..(tonumber(slot)-1).."-"..name)
+--				end
+--			else
+--			end
+--		end
+--	end
+--	local chan_name_str = ""
+--	for k,v in pairs(chan_name_tb) do
+--		local tmp_flag = true
 		
--- 		for k2,v2 in pairs(to_ivr_chan_tb) do
--- 			if v == v2 then
--- 				tmp_flag = false
--- 				break
--- 			end
--- 		end
+--		for k2,v2 in pairs(to_ivr_chan_tb) do
+--			if v == v2 then
+--				tmp_flag = false
+--				break
+--			end
+--		end
 
--- 		if tmp_flag then
--- 			if chan_name_str == "" then
--- 				chan_name_str = v
--- 			else
--- 				chan_name_str = chan_name_str.."|"..v
--- 			end
--- 		end
--- 	end
+--		if tmp_flag then
+--			if chan_name_str == "" then
+--				chan_name_str = v
+--			else
+--				chan_name_str = chan_name_str.."|"..v
+--			end
+--		end
+--	end
 
--- 	if chan_name_str ~= "" then
--- 		local chan_condition = mxml.newnode(extension,"condition")
--- 		mxml.setattr(chan_condition,"field","chan_name")
--- 		mxml.setattr(chan_condition,"expression",chan_name_str)
+--	if chan_name_str ~= "" then
+--		local chan_condition = mxml.newnode(extension,"condition")
+--		mxml.setattr(chan_condition,"field","chan_name")
+--		mxml.setattr(chan_condition,"expression",chan_name_str)
 
--- 		add_action(chan_condition,"lua","autodial.lua")
--- 		add_action(chan_condition,"transfer","${destination_number} XML public")
+--		add_action(chan_condition,"lua","autodial.lua")
+--		add_action(chan_condition,"transfer","${destination_number} XML public")
 
--- 		mxml.savefile(xml,autodial_call_z98)
--- 	end
+--		mxml.savefile(xml,autodial_call_z98)
+--	end
 
--- 	mxml.release(xml)
+--	mxml.release(xml)
 -- end
 function add_fax_param(parent_node,sip_app,pstn_app)
 	local a = mxml.newnode(parent_node,"action")
