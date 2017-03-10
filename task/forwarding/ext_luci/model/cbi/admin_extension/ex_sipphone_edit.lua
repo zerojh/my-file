@@ -197,96 +197,139 @@ for i=1,32 do
 end
 
 local profile_time = uci:get_all("profile_time") or {}
---@ Forward uncondition
-call_forward_uncondition = s:option(CallForwarding, "forward_uncondition", translate("Call Forward Unconditional").." / "..translate("Time Profile"))
-call_forward_uncondition.datatype = "phonenumber"
-call_forward_uncondition:s1_value("Deactivate",translate("Off"))
+--@ Followme
+followme = s:option(CallForwarding, "followme", translate("Followme / Time Profile"))
+followme.datatype = "phonenumber"
 for k,v in pairs(forward_extension_dst) do
-	call_forward_uncondition:s1_value(v.index, v.name)
+	followme:s1_value(v.index, v.name)
 end
 for k,v in pairs(forward_trunk_dst) do
-	call_forward_uncondition:s1_depvalue(v.index, v.name)
+	followme:s1_depvalue(v.index, v.name)
 end
-call_forward_uncondition:s2_value("",translate("Alaways"))
+followme:s2_value("",translate("Alaways"))
 for k,v in pairs(profile_time) do
 	if v.index and v.name then
-		call_forward_uncondition:s2_value(v.index, v.name)
+		followme:s2_value(v.index, v.name)
 	end
 end
 local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_uncondition:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+followme:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+--@ end
+
+--@ Forward uncondition
+forward_uncondition = s:option(ListValue,"forward_uncondition", translate("Call Forward Unconditional"))
+forward_uncondition.default = "Deactivate"
+forward_uncondition:value("Deactivate",translate("Off"))
+forward_uncondition:value("Followme",translate("Followme"))
+forward_uncondition:value("Custom", translate("Custom"))
+
+custom_forward_uncondition = s:option(CallForwarding, "custom_forward_uncondition", translate("Custom Destination / Time Profile"))
+custom_forward_uncondition.datatype = "phonenumber"
+custom_forward_uncondition.margin = "30px"
+custom_forward_uncondition:depends("forward_uncondition","Custom")
+for k,v in pairs(forward_extension_dst) do
+	custom_forward_uncondition:s1_value(v.index, v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	custom_forward_uncondition:s1_depvalue(v.index, v.name)
+end
+custom_forward_uncondition:s2_value("",translate("Alaways"))
+for k,v in pairs(profile_time) do
+	if v.index and v.name then
+		custom_forward_uncondition:s2_value(v.index, v.name)
+	end
+end
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+custom_forward_uncondition:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
 --@ end
 --@ Unregister uncondition
-call_forward_unregister = s:option(CallForwarding, "forward_unregister", translate("Call Forward Unregister").." / "..translate("Time Profile"))
-call_forward_unregister:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
-call_forward_unregister.datatype = "phonenumber"
-call_forward_unregister:s1_value("Deactivate",translate("Off"))
+forward_unregister = s:option(ListValue,"forward_unregister", translate("Call Forward Unregister"))
+forward_unregister.default = "Deactivate"
+forward_unregister:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
+forward_unregister:value("Deactivate",translate("Off"))
+forward_unregister:value("Followme",translate("Followme"))
+forward_unregister:value("Custom", translate("Custom"))
+
+custom_forward_unregister = s:option(CallForwarding, "custom_forward_unregister", translate("Custom Destination / Time Profile"))
+custom_forward_unregister.datatype = "phonenumber"
+custom_forward_unregister.margin = "30px"
+custom_forward_unregister:depends("forward_unregister","Custom")
 for k,v in pairs(forward_extension_dst) do
-	call_forward_unregister:s1_value(v.index, v.name)
+	custom_forward_unregister:s1_value(v.index, v.name)
 end
 for k,v in pairs(forward_trunk_dst) do
-	call_forward_unregister:s1_depvalue(v.index, v.name)
+	custom_forward_unregister:s1_depvalue(v.index, v.name)
 end
-call_forward_unregister:s2_value("",translate("Alaways"))
+custom_forward_unregister:s2_value("",translate("Alaways"))
 for k,v in pairs(profile_time) do
 	if v.index and v.name then
-		call_forward_unregister:s2_value(v.index, v.name)
+		custom_forward_unregister:s2_value(v.index, v.name)
 	end
 end
 local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_unregister:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+custom_forward_unregister:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
 --@ end
 --@ Forward busy
-call_forward_busy = s:option(CallForwarding, "forward_busy", translate("Call Forward Busy").." / "..translate("Time Profile"))
-call_forward_busy:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
-call_forward_busy.datatype = "phonenumber"
-call_forward_busy:s1_value("Deactivate",translate("Off"))
+forward_busy = s:option(ListValue,"forward_busy", translate("Call Forward Busy"))
+forward_busy.default = "Deactivate"
+forward_busy:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
+forward_busy:value("Deactivate",translate("Off"))
+forward_busy:value("Followme",translate("Followme"))
+forward_busy:value("Custom", translate("Custom"))
+
+custom_forward_busy = s:option(CallForwarding, "custom_forward_busy", translate("Custom Destination / Time Profile"))
+custom_forward_busy.datatype = "phonenumber"
+custom_forward_busy.margin = "30px"
+custom_forward_busy:depends("forward_busy","Custom")
 for k,v in pairs(forward_extension_dst) do
-	call_forward_busy:s1_value(v.index, v.name)
+	custom_forward_busy:s1_value(v.index, v.name)
 end
 for k,v in pairs(forward_trunk_dst) do
-	call_forward_busy:s1_depvalue(v.index, v.name)
+	custom_forward_busy:s1_depvalue(v.index, v.name)
 end
-call_forward_busy:s2_value("",translate("Alaways"))
+custom_forward_busy:s2_value("",translate("Alaways"))
 for k,v in pairs(profile_time) do
 	if v.index and v.name then
-		call_forward_busy:s2_value(v.index, v.name)
+		custom_forward_busy:s2_value(v.index, v.name)
 	end
 end
 local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_busy:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+custom_forward_busy:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
 --@ end
 --@ Forward noreply
-call_forward_noreply = s:option(CallForwarding, "forward_noreply", translate("Call Forward No Reply").." / "..translate("Time Profile"))
-call_forward_noreply:depends("forward_uncondition","Deactivate")
-call_forward_noreply.datatype = "phonenumber"
-call_forward_noreply:s1_value("Deactivate",translate("Off"))
+forward_noreply = s:option(ListValue,"forward_noreply", translate("Call Forward No Reply"))
+forward_noreply.default = "Deactivate"
+forward_noreply:depends("forward_uncondition","Deactivate")
+forward_noreply:value("Deactivate",translate("Off"))
+forward_noreply:value("Followme",translate("Followme"))
+forward_noreply:value("Custom", translate("Custom"))
+
+custom_forward_noreply = s:option(CallForwarding, "custom_forward_noreply", translate("Custom Destination / Time Profile"))
+custom_forward_noreply.datatype = "phonenumber"
+custom_forward_noreply.margin = "30px"
+custom_forward_noreply:depends("forward_noreply","Custom")
 for k,v in pairs(forward_extension_dst) do
-	call_forward_noreply:s1_value(v.index, v.name)
+	custom_forward_noreply:s1_value(v.index, v.name)
 end
 for k,v in pairs(forward_trunk_dst) do
-	call_forward_noreply:s1_depvalue(v.index, v.name)
+	custom_forward_noreply:s1_depvalue(v.index, v.name)
 end
-call_forward_noreply:s2_value("",translate("Alaways"))
+custom_forward_noreply:s2_value("",translate("Alaways"))
 for k,v in pairs(profile_time) do
 	if v.index and v.name then
-		call_forward_noreply:s2_value(v.index, v.name)
+		custom_forward_noreply:s2_value(v.index, v.name)
 	end
 end
 local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_noreply:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
+custom_forward_noreply:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
 
 forward_noreply_timeout = s:option(Value,"forward_noreply_timeout",translate("Call Timeout(s)"))
 forward_noreply_timeout.default = "20"
 forward_noreply_timeout.margin = "30px"
 forward_noreply_timeout.datatype = "range(1,3600)"
 forward_noreply_timeout.rmempty = "false"
-for k,v in pairs(forward_extension_dst) do
-	forward_noreply_timeout:depends("forward_noreply",v.index)
-end
-for k,v in pairs(forward_trunk_dst) do
-	forward_noreply_timeout:depends("forward_noreply",v.index)
-end
+forward_noreply_timeout:depends("forward_noreply","Followme")
+forward_noreply_timeout:depends("forward_noreply","Custom")
 function forward_noreply_timeout.validate(self, value)
 	local tmp = m:get(arg[1],"forward_noreply")
 	if not tmp or tmp == "Deactivate" or tmp == "" then

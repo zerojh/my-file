@@ -303,8 +303,8 @@ if session:ready() then
 
 				local hangup_cause = bridge_session:getVariable("hangup_cause")
 				hangup_cause = ("" == hangup_cause) and bridge_session:hangupCause() or hangup_cause
-				freeswitch.consoleLog("debug", "hangup_cause: "..(hangup_cause or "UNKNOWN"))
-				if hangup_cause == "NORMAL_CLEARING" or hangup_cause == "SUCCESS" then
+				freeswitch.consoleLog("debug", "hangup_cause: "..hangup_cause)
+				if not (hangup_cause == "USER_BUSY" or hangup_cause == "TIMEOUT" or hangup_cause == "NO_ANSWER" or hangup_cause == "NO_USER_RESPONSE" or hangup_cause == "ALLOTTED_TIMEOUT") then
 					last_hangup_flag = true
 				end
 			end

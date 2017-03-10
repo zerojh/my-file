@@ -14,11 +14,11 @@ uci:check_cfg("profile_time")
 local current_section = arg[1]
 
 if arg[2] == "edit" then
-    m = Map("endpoint_sipphone",translate("Extension / SIP / Edit"))
+	m = Map("endpoint_sipphone",translate("Extension / SIP / Edit"))
 else
-    m = Map("endpoint_sipphone",translate("Extension / SIP / New"))
-    m.addnew = true
-    m.new_section = arg[1]
+	m = Map("endpoint_sipphone",translate("Extension / SIP / New"))
+	m.addnew = true
+	m.new_section = arg[1]
 end
 
 m.redirect = dsp.build_url("admin","extension","sip")
@@ -63,9 +63,9 @@ user.rmempty = false
 local str = ""
 --# sip_extension
 for k,v in pairs(profile) do
-    if  v.index ~= this_index and v.user then
-    	str = str..v.user.."&"
-    end
+	if  v.index ~= this_index and v.user then
+		str = str..v.user.."&"
+	end
 end
 --# fxs /fxo
 local fxso_profile = uci:get_all("endpoint_fxso") or {}
@@ -275,7 +275,6 @@ for k,v in pairs(profile_time) do
 end
 local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
 call_forward_noreply:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
-
 
 forward_noreply_timeout = s:option(Value,"forward_noreply_timeout",translate("Call Timeout(s)"))
 forward_noreply_timeout.default = "20"
