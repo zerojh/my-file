@@ -1,0 +1,34 @@
+
+msgid "Network / Mobile Storage"
+msgstr "网络 / 移动存储"
+
+msgid "File Name"
+msgstr "文件名"
+
+msgid "File Size"
+msgstr "文件大小"
+
+msgid "Modify Time"
+msgstr "修改时间"
+
+msgid "New Folder"
+msgstr "新建文件夹"
+
+msgid "Safe Popup"
+msgstr "安全弹出"
+
+msgid "Mobile Storage"
+msgstr "移动存储"
+
+msgid "Failed to check out the mobile storage device"
+msgstr "未检测到移动存储设备"
+
+msgid "Uploading..."
+msgstr "上传中..."
+
+msgid "Total Size:"
+msgstr "总空间: "
+
+msgid "Available Size:"
+msgstr "可用空间: "
+
