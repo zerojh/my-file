@@ -1,0 +1,148 @@
+
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config globals 'globals'
+	option ula_prefix 'fdca:5f92:f802::/48'
+
+config interface 'lan'
+	option ifname 'eth0'
+	option force_link '1'
+	option type 'bridge'
+	option proto 'static'
+	option ipaddr '192.168.11.1'
+	option netmask '255.255.255.0'
+	option ip6assign '60'
+	option disabled '0'
+
+# GPON special interface for connecting ONU
+config interface 'gpon'
+        option ifname 'eth1.2012'
+        option force_link '1'
+        option proto 'static'
+        option ipaddr '10.251.251.251'
+        option netmask '255.255.255.0'
+        option metric '12'
+	option disabled '1'
+
+config interface 'wan'
+	option ifname 'eth1'
+	option force_link '1'
+	option proto 'dhcp'
+	option metric '10'
+	option wan_switch 'on'
+
+config interface 'wan2'
+        option ifname 'ppp0'
+        option disabled '1'
+	option userdisabled '0'
+        option proto '3g'
+        option device '/dev/ttyUSB3'
+        option apn 'cmnet'
+        option dialnumber '*99#'
+        option service 'umts'
+        option metric '20'
+
+# VLAN switch0
+config switch 'switch0'
+	option enable_vlan '1'
+	option reset '1'
+
+# LAN PORT sections
+config switch_port
+	option port '0'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '1'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '2'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '3'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '4'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '5'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '6'
+	option pvid '1'
+	option tagged '2'
+
+config switch_port
+	option port '7'
+	option pvid '1'
+	option tagged '2'
+
+config interface 'eth0'
+	option ifname 'eth0'
+	option macaddr '00:c3:f1:33:45:25'
+
+config interface 'eth1'
+	option ifname 'eth1'
+	option macaddr '00:c3:f1:33:45:26'
+
+config interface 'gre1'
+	option ifname 'gre1'
+	option enabled '1'
+
+config interface 'gre2'
+	option ifname 'gre2'
+	option enabled '1'
+
+config interface 'gre3'
+	option ifname 'gre3'
+	option enabled '1'
+
+config interface 'gre4'
+	option ifname 'gre4'
+	option enabled '1'
+
+config interface 'gre5'
+	option ifname 'gre5'
+	option enabled '1'
+
+config interface 'gre6'
+	option ifname 'gre6'
+	option enabled '1'
+
+config interface 'gre7'
+	option ifname 'gre7'
+	option enabled '1'
+
+config interface 'gre8'
+	option ifname 'gre8'
+	option enabled '1'
+
+config interface 'gre9'
+	option ifname 'gre9'
+	option enabled '1'
+
+config interface 'gre10'
+	option ifname 'gre10'
+	option enabled '1'
+
+config rule autovpn
+	option lookup 'autovpn'
+	option mark '0x10000/0xf0000'
+	option priority '210'
+	option enabled '1'
+

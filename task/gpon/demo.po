@@ -1,0 +1,6 @@
+
+msgid "WAN/GPON Switch"
+msgstr "WAN/GPON 切换"
+
+msgid "WAN/GPON switch needs to take effect after reboot !"
+msgstr "WAN/GPON 切换需要重启后生效 !"

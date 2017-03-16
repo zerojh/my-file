@@ -1,6 +1,6 @@
 
-msgid "Network / Mobile Storage"
-msgstr "网络 / 移动存储"
+msgid "System / Mobile Storage"
+msgstr "系统 / 移动存储"
 
 msgid "File Name"
 msgstr "文件名"
@@ -32,3 +32,11 @@ msgstr "总空间: "
 msgid "Available Size:"
 msgstr "可用空间: "
 
+msgid "Please confirm whether to delete ."
+msgstr "请确认是否删除 ."
+
+msgid "Parent Directory"
+msgstr "父目录"
+
+msgid "All Files"
+msgstr "全部文件"

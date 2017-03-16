@@ -21,6 +21,7 @@ function index()
 	end
 	entry({"admin", "system", "tr069"},cbi("admin_system/tr069"),_("TR069"),13)
 	entry({"admin", "system", "cloud"},cbi("admin_system/cloud"),_("Cloud Service"),14)
+	entry({"admin","system","tfcard"},call("action_tfcard"),_("Mobile Storage"),15).leaf = true
 	entry({"admin","system","get_ap_list"},call("wifi_list"))
 	entry({"admin","system","upgrade_progress"},call("get_upgrade_progress"))
 	entry({"admin","system","reboot"},call("action_reboot"),_("Reboot"),20)
@@ -477,12 +478,8 @@ function user_add_edit(...)
 
 		uci:save("user")
 
-		luci.http.redirect(ds.build_url("admin","system","security"))
-		return
 	elseif luci.http.formvalue("cancel") then
 		--do nothing
-		luci.http.redirect(ds.build_url("admin","system","security"))
-		return
 	else
 		if arg[1] == "add" then
 			luci.template.render("admin_system/user_edit",{
@@ -1601,5 +1598,310 @@ function ltn12_popen(command)
 		fdi:close()
 		fdo:close()
 		nixio.exec("/bin/sh","-c",command)
+	end
+end
+
+function parse_dir(param)
+	local util = require "luci.util"
+	local ret_tb = {}
+
+	if param then
+		local ret_cmd = util.exec("ls -lahrS "..param)
+		local tmp_tb = util.split(ret_cmd,"\n") or {}
+
+		for _,v in ipairs(tmp_tb) do
+			if v then
+				local temp = {}
+				
+				local mode,size,mtime,name = v:match("^([a-zA-Z%-]+)%s*[0-9]+%s*[a-zA-Z]+%s*[a-zA-Z]+%s*([0-9a-zA-Z%.]+)%s*([a-zA-Z]+%s*[0-9]+%s*[0-9:]+)%s*(.+)")
+				if mode and size and mtime and name and name ~= ".." and name ~= "." then
+					temp.file_name = name
+					temp.mtime = mtime
+					temp.path = param.."/"..name
+					temp.file_type = mode:match("^.") == "d" and "directory" or "file"
+					if temp.file_type == "directory" then
+						temp.size = util.exec("du -h -d 0 "..temp.path.." | awk '{print$1}'"):match("(.+)\n$") or "-"
+					else
+						temp.size = size
+					end
+					
+					table.insert(ret_tb,temp)
+				end
+			end
+		end
+	end
+	
+	return ret_tb
+end
+
+function parse_tfcard_size(cmd_param)
+	local util = require "luci.util"
+	local ret_tsize = 0
+	local ret_rsize = 0
+
+	if cmd_param then
+		local ret_cmd = util.exec(cmd_param)
+		_,ret_tsize,_,ret_rsize,_,_ = ret_cmd:match("^([a-z%/0-9]+)%s*([a-zA-Z0-9%.]+)%s*([a-zA-Z0-9%.]+)%s*([a-zA-Z0-9%.]+)%s*([0-9%.%%]+)%s*([a-z%/]+)")
+	end
+
+	return ret_tsize,ret_rsize
+end
+
+function action_tfcard()
+	local fs = require "luci.fs"
+	local sys = require "luci.sys"
+	local util = require "luci.util"
+	local file_content = {}
+	local dev_file = "/dev/mmcblk0p1"
+	local root_path = "/mnt/mmcblk0p1"
+	local rel_path = ""
+	local abs_path = ""
+	local tmp_file = ""
+	local upload_file
+	local refresh_flag = true
+	
+	--@ get upload file
+	local fp
+	luci.http.setfilehandler(
+		function(meta, chunk, eof)
+			if not fp then
+				if meta and meta.name then
+					tmp_file = os.tmpname()
+					file_name = meta.file or "newfile"
+					fp = io.open(tmp_file,"w")
+				end
+			end
+			if chunk then
+				fp:write(chunk)
+			end
+			if eof and fp then
+				fp:close()
+				fp = nil
+				--@ mv to abs_path
+				local save_path = root_path..(luci.http.formvalue("cur_dir") or rel_path)
+				util.exec("mv "..tmp_file.." "..save_path.."/"..file_name)
+			end
+		end
+	)
+
+	rel_path = luci.http.formvalue("cur_dir") or ""
+	abs_path = root_path..rel_path
+	--@ download
+	if luci.http.formvalue("file_download") then
+		local download_filename = luci.http.formvalue("file_download") -- http formvalue
+		local content_type_list = {
+			ai="application/postscript",
+			aif="audio/x-aiff",
+			aifc="audio/x-aiff",
+			aiff="audio/x-aiff",
+			asc="text/plain",
+			au="audio/basic",
+			avi="video/x-msvideo",
+			bcpio="application/x-bcpio",
+			bin="application/octet-stream",
+			bmp="image/bmp",
+			cdf="application/x-netcdf",
+			class="application/octet-stream",
+			cpio="application/x-cpio",
+			cpt="application/mac-compactpro",
+			csh="application/x-csh",
+			css="text/css",
+			dcr="application/x-director",
+			dir="application/x-director",
+			djv="image/vnd.djvu",
+			djvu="image/vnd.djvu",
+			dll="application/octet-stream",
+			dms="application/octet-stream",
+			doc="application/msword",
+			dvi="application/x-dvi",
+			dxr="application/x-director",
+			eps="application/postscript",
+			etx="text/x-setext",
+			exe="application/octet-stream",
+			ez="application/andrew-inset",
+			gif="image/gif",
+			gtar="application/x-gtar",
+			hdf="application/x-hdf",
+			hqx="application/mac-binhex40",
+			htm="text/html",
+			html="text/html",
+			ice="x-conference/x-cooltalk",
+			ief="image/ief",
+			iges="model/iges",
+			igs="model/iges",
+			jpe="image/jpeg",
+			jpeg="image/jpeg",
+			jpg="image/jpeg",
+			js="application/x-javascript",
+			kar="audio/midi",
+			latex="application/x-latex",
+			lha="application/octet-stream",
+			lzh="application/octet-stream",
+			m3u="audio/x-mpegurl",
+			man="application/x-troff-man",
+			me="application/x-troff-me",
+			mesh="model/mesh",
+			mid="audio/midi",
+			midi="audio/midi",
+			mif="application/vnd.mif",
+			mov="video/quicktime",
+			movie="video/x-sgi-movie",
+			mp2="udio/mpeg",
+			mp3="audio/mpeg",
+			mpe="video/mpeg",
+			mpeg="video/mpeg",
+			mpg="video/mpeg",
+			mpga="audio/mpeg",
+			ms="application/x-troff-ms",
+			msh="model/mesh",
+			mxu="video/vnd.mpegurl",
+			nc="application/x-netcdf",
+			oda="application/oda",
+			pbm="image/x-portable-bitmap",
+			pdb="chemical/x-pdb",
+			pdf="application/pdf",
+			pgm="image/x-portable-graymap",
+			pgn="application/x-chess-pgn",
+			png="image/png",
+			pnm="image/x-portable-anymap",
+			ppm="image/x-portable-pixmap",
+			ppt="application/vnd.ms-powerpoint",
+			ps="application/postscript",
+			qt="video/quicktime",
+			ra="audio/x-realaudio",
+			ram="audio/x-pn-realaudio",
+			ras="image/x-cmu-raster",
+			rgb="image/x-rgb",
+			rm="audio/x-pn-realaudio",
+			roff="application/x-troff",
+			rpm="audio/x-pn-realaudio-plugin",
+			rtf="text/rtf",
+			rtx="text/richtext",
+			sgm="text/sgml",
+			sgml="text/sgml",
+			sh="application/x-sh",
+			shar="application/x-shar",
+			silo="model/mesh",
+			sit="application/x-stuffit",
+			skd="application/x-koan",
+			skm="application/x-koan",
+			skp="application/x-koan",
+			skt="application/x-koan",
+			smi="application/smil",
+			smil="application/smil",
+			snd="audio/basic",
+			so="application/octet-stream",
+			spl="application/x-futuresplash",
+			src="application/x-wais-source",
+			sv4cpio="application/x-sv4cpio",
+			sv4crc="application/x-sv4crc",
+			swf="application/x-shockwave-flash",
+			t="application/x-troff",
+			tar="application/x-tar",
+			tcl="application/x-tcl",
+			tex="application/x-tex",
+			texi="application/x-texinfo",
+			texinfo="application/x-texinfo",
+			tif="image/tiff",
+			tiff="image/tiff",
+			tr="application/x-troff",
+			tsv="text/tab-separated-values",
+			txt="text/plain",
+			ustar="application/x-ustar",
+			vcd="application/x-cdlink",
+			vrml="model/vrml",
+			wav="audio/x-wav",
+			wbmp="image/vnd.wap.wbmp",
+			wbxml="application/vnd.wap.wbxml",
+			wml="text/vnd.wap.wml",
+			wmlc="application/vnd.wap.wmlc",
+			wmls="text/vnd.wap.wmlscript",
+			wmlsc="application/vnd.wap.wmlscriptc",
+			wrl="model/vrml",
+			xbm="image/x-xbitmap",
+			xht="application/xhtml+xml",
+			xhtml="application/xhtml+xml",
+			xls="application/vnd.ms-excel",
+			xml="text/xml",
+			xpm="image/x-xpixmap",
+			xsl="text/xml",
+			xwd="image/x-xwindowdump",
+			xyz="chemical/x-xyz",
+			zip="application/zip"
+		}
+
+		refresh_flag = false
+		if download_filename then
+			local reader = luci.ltn12.source.file(io.open(abs_path.."/"..download_filename,"r"))
+			luci.http.header('Content-Disposition', 'attachment; filename="'..download_filename..'"')
+			local tmp = download_filename:match("%.([a-zA-Z0-9]+)$") or ""
+			local content_type = content_type_list[tmp] or "application/octet-stream"
+			
+			luci.http.prepare_content(content_type)
+			luci.ltn12.pump.all(reader, luci.http.write)
+			fs.unlink(download_filename)
+		end
+	--@ new folder
+	elseif luci.http.formvalue("folder_name") then
+		local folder_name = luci.http.formvalue("folder_name") -- http formvalue
+		
+		if folder_name then
+			util.exec("mkdir -p '"..abs_path.."/"..folder_name.."'")
+		end
+		
+	--@ file upload
+	elseif luci.http.formvalue("file_upload") then
+		--@ get upload file by trunk		
+		local upload_file = luci.http.formvalue("upload")
+		if upload_file and #upload_file > 0 then
+
+		end
+	--@ change directory
+	elseif luci.http.formvalue("change_dir") or luci.http.formvalue("goto_dir") then
+		--@ can not move out "/mnt/mmcblk0p1"
+		if luci.http.formvalue("change_dir") then
+			rel_path = rel_path.."/"..luci.http.formvalue("change_dir")
+		else
+			rel_path = luci.http.formvalue("goto_dir")
+		end
+		abs_path = root_path..rel_path
+		abs_path = util.exec("cd '"..abs_path.."' && pwd"):match("(.+)\n$")
+		if not abs_path or not abs_path:match("^"..root_path.."") then
+			rel_path = ""
+			abs_path = root_path
+		else
+			rel_path = abs_path:match("^"..root_path.."(.+)$")
+			rel_path = rel_path or ""
+		end
+	--@ file delete
+	elseif luci.http.formvalue("file_delete") then
+		local file_name = luci.http.formvalue("file_delete")
+
+		if file_name then
+			util.exec("rm -rf '"..abs_path.."/"..file_name.."'")
+		end
+	--@ safe_popup
+	elseif luci.http.formvalue("safe_popup") then
+		util.exec("umount "..root_path)
+		rel_dir = ""
+		abs_dir = root_path
+	else
+		--@ first in ,do nothing
+	end
+
+	if refresh_flag then
+		--@ render to html
+		file_content = parse_dir(abs_path)
+		local total_size,available_size = parse_tfcard_size("df -h | grep "..dev_file)
+		local _,max_size = parse_tfcard_size("df | grep "..dev_file)
+		max_size = (max_size or 0) * 1024
+		
+		luci.template.render("admin_system/tfcard",{
+			cur_dir = rel_path,
+			file_content = file_content,
+			total_size = total_size,
+			available_size = available_size,
+			max_size = max_size,
+		})
 	end
 end

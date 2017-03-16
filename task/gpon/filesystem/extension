@@ -1,0 +1,71 @@
+#!/bin/sh  /etc/rc.common
+
+echo "extension start..." > /dev/ttyS0
+
+#RESET=`cat /proc/reset_cause`
+
+#if [ "$RESET" == "0" ]; then
+#	echo "hard reset" > /dev/ttyS0
+#	mkfs.ext2 /dev/ramreserve
+#	mount -t ext2 /dev/ramreserve /ramlog
+#else
+#	echo "soft reset" > /dev/ttyS0
+#	mount -t ext2 /dev/ramreserve /ramlog
+#	touch /tmp/resetflag
+#	chmod 755 /tmp/resetflag
+#fi
+
+#echo "timer" > /sys/class/leds/uc100-run/trigger
+#echo "1000" > /sys/class/leds/uc100-run/delay_on
+#echo "1000" > /sys/class/leds/uc100-run/delay_off
+#/bin/updateimage check
+
+/bin/readdspkey
+
+ETH0MAC=`/bin/readmac`
+oui=
+nic=
+CFG_ETH0MAC=""
+CFG_ETH1MAC=""
+
+config_load network
+config_get CFG_ETH0MAC eth0 macaddr
+config_get CFG_ETH1MAC eth1 macaddr
+config_get CFG_CLONE_WANMAC wan clone_macaddr
+config_get CFG_CLONE_LANMAC lan clone_macaddr
+config_get CFG_WAN_SWITCH wan wan_switch
+
+oui=${ETH0MAC%:*:*:*}
+nic=${ETH0MAC#*:*:*:}
+ETH1MAC=$(printf "%06x" $((0x${nic//:/} + 1 & 0xffffff)) | sed 's/^\(.\{2\}\)\(.\{2\}\)\(.\{2\}\)/\1:\2:\3/')
+ETH1MAC=$oui:$ETH1MAC
+
+if [ -n "$CFG_CLONE_WANMAC" -a "$ETH1MAC" != "$CFG_CLONE_WANMAC" ]; then
+	ETH1MAC=$CFG_CLONE_WANMAC
+fi
+
+if [ -n "$CFG_CLONE_LANMAC" -a "$ETH0MAC" != "$CFG_CLONE_LANMAC" ]; then
+	ETH0MAC=$CFG_CLONE_LANMAC
+fi
+
+if [ -n "$ETH0MAC" -a "$ETH0MAC" != "$CFG_ETH0MAC" ]; then
+	uci set network.eth0.macaddr="$ETH0MAC"
+	uci commit
+elif [ -z "$ETH0MAC" ]; then
+	uci set network.eth0.macaddr="00:11:22:33:44:56"
+	uci commit
+fi
+
+if [ -n "$ETH1MAC" -a "$ETH1MAC" != "$CFG_ETH1MAC" ]; then
+	uci set network.eth1.macaddr="$ETH1MAC"
+	uci commit
+elif [ -z "$ETH1MAC" ]; then
+	uci set network.eth1.macaddr="00:11:22:33:44:56"
+	uci commit
+fi
+
+if [ -n "$CFG_WAN_SWITCH" ] && [ "$CFG_WAN_SWITCH" = "on" ]; then
+	echo "yes" > /proc/wan_switch
+elif [ -n "$CFG_WAN_SWITCH" ] && [ "$CFG_WAN_SWITCH" = "off" ]; then
+	echo "no" > /proc/wan_switch
+fi
