@@ -17,11 +17,8 @@ function index()
 	entry({"admin","network","wan","wan_config"},cbi("admin_network/wan_config_edit"),_("WAN Config"),10)
 	entry({"admin","network","wan","wan_subinterface_config"},call("action_wan_subinterface"),_("WAN Subinterface Config"),20)
 	entry({"admin","network","wan","wan_subinterface_config","edit"},cbi("admin_network/wan_subinterface_edit"),nil,20).leaf = true
-	if fs.access("/proc/gpon_exist") and util.exec("cat /proc/gpon_exist"):match("1") then
-		entry({"admin","network","wan","switch"},cbi("admin_network/wan_switch"),_("WAN/GPON Switch"),30)
-		if fs.access("/proc/wan_at") and util.exec("cat /proc/wan_at"):match("4") then --@ Check Pon exist
-			entry({"admin","network","wan","gpon"},call("action_gpon"),_("GPON"),40)
-		end
+	if fs.access("/proc/wan_at") and util.exec("cat /proc/wan_at"):match("4") then --@ Check Pon exist
+		entry({"admin","network","wan","gpon"},call("action_gpon"),_("GPON"),30)
 	end
 
 	--# LAN / VLAN

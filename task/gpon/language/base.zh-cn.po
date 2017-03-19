@@ -1,0 +1,6019 @@
+
+msgid "-- Additional Field --"
+msgstr "-- 更多选项 --"
+
+msgid "-- Please choose --"
+msgstr "-- 请选择 --"
+
+msgid "-- custom --"
+msgstr "-- 自定义 --"
+
+msgid "All"
+msgstr "所有"
+
+msgid "Action"
+msgstr "动作"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Address"
+msgstr "地址"
+
+msgid "Advanced Settings"
+msgstr "高级设置"
+
+msgid "Alert"
+msgstr "警戒"
+
+msgid "Any"
+msgstr "任意"
+
+msgid "auto"
+msgstr "自动"
+
+msgid "Auto"
+msgstr "自动"
+
+msgid "Adaptive"
+msgstr "自适应"
+
+msgid "Backup/Restore/Upgrade"
+msgstr "备份/恢复/升级"
+
+msgid "System / Backup/Restore"
+msgstr "系统 / 备份/恢复"
+
+msgid "System / Upgrade"
+msgstr "系统 / 升级"
+
+msgid "Choose backup files"
+msgstr "选择要备份的文件"
+
+msgid "Current"
+msgstr "当前"
+
+msgid "Choose backup files and download"
+msgstr "选择要备份的配置并下载"
+
+msgid "Choose firmware file to upgrade"
+msgstr "选择要进行升级的固件文件"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Upgrade"
+msgstr "升级"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Applying changes"
+msgstr "正在应用更改"
+
+msgid "Auto Refresh"
+msgstr "自动刷新"
+
+msgid "Available"
+msgstr "可用"
+
+msgid "Average:"
+msgstr "平均:"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Backup / Flash Firmware"
+msgstr "备份/升级"
+
+msgid "Backup / Restore"
+msgstr "备份/恢复"
+
+msgid "Backup file list"
+msgstr "文件备份列表"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Status / CDRs"
+msgstr "状态 / 话单"
+
+msgid "CDRs"
+msgstr "话单"
+
+msgid "Changes applied."
+msgstr "更改已应用"
+
+msgid "Check"
+msgstr "检查"
+
+msgid "Codec"
+msgstr "编解码"
+
+msgid "Configuration"
+msgstr "配置"
+
+msgid "Configuration applied."
+msgstr "配置已应用"
+
+msgid "Configuration files will be kept."
+msgstr "配置文件将被保留。"
+
+msgid "Confirmation"
+msgstr "确认"
+
+msgid "Connect"
+msgstr "连接"
+
+msgid "Connecting..."
+msgstr "正在连接..."
+
+msgid "Disconnecting..."
+msgstr "正在断开..."
+
+msgid "Disconnect"
+msgstr "断开"
+
+msgid "Connected"
+msgstr "已连接"
+
+msgid "Connection Limit"
+msgstr "连接数限制"
+
+msgid "Connections"
+msgstr "链接"
+
+msgid "Country"
+msgstr "国家"
+
+msgid "Critical"
+msgstr "致命错误"
+
+msgid "Status / Current Call"
+msgstr "状态 / 当前呼叫"
+
+msgid "Current Call"
+msgstr "当前呼叫"
+
+msgid "Debug"
+msgstr "调试"
+
+msgid "Default"
+msgstr "缺省"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Destination"
+msgstr "目的地"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "Device Configuration"
+msgstr "设备配置"
+
+msgid "Device Model"
+msgstr "设备型号"
+
+msgid "Device Name"
+msgstr "设备名称"
+
+msgid "Device SN"
+msgstr "设备序列号"
+
+msgid "Hardware ID"
+msgstr "硬件ID"
+
+msgid "Hardware Version"
+msgstr "硬件版本"
+
+msgid "Diagnostics"
+msgstr "诊断"
+
+msgid "Directory"
+msgstr "目录"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Emergency"
+msgstr "紧急"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Enable builtin NTP server"
+msgstr "开启内置时间同步服务器"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Expires"
+msgstr "有效期"
+
+msgid "Expiration"
+msgstr "失效时间"
+
+msgid "FAX"
+msgstr "传真"
+
+msgid "File"
+msgstr "文件"
+
+msgid "Filesystem"
+msgstr "文件系统"
+
+msgid "Filter"
+msgstr "过滤"
+
+msgid "Filter Rules"
+msgstr "过滤规则"
+
+msgid "Filter Rules Control"
+msgstr "过滤规则控制"
+
+msgid "Finish"
+msgstr "完成"
+
+msgid "Firmware Version"
+msgstr "固件版本"
+
+msgid "Gateway"
+msgstr "网关"
+
+msgid "Gateway ports"
+msgstr "网关端口"
+
+msgid "Go to apply..."
+msgstr "转到 配置应用 页面..."
+
+msgid "Go to password configuration..."
+msgstr "转到 密码配置 页面..."
+
+msgid "General"
+msgstr "基本设置"
+
+msgid "General Setup"
+msgstr "基本设置"
+
+msgid "Generate archive"
+msgstr "生成备份"
+
+msgid "Hostname"
+msgstr "主机名"
+
+msgid "Hostnames"
+msgstr "主机名"
+
+msgid "Index"
+msgstr "编号"
+
+msgid "IP Address"
+msgstr "IP地址"
+
+msgid "IPv4 Address"
+msgstr "IPv4地址"
+
+msgid "IPv4 Gateway"
+msgstr "IPv4网关"
+
+msgid "IPv4 Netmask"
+msgstr "IPv4子网掩码"
+
+msgid "Info"
+msgstr "信息"
+
+msgid "Java Script required!"
+msgstr "需要Java Script！"
+
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Load"
+msgstr "负载"
+
+msgid "Loading"
+msgstr "加载中"
+
+msgid "Local Time"
+msgstr "本地时间"
+
+msgid "Log"
+msgstr "日志"
+
+msgid "Enable Syslog"
+msgstr "启用Syslog"
+
+msgid "Log Server IP Address"
+msgstr "日志服务器"
+
+msgid "Log Server Port"
+msgstr "日志服务器端口"
+
+msgid "Log Level"
+msgstr "日志记录等级"
+
+msgid "Service Log Level"
+msgstr "服务运行日志级别"
+
+msgid "Level"
+msgstr "级别"
+
+msgid "Log queries"
+msgstr "日志查询"
+
+msgid "Logging"
+msgstr "日志"
+
+msgid "Login"
+msgstr "登录"
+
+msgid "Logout"
+msgstr "退出"
+
+msgid "Manipulation"
+msgstr "号码变换"
+
+msgid "MAC Address"
+msgstr "MAC地址"
+
+msgid "Memory"
+msgstr "内存"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "Move down"
+msgstr "下移"
+
+msgid "Move up"
+msgstr "上移"
+
+msgid "Notice"
+msgstr "注意"
+
+msgid "NTP server candidates"
+msgstr "候选时间同步服务器"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Netmask"
+msgstr "子网掩码"
+
+msgid "Network"
+msgstr "网络"
+
+msgid "Network / Diagnostics"
+msgstr "网络 / 诊断"
+
+msgid "Network / QoS"
+msgstr "网络 / QoS"
+
+msgid "Network / DDNS"
+msgstr "网络 / 动态域名"
+
+msgid "Network / ALG"
+msgstr "网络 / ALG"
+
+msgid "Network / Net U-Disk"
+msgstr "网络 / 网络U盘"
+
+msgid "New"
+msgstr "新建"
+
+msgid "Batch New"
+msgstr "批量新建"
+
+msgid "New Password"
+msgstr "新密码"
+
+msgid "Default password not change !"
+msgstr "未修改默认密码 !"
+
+msgid "Normal"
+msgstr "正常"
+
+msgid "Not Found"
+msgstr "未找到"
+
+msgid "Number"
+msgstr "号码"
+
+msgid "On"
+msgstr "开启"
+
+msgid "on"
+msgstr "开启"
+
+msgid "ON"
+msgstr "开启"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "off"
+msgstr "关闭"
+
+msgid "OFF"
+msgstr "关闭"
+
+msgid "Overview"
+msgstr "总览"
+
+msgid "Packets"
+msgstr "数据包"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Perform reboot"
+msgstr "执行重启"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Performance"
+msgstr "性能"
+
+msgid "Pkts."
+msgstr "数据包"
+
+msgid "Please wait: Device rebooting..."
+msgstr "请稍等：设备重启中..."
+
+msgid "Policy"
+msgstr "策略"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Port %d"
+msgstr "端口 %d"
+
+msgid "Port 0 Extension/DID/Autodial Num"
+msgstr "端口 0 分机号码/DID/代拨号码"
+
+msgid "Port 1 Extension/DID/Autodial Num"
+msgstr "端口 1 分机号码/DID/代拨号码"
+
+msgid "Port 0 Extension/Autodial Num"
+msgstr "端口 0 分机号码/代拨号码"
+
+msgid "Port 1 Extension/Autodial Num"
+msgstr "端口 1 分机号码/代拨号码"
+
+msgid "Port 0 Extension/DID"
+msgstr "端口 0 分机号码/DID"
+
+msgid "Port 1 Extension/DID"
+msgstr "端口 1 分机号码/DID"
+
+msgid "Port status:"
+msgstr "端口状态："
+
+msgid "Proceed"
+msgstr "执行"
+
+msgid "Processes"
+msgstr "系统进程"
+
+msgid "Profile"
+msgstr "配置"
+
+msgid "Prot."
+msgstr "协议"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "RX"
+msgstr "接收"
+
+msgid "RX Rate"
+msgstr "接收速率"
+
+msgid "Really switch protocol?"
+msgstr "确定要切换协议？"
+
+msgid "Reboot"
+msgstr "重启"
+
+msgid "Receive"
+msgstr "接收"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Reset to defaults"
+msgstr "恢复到缺省设置"
+
+msgid "Resolve file"
+msgstr "解析文件"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Restore backup"
+msgstr "恢复配置"
+
+msgid "Revert"
+msgstr "放弃"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Setting"
+msgstr "设置"
+
+msgid "Security"
+msgstr "安全"
+
+msgid "Security / Access Control"
+msgstr "安全 / 访问控制"
+
+msgid "Security / Firewall"
+msgstr "安全 / 防火墙"
+
+msgid "Security / URL Filter / Edit"
+msgstr "安全 / URL过滤 / 编辑"
+
+msgid "Security / URL Filter / New"
+msgstr "安全 / URL过滤 / 新建"
+
+msgid "Security / MAC Filter"
+msgstr "安全 / MAC过滤"
+
+msgid "User Manager"
+msgstr "用户管理"
+
+msgid "Services"
+msgstr "服务"
+
+msgid "Signal"
+msgstr "信号"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Skip"
+msgstr "跳过"
+
+msgid "Some fields are invalid, cannot save values!"
+msgstr "一些项目的值无效，无法保存 !"
+
+msgid "Sorry, the object you requested was not found."
+msgstr "对不起，请求的目标未找到。"
+
+msgid "Sorry, the server encountered an unexpected error."
+msgstr "对不起，服务器遇到未知错误。"
+
+msgid "Sort"
+msgstr "排序"
+
+msgid "Source"
+msgstr "源地址"
+
+msgid "Custom Source"
+msgstr "自定义来源"
+
+msgid "Start"
+msgstr "开始"
+
+msgid "Static address"
+msgstr "静态地址"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Status / Network"
+msgstr "状态 / 网络"
+
+msgid "Status / SIP"
+msgstr "状态 / SIP"
+
+msgid "Status / FXS"
+msgstr "状态 / FXS"
+
+msgid "Stop"
+msgstr "关闭"
+
+msgid "Submit"
+msgstr "提交"
+
+msgid "Switch protocol"
+msgstr "切换协议"
+
+msgid "Sync with browser"
+msgstr "同步浏览器时间"
+
+msgid "Synchronizing..."
+msgstr "同步中..."
+
+msgid "System"
+msgstr "系统"
+
+msgid "System Log"
+msgstr "系统日志"
+
+msgid "System Properties"
+msgstr "系统属性"
+
+msgid "Tone"
+msgstr "信号音"
+
+msgid "TS"
+msgstr "时隙"
+
+msgid "TX"
+msgstr "发送"
+
+msgid "TX Rate"
+msgstr "发送速率"
+
+msgid "The following changes have been committed"
+msgstr "以下更改已提交"
+
+msgid "The following changes have been reverted"
+msgstr "以下更改已放弃"
+
+msgid "This device is still the default password. Please change the defaut password to protect the web interface !"
+msgstr "尚未修改默认密码。请修改以便保护设备安全。"
+
+msgid "This section contains no values yet"
+msgstr "尚无任何配置"
+
+msgid "This section contains no records yet"
+msgstr "尚无任何记录"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Time Synchronization"
+msgstr "时间同步"
+
+msgid "Time Synchronization is not configured yet."
+msgstr "尚未配置时间同步"
+
+msgid "Timezone"
+msgstr "时区"
+
+msgid "Timezone Offset"
+msgstr "时区偏移"
+
+msgid "Timezone Name"
+msgstr "时区名称"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Unknown Error, password not changed!"
+msgstr "未知错误，密码未更改！"
+
+msgid "Unmanaged"
+msgstr "不配置协议"
+
+msgid "Unapplyed Changes"
+msgstr "未应用的配置"
+
+msgid "Restore"
+msgstr "恢复"
+
+msgid "Uploaded File"
+msgstr "上传的文件"
+
+msgid "Uptime"
+msgstr "运行时间"
+
+msgid "Use custom DNS server"
+msgstr "使用自定义的DNS服务器"
+
+msgid "Username"
+msgstr "用户名"
+
+msgid "Auth Username"
+msgstr "认证用户名"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Waiting for changes to be applied..."
+msgstr "正在应用更改..."
+
+msgid "Waiting for command to complete..."
+msgstr "正在执行命令..."
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Warning: There are unsaved changes that will be lost while rebooting!"
+msgstr "警告: 有尚未保存的更改，重启将丢失!"
+
+msgid "You must enable Java Script in your browser or Web Configure will not work properly."
+msgstr "Web配置的正常运行需要开启浏览器的Java Script支持。"
+
+msgid "SIP Profile"
+msgstr "SIP配置"
+
+msgid "SIP Profile / Edit"
+msgstr "SIP配置 / 编辑"
+
+msgid "SIP Profile / New"
+msgstr "SIP配置 / 新建"
+
+msgid "Transport"
+msgstr "协议"
+
+msgid "Reg"
+msgstr "注册"
+
+msgid "Register"
+msgstr "注册"
+
+msgid "Local Listening Port"
+msgstr "本地监听端口"
+
+msgid "Listening Port"
+msgstr "监听端口"
+
+msgid "Expire Sec."
+msgstr "有效期(秒)"
+
+msgid "Expire Seconds"
+msgstr "有效期(秒)"
+
+msgid "Retry Seconds"
+msgstr "重试周期(秒)"
+
+msgid "Max Proceeding"
+msgstr "最大接续并发"
+
+msgid "Codec Priority"
+msgstr "编解码优先级"
+
+msgid "Incodec Profile"
+msgstr "呼入编解码配置"
+
+msgid "Inbound Codec Profile"
+msgstr "呼入编解码配置"
+
+msgid "Outcodec Profile"
+msgstr "呼出编解码配置"
+
+msgid "Outbound Codec Profile"
+msgstr "呼出编解码配置"
+
+msgid "FAX Profile"
+msgstr "传真配置"
+
+msgid "Anonymous"
+msgstr "匿名"
+
+msgid "Hold Music"
+msgstr "呼叫保持音"
+
+msgid "Bypass Media"
+msgstr "不转发RTP"
+
+msgid "FXS Profile"
+msgstr "FXS 配置"
+
+msgid "FXS Profile / Edit"
+msgstr "FXS 配置 / 编辑"
+
+msgid "FXS Profile / New"
+msgstr "FXS 配置 / 新建"
+
+msgid "FXO Profile"
+msgstr "FXO 配置"
+
+msgid "FXO Profile / Edit"
+msgstr "FXO 配置 / 编辑"
+
+msgid "FXO Profile / New"
+msgstr "FXO 配置 / 新建"
+
+msgid "Tone Group"
+msgstr "铃音标准"
+
+msgid "USA"
+msgstr "美国"
+
+msgid "Austria"
+msgstr "奥地利"
+
+msgid "Belgium"
+msgstr "比利时"
+
+msgid "Finland"
+msgstr "芬兰"
+
+msgid "France"
+msgstr "法国"
+
+msgid "Germany"
+msgstr "德国"
+
+msgid "Greece"
+msgstr "希腊"
+
+msgid "Italy"
+msgstr "意大利"
+
+msgid "Japan"
+msgstr "日本"
+
+msgid "Norway"
+msgstr "挪威"
+
+msgid "Spain"
+msgstr "西班牙"
+
+msgid "Sweden"
+msgstr "瑞典"
+
+msgid "UK"
+msgstr "英国"
+
+msgid "Australia"
+msgstr "澳大利亚"
+
+msgid "China"
+msgstr "中国"
+
+msgid "Chinese"
+msgstr "中文"
+
+msgid "Hongkong"
+msgstr "香港"
+
+msgid "Denmark"
+msgstr "丹麦"
+
+msgid "Russia"
+msgstr "俄罗斯"
+
+msgid "Poland"
+msgstr "波兰"
+
+msgid "Portugal"
+msgstr "葡萄牙"
+
+msgid "Turkey"
+msgstr "土耳其"
+
+msgid "Dutch"
+msgstr "荷兰"
+
+msgid "Philippines"
+msgstr "菲律宾"
+
+msgid "South Africa"
+msgid "南非"
+
+msgid "Digit Timeout"
+msgstr "拨号超时"
+
+msgid "Digit Timeout(s)"
+msgstr "拨号超时(秒)"
+
+msgid "Ring Timeout(s)"
+msgstr "振铃超时(秒)"
+
+msgid "No Answer Timeout(s)"
+msgstr "无应答超时(秒)"
+
+msgid "Max Len"
+msgstr "最大长度"
+
+msgid "Max Length"
+msgstr "最大长度"
+
+msgid "Call Waiting"
+msgstr "呼叫等待"
+
+msgid "Enable Caller ID"
+msgstr "启用主叫号码"
+
+msgid "Delay Offhook(s)"
+msgstr "延时摘机(秒)"
+
+msgid "Dial Timeout(s)"
+msgstr "拨号音超时(秒)"
+
+msgid "Global impedance"
+msgstr "通用配置"
+
+msgid "Send Polarity Reverse"
+msgstr "发送极性反转"
+
+msgid "Detect Polarity Reverse"
+msgstr "检测极性反转"
+
+msgid "Polarity Delay"
+msgstr "应答反转及挂断反转最小间隔"
+
+msgid "Polarity Caller ID"
+msgstr "反转时是否获取主叫号码"
+
+msgid "Hot Line"
+msgstr "热线"
+
+msgid "Hot Line Number"
+msgstr "热线号码"
+
+msgid "Hot Line Delay"
+msgstr "热线延时"
+
+msgid "Immediately"
+msgstr "立即"
+
+msgid "%d Second"
+msgstr "%d秒"
+
+msgid "Delay"
+msgstr "延时"
+
+msgid "Rxgain"
+msgstr "接收增益"
+
+msgid "Txgain"
+msgstr "发送增益"
+
+msgid "Rxgain/Txgain"
+msgstr "接收/发送 增益"
+
+msgid "GSM/CDMA Profile"
+msgstr "GSM/CDMA配置"
+
+msgid "GSM/CDMA Profile / Edit"
+msgstr "GSM/CDMA配置 / 编辑"
+
+msgid "GSM/CDMA Profile / New"
+msgstr "GSM/CDMA配置 / 新建"
+
+msgid "GSM Codec"
+msgstr "GSM语音编码"
+
+msgid "Band Type"
+msgstr "频段"
+
+msgid "Carrier"
+msgstr "运营商"
+
+msgid "Reactive when register fail"
+msgstr "注册失败时重新激活"
+
+msgid "CMCC"
+msgstr "中国移动"
+
+msgid "CUC"
+msgstr "中国联通"
+
+msgid "CT"
+msgstr "中国电信"
+
+msgid "SIM Card Lock"
+msgstr "SIM卡锁定"
+
+msgid "PIN Code"
+msgstr "PIN码"
+
+msgid "Call Forwarding"
+msgstr "呼叫转移"
+
+msgid "Codec Profile"
+msgstr "编解码配置"
+
+msgid "VoIP Config / Codec Profile"
+msgstr "VoIP配置 / 编解码配置"
+
+msgid "VoIP Config / Codec Profile / Edit"
+msgstr "VoIP配置 / 编解码配置 / 编辑"
+
+msgid "VoIP Config / Codec Profile / New"
+msgstr "VoIP配置 / 编解码配置 / 新建"
+
+msgid "Min Ptime"
+msgstr "最小打包时长"
+
+msgid "Max Ptime"
+msgstr "最大打包时长"
+
+msgid "FAX Profile / Edit"
+msgstr "传真参数配置 / 编辑"
+
+msgid "FAX Profile / New"
+msgstr "传真参数配置 / 新建"
+
+msgid "FAX Type"
+msgstr "传真类型"
+
+msgid "FAX Param"
+msgstr "传真参数"
+
+msgid "Number Profile"
+msgstr "号码配置"
+
+msgid "VoIP Config / Number Profile"
+msgstr "VoIP配置 / 号码配置"
+
+msgid "VoIP Config / Number Profile / Edit"
+msgstr "VoIP配置 / 号码配置 / 编辑"
+
+msgid "VoIP Config / Number Profile / New"
+msgstr "VoIP配置 / 号码配置 / 新建"
+
+msgid "Caller"
+msgstr "主叫"
+
+msgid "Called"
+msgstr "被叫"
+
+msgid "Caller Prefix"
+msgstr "主叫前缀"
+
+msgid "Called Prefix"
+msgstr "被叫前缀"
+
+msgid "More"
+msgstr "更多"
+
+msgid "Length"
+msgstr "长度"
+
+msgid "Property"
+msgstr "属性"
+
+msgid "Area"
+msgstr "地区"
+
+msgid "Internationl"
+msgstr "国际号码"
+
+msgid "National"
+msgstr "国内号码"
+
+msgid "Network Special"
+msgstr "网络指定"
+
+msgid "Subscriber"
+msgstr "用户号码"
+
+msgid "Abbreviated"
+msgstr "缩位号码"
+
+msgid "Time Profile"
+msgstr "时间配置"
+
+msgid "VoIP Config / Time Profile"
+msgstr "VoIP配置 / 时间配置"
+
+msgid "VoIP Config / Time Profile / Edit"
+msgstr "VoIP配置 / 时间配置 / 编辑"
+
+msgid "VoIP Config / Time Profile / New"
+msgstr "VoIP配置 / 时间配置 / 新建"
+
+msgid "Start Date"
+msgstr "起始日期"
+
+msgid "Start Date - End Date"
+msgstr "起始日期 - 结束日期"
+
+msgid "End Date"
+msgstr "结束日期"
+
+msgid "Weekday"
+msgstr "周几"
+
+msgid "Mon"
+msgstr "一"
+
+msgid "Tue"
+msgstr "二"
+
+msgid "Wed"
+msgstr "三"
+
+msgid "Thu"
+msgstr "四"
+
+msgid "Fri"
+msgstr "五"
+
+msgid "Sat"
+msgstr "六"
+
+msgid "Sun"
+msgstr "日"
+
+msgid "Start Time(hh:mm)"
+msgstr "起始时间(小时:分)"
+
+msgid "Start Time : End Time"
+msgstr "起始时间 : 结束时间"
+
+msgid "End Time"
+msgstr "结束时间"
+
+msgid "End Time(hh:mm)"
+msgstr "结束时间(小时:分)"
+
+msgid "Manipulation Profile"
+msgstr "号码变换配置"
+
+msgid "VoIP Config / Manipulation Profile"
+msgstr "VoIP配置 / 号码变换配置"
+
+msgid "VoIP Config / Manipulation Profile / Edit"
+msgstr "VoIP配置 / 号码变换配置 / 编辑"
+
+msgid "VoIP Config / Manipulation Profile / New"
+msgstr "VoIP配置 / 号码变换配置 / 新建"
+
+msgid "Delete Prefix Count"
+msgstr "删除前缀位数"
+
+msgid "Delete Suffix Count"
+msgstr "删除后缀位数"
+
+msgid "Add Prefix"
+msgstr "添加前缀"
+
+msgid "Add Suffix"
+msgstr "添加后缀"
+
+msgid "Replace by"
+msgstr "替换为"
+
+msgid "Tone Profile"
+msgstr "铃音配置"
+
+msgid "Endpoint"
+msgstr "端点"
+
+msgid "Hardware"
+msgstr "硬件"
+
+msgid "Call Control"
+msgstr "呼叫控制"
+
+msgid "Call Control / Setting"
+msgstr "呼叫控制 / 设置"
+
+msgid "Call Control / Route"
+msgstr "呼叫控制 / 路由"
+
+msgid "Feature"
+msgstr "功能"
+
+msgid "Feature Code"
+msgstr "特性码"
+
+msgid "Route"
+msgstr "路由"
+
+msgid "Ring Group"
+msgstr "振铃组"
+
+msgid "Flow Control"
+msgstr "流量控制"
+
+msgid "SMS"
+msgstr "短信"
+
+msgid "SMS Center Number"
+msgstr "短信中心号码"
+
+msgid "Condition"
+msgstr "条件"
+
+msgid "Source"
+msgstr "来源地"
+
+msgid "Busy"
+msgstr "用户忙"
+
+msgid "Wait while destination busy"
+msgstr "用户忙时是否等待"
+
+msgid "Timeout"
+msgstr "超时"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "Timeout Len(s)"
+msgstr "超时时长(秒)"
+
+msgid "Other Condition Code"
+msgstr "其它条件代码"
+
+msgid "Tone"
+msgstr "提示音"
+
+msgid "Callfail Tone"
+msgstr "呼叫失败音"
+
+msgid "Progress Tone"
+msgstr "呼叫接续音"
+
+msgid "Waiting Tone"
+msgstr "呼叫等待音"
+
+msgid "SIP Trunk"
+msgstr "SIP中继"
+
+msgid "SIP Trunk / Edit"
+msgstr "SIP中继 / 编辑"
+
+msgid "SIP Trunk / New"
+msgstr "SIP中继 / 新建"
+
+msgid "SIP Extension"
+msgstr "SIP分机"
+
+msgid "SIP Extension / Edit"
+msgstr "SIP分机 / 编辑"
+
+msgid "SIP Extension / New"
+msgstr "SIP分机 / 新建"
+
+msgid "SIP Extension / Batch New"
+msgstr "SIP分机 / 批量新建"
+
+msgid "FXS Extension"
+msgstr "FXS分机"
+
+msgid "FXS Extension / Edit"
+msgstr "FXS分机 / 编辑"
+
+msgid "FXS Extension / New"
+msgstr "FXS分机 / 新建"
+
+msgid "FXO Trunk"
+msgstr "FXO中继"
+
+msgid "FXO Trunk / Edit"
+msgstr "FXO中继 / 编辑"
+
+msgid "FXO Trunk / New"
+msgstr "FXO中继 / 新建"
+
+msgid "CDMA Trunk"
+msgstr "CDMA中继"
+
+msgid "GSM Trunk"
+msgstr "GSM中继"
+
+msgid "GSM Trunk / Edit"
+msgstr "GSM中继 / 编辑"
+
+msgid "CDMA Trunk / New"
+msgstr "CDMA中继 / 新建"
+
+msgid "Realm"
+msgstr "地址"
+
+msgid "Outbound Proxy"
+msgstr "外出代理服务器"
+
+msgid "Outbound Proxy Port"
+msgstr "外出代理服务器端口"
+
+msgid "Call Control / Feature Code"
+msgstr "呼叫控制 / 特性码"
+
+msgid "Call Control / Feature Code / Edit"
+msgstr "呼叫控制 / 特性码 / 编辑"
+
+msgid "Call Control / Route"
+msgstr "呼叫控制 / 路由"
+
+msgid "Call Control / Route / Edit"
+msgstr "呼叫控制 / 路由 / 编辑"
+
+msgid "Call Control / Route / New"
+msgstr "呼叫控制 / 路由 / 新建"
+
+msgid "Failover Action"
+msgstr "呼叫失败动作"
+
+msgid "Destination for Failover Action"
+msgstr "呼叫失败目的地"
+
+msgid "Manipulation or Failover Action"
+msgstr "呼叫失败号码变换"
+
+msgid "One or more value has been changed, Do you really want to leave without save ?"
+msgstr "一个或多个值已经修改，确定放弃修改吗？"
+
+msgid "One or more fields contain invalid values!"
+msgstr "一个或多个选项值有误！"
+
+msgid "One or more required fields have no value!"
+msgstr "一个或多个必选项值为空！"
+
+msgid "Configuration / Apply"
+msgstr "设置 / 应用"
+
+msgid "Configuration / Changes"
+msgstr "设置 / 修改"
+
+msgid "Configuration / Revert"
+msgstr "设置 / 重置"
+
+msgid "Network Capture"
+msgstr "网络抓包"
+
+msgid "Collecting data..."
+msgstr "正在采集数据..."
+
+msgid "Network Capture Tool Missed!"
+msgstr "网络抓包工具缺失!"
+
+msgid "You must upload Network Capture Tool in the system."
+msgstr "必须先在系统中安装网络抓包工具."
+
+msgid "Go to system upgrade..."
+msgstr "转到系统升级页..."
+
+msgid "Network Utilities"
+msgstr "网络工具"
+
+msgid "Slot"
+msgstr "槽位"
+
+msgid "Src"
+msgstr "来源"
+
+msgid "Dest"
+msgstr "目的地"
+
+msgid "Start Time"
+msgstr "开始时间"
+
+msgid "Answer Time"
+msgstr "应答时间"
+
+msgid "State"
+msgstr "状态"
+
+msgid "Duration"
+msgstr "时长"
+
+msgid "Listening Addr"
+msgstr "监听地址"
+
+msgid "Call In(F/T)"
+msgstr "呼入统计(F/T)"
+
+msgid "Call Out(F/T)"
+msgstr "呼出统计(F/T)"
+
+msgid "Heartbeat"
+msgstr "心跳"
+
+msgid "Waiting for response from system..."
+msgstr "等待系统响应..."
+
+msgid "Config name can not be empty, less than 32 characters"
+msgstr "配置名不能为空, 最多32个字符"
+
+msgid "IPv4 address, Example: 172.16.17.18, not same with existing"
+msgstr "IPv4地址, 例如:172.16.17.18, 不能与已配置的冲突"
+
+msgid "IPv4 address, Example: 172.16.17.18"
+msgstr "IPv4地址, 例如:172.16.17.18"
+
+msgid "Hour and minute , Example: 12:10"
+msgstr "小时和分钟, 例如: 12:10"
+
+msgid "Positive (unsigned) number and doesn't contain decimals(.)"
+msgstr "不含小数点的无符号正数"
+
+msgid "A number doesn't contain decimals(.)"
+msgstr "不包含小数点的数字"
+
+msgid "One or more number length separated by a comma(,), or range by dash(-), Example: 8,10-12, totally less than 32 characters."
+msgstr "一个或多个用逗号隔开的号码长度，或者由中划线连接的范围, 例如: 8,10-12，总共不超过32个字符"
+
+msgid "Number begin with 0-9 or +/*, Max length is 32, Support multi-prefix by OR operation(|), Example: +86|852"
+msgstr "以数字或者+/*号开头的号码，最大长度32，支持多个用符号(|)隔开即可，例如: +86|852"
+
+msgid "Number only could use 0-9,a-Z or +/*/#, Max length is 32"
+msgstr "号码只能使用数字,字母或者+/*/#,最大长度32"
+
+msgid "Hostname should begin with letters, could contain number, period(.) or minus(-), last character must not be minus or period,totally less than 24 characters."
+msgstr "有效主机名应当以字母开头,可包含数字,点或者减号,最后一位字符不能是点或减号,总共不超过24个字符"
+
+msgid "Valid URL should begin with tftp:// or http:// or ftp:// or https:// or ftps://"
+msgstr "有效地址前缀应当为: tftp:// , http:// , ftp:// , https:// , ftps://"
+
+msgid "Can not be empty!"
+msgstr "不能为空!"
+
+msgid "Port should be a number between 1 and 65535, not conflict with local listening port, and can not be empty!"
+msgstr "端口应当是1到65535之间的数字, 不能与已存在的监听端口冲突, 且不能为空!"
+
+msgid "Invalid netmask address"
+msgstr "无效的掩码地址"
+
+msgid "Gateway must be in the same subnet with IPv4 address"
+msgstr "网关必须与IPv4地址在同一个子网内"
+
+msgid "Gateway must be in the same subnet with the interface address"
+msgstr "网关必须与接口地址在同一个子网内"
+
+msgid "DHCP gateway must be in the same subnet with LAN IP address"
+msgstr "DHCP网关必须与LAN口IP地址在同一个子网内"
+
+msgid "IPv4 address, and can not in the same subnet with LAN IP address"
+msgstr "IPv4地址格式, 且不能与LAN口IP地址同一个子网内"
+
+msgid "IPv4 address,and not conflict with existing"
+msgstr "IPv4地址格式,且不与存在的网段冲突"
+
+msgid "IPv4 address, and can not in the same subnet with WAN IP address"
+msgstr "IPv4地址格式, 且不能与WAN口IP地址在同一个子网内"
+
+msgid "Heartbeat Period(s)"
+msgstr "心跳周期(秒)"
+
+msgid "Config Status"
+msgstr "配置状态"
+
+msgid "Line State"
+msgstr "线路状态"
+
+msgid "Hook State"
+msgstr "摘挂机状态"
+
+msgid "OFFLINE"
+msgstr "离线"
+
+msgid "ONLINE"
+msgstr "在线"
+
+msgid "Offline"
+msgstr "离线"
+
+msgid "Online"
+msgstr "在线"
+
+msgid "OFFHOOK"
+msgstr "摘机"
+
+msgid "ONHOOK"
+msgstr "挂机"
+
+msgid "Channel State"
+msgstr "通道状态"
+
+msgid "OK"
+msgstr "正常"
+
+msgid "READY"
+msgstr "正常"
+
+msgid "FAULT"
+msgstr "故障"
+
+msgid "Not Config"
+msgstr "未配置"
+
+msgid "UNKNOWN"
+msgstr "未知"
+
+msgid "Caller/Length/Property/Area/Carrier"
+msgstr "主叫/长度/属性/地区/运营商"
+
+msgid "Called/Length/Property/Area/Carrier"
+msgstr "被叫/长度/属性/地区/运营商"
+
+msgid "Caller: Prefix/Suffix/Replace"
+msgstr "主叫:前缀/后缀/替换"
+
+msgid "Called: Prefix/Suffix/Replace"
+msgstr "被叫:前缀/后缀/替换"
+
+msgid "Number Change"
+msgstr "号码变换"
+
+msgid "Condition: Source/Number/Time"
+msgstr "匹配条件:来源/号码/时间"
+
+msgid "Action: Manipulation/Dest"
+msgstr "匹配成功:号码变换/目的地"
+
+msgid "Failover: Manipulation/Dest"
+msgstr "失败处理:号码变换/目的地"
+
+msgid "Access Source"
+msgstr "访问来源"
+
+msgid "Operation"
+msgstr "操作"
+
+msgid "Operation Log"
+msgstr "操作日志"
+
+msgid "Page"
+msgstr "页面"
+
+msgid "View"
+msgstr "查看"
+
+msgid "EditCfg"
+msgstr "修改配置"
+
+msgid "Login"
+msgstr "登录"
+
+msgid "Logout"
+msgstr "登出"
+
+msgid "LoginFail"
+msgstr "登录失败"
+
+msgid "LoginSucc"
+msgstr "登录成功"
+
+msgid "AddCfg"
+msgstr "新建配置"
+
+msgid "SaveNewCfg"
+msgstr "保存新配置"
+
+msgid "CancelNewCfg"
+msgstr "取消新建配置"
+
+msgid "SaveEditCfg"
+msgstr "保存修改配置"
+
+msgid "CancelEditCfg"
+msgstr "取消修改配置"
+
+msgid "DelCfg"
+msgstr "删除配置"
+
+msgid "Post"
+msgstr "提交"
+
+msgid "No result found"
+msgstr "未查询到结果"
+
+msgid "Members"
+msgstr "成员"
+
+msgid "Members Select"
+msgstr "成员选择"
+
+msgid "Strategy"
+msgstr "策略"
+
+msgid "sequence"
+msgstr "顺序(递增)"
+
+msgid "loop_sequence"
+msgstr "顺序(循环递增)"
+
+msgid "simultaneous"
+msgstr "共振"
+
+msgid "random"
+msgstr "随机"
+
+msgid "QueryCDRs"
+msgstr "查询话单"
+
+msgid "ChangePassword"
+msgstr "修改密码"
+
+msgid "SendMsg"
+msgstr "发送短信"
+
+msgid "Message Send"
+msgstr "短信发送"
+
+msgid "Select Port"
+msgstr "选择端口"
+
+msgid "Recipient"
+msgstr "收件人"
+
+msgid "Send"
+msgstr "发送"
+
+msgid "Contact"
+msgstr "联系人"
+
+msgid "Direction"
+msgstr "方向"
+
+msgid "Message"
+msgstr "信息"
+
+msgid "Operation"
+msgstr "操作"
+
+msgid "Message Send"
+msgstr "消息发送"
+
+msgid "Message List"
+msgstr "消息列表"
+
+msgid "Recipient can only be number 0-9, support multi-recipient by OR operation(|)"
+msgstr "收件人只能是数字，若有多个联系人，请用符号(|)隔开"
+
+msgid "Please Select Upgrade Type"
+msgstr "请选择升级类型"
+
+msgid "Please select FXS board want to upgrade"
+msgstr "请选择要升级的FXS板"
+
+msgid "Please select FXO board want to upgrade"
+msgstr "请选择要升级的FXO板"
+
+msgid "Please select GSM board want to upgrade"
+msgstr "请选择要升级的GSM板"
+
+msgid "Please select CDMA board want to upgrade"
+msgstr "请选择要升级的CDMA板"
+
+msgid "Restore config data succ !"
+msgstr "恢复配置数据成功 !"
+
+msgid "Upgrade Firmware Succ !"
+msgstr "升级系统成功 !"
+
+msgid "Upgrade Firmware Fail !"
+msgstr "系统升级失败 !"
+
+msgid "Upgrade Kernel Succ ! Device rebooting !"
+msgstr "升级内核成功 ! 设备正在重启 ！"
+
+msgid "Upgrade Kernel Fail !"
+msgstr "内核升级失败 !"
+
+msgid "Kernel upgrade will disable switch kernel and stop all the call, all config data, cdrs will be erased, please backup first ！if upgrade succ, will reboot automatically !"
+msgstr "内核升级将会禁用交换核心及中断所有通话，所有配置数据，话单等都会被擦除，请先备份数据 ！若升级成功，将会自动重启 ！"
+
+msgid "Please connect to devive via 192.168.11.1 from LAN port later and continue next step !"
+msgstr "稍后请通过LAN口及IP地址 192.168.11.1 访问设备并继续下一步 ！"
+
+msgid "Please reboot to take effect !"
+msgstr "请重启系统生效 !"
+
+msgid "Go to reboot..."
+msgstr "转到 重启 页面..."
+
+msgid "Please check the file is correct !"
+msgstr "请检查文件是否正确 !"
+
+msgid "Restore Succ !"
+msgstr "恢复成功 !"
+
+msgid "Restore Fail !"
+msgstr "恢复失败 !"
+
+msgid "Provision Profile"
+msgstr "Provision 配置"
+
+msgid "Periodic Check"
+msgstr "周期性检查"
+
+msgid "Check Interval(s)"
+msgstr "检查间隔(秒)"
+
+msgid "URL"
+msgstr "地址"
+
+msgid "Proxy Address"
+msgstr "代理地址"
+
+msgid "Password successfully changed!"
+msgstr "密码修改成功!"
+
+msgid "Unknown Error, password not changed!"
+msgstr "未知错误,密码修改未成功!"
+
+msgid "Given password confirmation did not match, password not changed!"
+msgstr "密码两次输入不匹配,密码修改未成功!"
+
+msgid "Really reset all changes?"
+msgstr "确定重置所有修改?"
+
+msgid "Rebooting..."
+msgstr "重启中..."
+
+msgid "Erasing..."
+msgstr "正在擦除..."
+
+msgid "The system is erasing the config data now and will reboot itself when finished."
+msgstr "系统正在擦除配置数据,完成后将会自动重启。"
+
+msgid "SMS Encoding"
+msgstr "短信编码"
+
+msgid "Input Gain"
+msgstr "呼入增益"
+
+msgid "Output Gain"
+msgstr "呼出增益"
+
+msgid "Slot-Type"
+msgstr "槽号-类型"
+
+msgid "VoIP Config / Ring Group"
+msgstr "VoIP配置 / 振铃组"
+
+msgid "VoIP Config / Ring Group / New"
+msgstr "VoIP配置 / 振铃组 / 新建"
+
+msgid "VoIP Config / Ring Group / Edit"
+msgstr "VoIP配置 / 振铃组 / 编辑"
+
+msgid "Route Group"
+msgstr "路由组"
+
+msgid "VoIP Config / Route Group"
+msgstr "VoIP配置 / 路由组"
+
+msgid "VoIP Config / Route Group / New"
+msgstr "VoIP配置 / 路由组 / 新建"
+
+msgid "VoIP Config / Route Group / Edit"
+msgstr "VoIP配置 / 路由组 / 编辑"
+
+msgid "CDRs Query Param"
+msgstr "话单查询参数"
+
+msgid "Query"
+msgstr "查询"
+
+msgid "Min Duration"
+msgstr "最小时长"
+
+msgid "Max Duration"
+msgstr "最大时长"
+
+msgid "Hangup Cause"
+msgstr "挂机原因"
+
+msgid "CDRs List"
+msgstr "话单列表"
+
+msgid "Backup"
+msgstr "备份"
+
+msgid "UpgradeSysSucc"
+msgstr "升级系统成功"
+
+msgid "UpgradeSysFail"
+msgstr "升级系统失败"
+
+msgid "UpgradeFXSSucc"
+msgstr "升级FXS成功"
+
+msgid "UpgradeFXSFail"
+msgstr "升级FXS失败"
+
+msgid "UpgradeFXOSucc"
+msgstr "升级FXO成功"
+
+msgid "UpgradeFXOFail"
+msgstr "升级FXO失败"
+
+msgid "UpgradeGSMSucc"
+msgstr "升级GSM成功"
+
+msgid "UpgradeGSMFail"
+msgstr "升级GSM失败"
+
+msgid "UpgradeCDMASucc"
+msgstr "升级CDMA成功"
+
+msgid "UpgradeCDMAFail"
+msgstr "升级CDMA失败"
+
+msgid "RestoreSucc"
+msgstr "恢复成功"
+
+msgid "RestoreFail"
+msgstr "恢复失败"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Go to save&apply..."
+msgstr "转到 保存&应用 页面..."
+
+msgid "Talking State"
+msgstr "通话状态"
+
+msgid "< Add New ...>"
+msgstr "< 新建 ...>"
+
+msgid "The value below is invalid"
+msgstr "以下选项值输入有误"
+
+msgid "The value below can not be empty"
+msgstr "以下选项值不能为空"
+
+msgid "Cancel & Back"
+msgstr "取消 & 返回"
+
+msgid "Save & Continue"
+msgstr "保存 & 继续"
+
+msgid "Invalid username and/or password! Please try again."
+msgstr "无效的用户名和/或密码! 请重试。"
+
+msgid "Local Call"
+msgstr "本地呼叫"
+
+msgid "Prefix for dial local extension directly"
+msgstr "本地分机直拨前缀"
+
+msgid "There are no pending changes to revert!"
+msgstr "没有可放弃的更改!"
+
+msgid "There are no pending changes to apply!"
+msgstr "没有待应用的更改!"
+
+msgid "Extension"
+msgstr "分机"
+
+msgid "Autodial Number"
+msgstr "代拨号码"
+
+msgid "Applying..."
+msgstr "正在应用..."
+
+msgid "Reloading..."
+msgstr "正在重新加载..."
+
+msgid "Applying changes finish"
+msgstr "应用更改完成"
+
+msgid "The changes has been saved and apply, but reload fail !"
+msgstr "更改已保存并应用, 但重新加载失败 !"
+
+msgid "The changes has been saved but apply fail!"
+msgstr "更改已保存, 但应用失败 !"
+
+msgid "Changes log"
+msgstr "更改日志"
+
+msgid "Restore config data succ but apply fail !"
+msgstr "恢复配置数据成功但应用失败 !"
+
+msgid "Restore config data and apply succ but reload fail !"
+msgstr "恢复配置数据并应用成功, 但重新加载失败 !"
+
+msgid "Please check the config data is correct !"
+msgstr "请检查配置数据是否正确 !"
+
+msgid "Please check the service status or try to reboot to take efffect !"
+msgstr "请检查服务状态，或者尝试重启生效 !"
+
+msgid "Get device model or sn fail, Backup/Restore is unavailable !"
+msgstr "获取设备型号或者序列号失败, 备份恢复功能暂时不可用 !"
+
+msgid "Get device model fail, system and kernel upgrade is unavailable !"
+msgstr "获取设备型号失败, 系统和内核升级功能不可用 !"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Service Log"
+msgstr "服务运行日志"
+
+msgid "SN"
+msgstr "序号"
+
+msgid "Module"
+msgstr "模块"
+
+msgid "File:Line"
+msgstr "文件:行号"
+
+msgid "DSP Input Gain"
+msgstr "DSP输入增益"
+
+msgid "DSP Output Gain"
+msgstr "DSP输出增益"
+
+msgid "500 Internal Server Error"
+msgstr "500 内部服务器错误"
+
+msgid "404 Not Found"
+msgstr "404 页面未找到"
+
+msgid "Sorry, the page you requested was not found !"
+msgstr "很抱歉, 请求的页面未找到 !"
+
+msgid "Sorry, the server encountered an unexpected error !"
+msgstr "很抱歉, 服务器遇到未知错误 !"
+
+msgid "Take me home..."
+msgstr "转到首页..."
+
+msgid "Hostname to send when requesting DHCP"
+msgstr "请求DHCP时发送的主机名"
+
+msgid "Upload and verify succ, upgrading..."
+msgstr "文件上传并校验成功 ! 正在升级..."
+
+msgid "Please wait, it will take you a few minutes."
+msgstr "请稍等, 升级过程需要几分钟..."
+
+msgid "Upload and verify finish, but start upgrade fail !"
+msgstr "文件上传并校验成功, 但启动升级失败 !"
+
+msgid "Upload succ but verify file fail !"
+msgstr "文件上传成功但校验失败 !"
+
+msgid "Userboard"
+msgstr "用户板"
+
+msgid "Userboard upgrade success !"
+msgstr "用户板升级成功 !"
+
+msgid "Userboard upgrade finish, but some fail !"
+msgstr "用户板升级完成, 但部分失败 !"
+
+msgid "Userboard upgrade fail !"
+msgstr "用户板升级失败 !"
+
+msgid "Userboard upgrade progress"
+msgstr "用户板升级进度"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Upgrading"
+msgstr "正在升级"
+
+msgid "Password Strength"
+msgstr "密码强度"
+
+msgid "Too short, use 8 to 32 characters"
+msgstr "太短, 请使用8到32个字符"
+
+msgid "Too long, use 8 to 32 characters"
+msgstr "太长, 请使用8到32个字符"
+
+msgid "Weak"
+msgstr "弱"
+
+msgid "Fair"
+msgstr "一般"
+
+msgid "Good"
+msgstr "较强"
+
+msgid "Strong"
+msgstr "强"
+
+msgid "Current Username"
+msgstr "当前用户"
+
+msgid "Old Password"
+msgstr "旧密码"
+
+msgid "Confirm New Password"
+msgstr "确认新密码"
+
+msgid "Username can not be empty !"
+msgstr "用户名不能为空 !"
+
+msgid "Please input old password !"
+msgstr "请输入旧密码 !"
+
+msgid "Confirmation did not match, please check !"
+msgstr "两次输入不匹配, 请检查 !"
+
+msgid "Username or old password error, password not changed !"
+msgstr "用户名或旧密码错误, 密码修改未成功 !"
+
+msgid "Some fields are invalid !"
+msgstr "一些项目的值无效 !"
+
+msgid "Please select userboard type want to upgrade"
+msgstr "请选择要升级的用户板类型"
+
+msgid "Please select slot"
+msgstr "请选择槽号"
+
+msgid "An unexpected error occour, restore is unavailable !"
+msgstr "未知错误, 恢复功能不可用 !"
+
+msgid "An unexpected error occour, system upgrade is unavailable !"
+msgstr "未知错误, 系统固件升级功能不可用 !"
+
+msgid "An unexpected error occour, userboard upgrade is unavailable !"
+msgstr "未知错误, 用户板升级功能不可用 !"
+
+msgid "An unexpected error occour, upgrade is unavailable !"
+msgstr "未知错误, 升级功能不可用 !"
+
+msgid "static"
+msgstr "静态地址"
+
+msgid "dhcp"
+msgstr "DHCP"
+
+msgid "DHCP Server"
+msgstr "DHCP服务器"
+
+msgid "pppoe"
+msgstr "PPPoE"
+
+msgid "Bytes"
+msgstr "字节"
+
+msgid "RX / TX (Per Second)"
+msgstr "接收 / 发送 (每秒)"
+
+msgid "RX / TX (Total)"
+msgstr "接收 / 发送 (总计)"
+
+msgid "Use default gateway"
+msgstr "使用默认网关"
+
+msgid "Use DNS servers advertised by peer"
+msgstr "使用局端通告的DNS服务器"
+
+msgid "d"
+msgstr "天"
+
+msgid "h"
+msgstr "小时"
+
+msgid "m"
+msgstr "分"
+
+msgid "s"
+msgstr "秒"
+
+msgid "Can not delete, it is being used in <%s> !"
+msgstr "不能删除, 该配置正被 <%s> 所引用 !"
+
+msgid "Can not disable, it is being used in <%s> !"
+msgstr "不能禁用, 该配置正被 <%s> 所引用 !"
+
+msgid "route"
+msgstr "路由"
+
+msgid "profile_sip"
+msgstr "SIP 配置"
+
+msgid "endpoint_mobile"
+msgstr "GSM/CDMA 中继"
+
+msgid "endpoint_siptrunk"
+msgstr "SIP 中继"
+
+msgid "Userboard is upgrading..."
+msgstr "用户板正在升级..."
+
+msgid "Rescan Hardware"
+msgstr "扫描硬件"
+
+msgid "Only latest 100 records provided to show, if want to see more, you can export it !"
+msgstr "仅提供最新100条记录查看, 若需查看更多, 请导出 !"
+
+msgid "Custom"
+msgstr "自定义"
+
+msgid "Capture Mode"
+msgstr "抓包模式"
+
+msgid "Source IP"
+msgstr "源IP"
+
+msgid "Source Port"
+msgstr "源端口"
+
+msgid "Destination IP"
+msgstr "目的IP"
+
+msgid "Destination Port"
+msgstr "目的端口"
+
+msgid "Network capture is working..."
+msgstr "正在进行网络抓包..."
+
+msgid "Stop & Download"
+msgstr "停止 & 下载"
+
+msgid "Please Wait"
+msgstr "请稍等"
+
+msgid "Error Value"
+msgstr "错误值"
+
+msgid "No CDRs yet !"
+msgstr "尚无话单记录 !"
+
+msgid "CDRs has disabled !"
+msgstr "话单未启用"
+
+msgid "You can enable it in System / Setting !"
+msgstr "可在 系统 / 设置 中启用 !"
+
+msgid "Go to system configuration..."
+msgstr "转到 系统配置 页面..."
+
+msgid "Get More"
+msgstr "获取更多"
+
+msgid "Service Name"
+msgstr "服务名"
+
+msgid "Date Period"
+msgstr "日期周期"
+
+msgid "Time Period"
+msgstr "时间周期"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Refreshing..."
+msgstr "正在刷新..."
+
+msgid "Manual"
+msgstr "手动"
+
+msgid "Access Control"
+msgstr "访问控制"
+
+msgid "Web Server"
+msgstr "Web 服务器"
+
+msgid "HTTP Port"
+msgstr "HTTP 端口"
+
+msgid "HTTPS Port"
+msgstr "HTTPS 端口"
+
+msgid "Inbound Codec Negotiation Priority"
+msgstr "呼入编解码协商优先级"
+
+msgid "Remote"
+msgstr "对端"
+
+msgid "Local"
+msgstr "本地"
+
+msgid "Local Force"
+msgstr "强制本地"
+
+msgid "DTMF Type"
+msgstr "DTMF 类型"
+
+msgid "Empty"
+msgstr "清空"
+
+msgid "RTP Start Port"
+msgstr "RTP起始端口"
+
+msgid "RTP End Port"
+msgstr "RTP结束端口"
+
+msgid "udp"
+msgstr "UDP"
+
+msgid "tcp"
+msgstr "TCP"
+
+msgid "Network changes need to take effect after reboot !"
+msgstr "网络修改需要重启后生效 !"
+
+msgid "RTP Port changes need to take effect after reboot !"
+msgstr "RTP端口修改需要重启后生效 !"
+
+msgid "System upgrade succ !"
+msgstr "系统升级成功 !"
+
+msgid "Reboot Required !"
+msgstr "系统需要重启 !"
+
+msgid "System Upgrading !"
+msgstr "系统正在升级 !"
+
+msgid "Please don't reboot system and refresh later !"
+msgstr "请不要重启系统，稍后再刷新页面 !"
+
+msgid "Web port had been changed, please relogin !"
+msgstr "Web端口已经修改，请重新登录 !"
+
+msgid "Go to login..."
+msgstr "转到 登录 页面..."
+
+msgid "Linux Version"
+msgstr "Linux版本"
+
+msgid "Kernel Image"
+msgstr "内核映像"
+
+msgid "Boot Image"
+msgstr "Boot映像"
+
+msgid "Root Image"
+msgstr "Root映像"
+
+msgid "Status / About"
+msgstr "状态 / 关于"
+
+msgid "About"
+msgstr "关于"
+
+msgid "Copyright"
+msgstr "版权所有"
+
+msgid "Tel: 86-755-26456664/61919966"
+msgstr "电话: 86-755-26456664/61919966"
+
+msgid "Copyright ? Dinstar Technologies Co., Ltd. All Rights Reserved."
+msgstr "版权所有 ? 鼎信通达科技有限公司. 保留所有权利."
+
+msgid "Disable Private Internets(RFC2918) DNS responses"
+msgstr "禁用DNS私网地址(RFC2918)响应"
+
+msgid "Year"
+msgstr "年"
+
+msgid "Month"
+msgstr "月"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "Previous Month"
+msgstr "上一个月"
+
+msgid "Next Month"
+msgstr "下一个月"
+
+msgid "Msg Service"
+msgstr "消息服务"
+
+msgid "Switch Kernel Service"
+msgstr "交换核心服务"
+
+msgid "Log Service"
+msgstr "日志服务"
+
+msgid "Upgrade Service"
+msgstr "升级服务"
+
+msgid "Web"
+msgstr "网页"
+
+msgid "Status / Service"
+msgstr "状态 / 服务"
+
+msgid "Service"
+msgstr "服务"
+
+msgid "Running Status"
+msgstr "运行状态"
+
+msgid "Running"
+msgstr "正在运行"
+
+msgid "Stopped"
+msgstr "未运行"
+
+msgid "Obtain gateway automatically"
+msgstr "自动获取网关"
+
+msgid "Obtain DNS server address automatically"
+msgstr "自动获取DNS服务器地址"
+
+msgid "Voice"
+msgstr "语音"
+
+msgid "Disconnect call when no RTP packet"
+msgstr "语音中断保护"
+
+msgid "Period without RTP packet(10s~300s)"
+msgstr "RTP报文中断最大时长(10秒~300秒)"
+
+msgid "Packet Loss Concealment(PLC)"
+msgstr "丢包补偿(PLC)"
+
+msgid "DTMF Detect Timeout(ms)"
+msgstr "DTMF检测超时时长(毫秒)"
+
+msgid "DTMF Detect Threshold"
+msgstr "DTMF检测阈值"
+
+msgid "DTMF Terminator"
+msgstr "DTMF结束符"
+
+msgid "Send DTMF Terminator"
+msgstr "发送DTMF结束符"
+
+msgid "Ring Group Number"
+msgstr "振铃组号码"
+
+msgid "Ring Time(5s~60s)"
+msgstr "振铃时长(5秒~60秒)"
+
+msgid "Register Source"
+msgstr "注册来源"
+
+msgid "Specified"
+msgstr "指定"
+
+msgid "Password Auth"
+msgstr "密码认证"
+
+msgid "Agent"
+msgstr "客户端"
+
+msgid "UTC"
+msgstr "世界标准时间"
+
+msgid "Africa/Abidjan"
+msgstr "非洲/阿比让"
+
+msgid "Africa/Accra"
+msgstr "非洲/阿克拉"
+
+msgid "Africa/Addis Ababa"
+msgstr "非洲/亚的斯亚贝巴"
+
+msgid "Africa/Algiers"
+msgstr "非洲/阿尔及尔"
+
+msgid "Africa/Asmara"
+msgstr "非洲/阿斯马拉"
+
+msgid "Africa/Bamako"
+msgstr "非洲/巴马科"
+
+msgid "Africa/Bangui"
+msgstr "非洲/班吉"
+
+msgid "Africa/Banjul"
+msgstr "非洲/班珠尔"
+
+msgid "Africa/Bissau"
+msgstr "非洲/比绍"
+
+msgid "Africa/Blantyre"
+msgstr "非洲/布兰太尔"
+
+msgid "Africa/Brazzaville"
+msgstr "非洲/布拉柴维尔"
+
+msgid "Africa/Bujumbura"
+msgstr "非洲/布琼布拉"
+
+msgid "Africa/Casablanca"
+msgstr "非洲/卡萨布兰卡"
+
+msgid "Africa/Ceuta"
+msgstr "非洲/休达"
+
+msgid "Africa/Conakry"
+msgstr "非洲/科纳克里"
+
+msgid "Africa/Dakar"
+msgstr "非洲/达喀尔"
+
+msgid "Africa/Dar es Salaam"
+msgstr "非洲/达累斯萨拉姆"
+
+msgid "Africa/Djibouti"
+msgstr "非洲/吉布提"
+
+msgid "Africa/Douala"
+msgstr "非洲/杜阿拉"
+
+msgid "Africa/El Aaiun"
+msgstr "非洲/阿尤恩"
+
+msgid "Africa/Freetown"
+msgstr "非洲/弗里敦"
+
+msgid "Africa/Gaborone"
+msgstr "非洲/哈博罗内"
+
+msgid "Africa/Harare"
+msgstr "非洲/哈拉雷"
+
+msgid "Africa/Johannesburg"
+msgstr "非洲/约翰内斯堡"
+
+msgid "Africa/Juba"
+msgstr "非洲/朱巴"
+
+msgid "Africa/Kampala"
+msgstr "非洲/坎帕拉"
+
+msgid "Africa/Khartoum"
+msgstr "非洲/喀土穆"
+
+msgid "Africa/Kigali"
+msgstr "非洲/基加利"
+
+msgid "Africa/Kinshasa"
+msgstr "非洲/金沙萨"
+
+msgid "Africa/Lagos"
+msgstr "非洲/拉各斯"
+
+msgid "Africa/Libreville"
+msgstr "非洲/利伯维尔"
+
+msgid "Africa/Lome"
+msgstr "非洲/洛美"
+
+msgid "Africa/Luanda"
+msgstr "非洲/罗安达"
+
+msgid "Africa/Lubumbashi"
+msgstr "非洲/卢本巴希"
+
+msgid "Africa/Lusaka"
+msgstr "非洲/卢萨卡"
+
+msgid "Africa/Malabo"
+msgstr "非洲/马拉博"
+
+msgid "Africa/Maputo"
+msgstr "非洲/马普托"
+
+msgid "Africa/Maseru"
+msgstr "非洲/马塞卢"
+
+msgid "Africa/Mbabane"
+msgstr "非洲/姆巴巴纳"
+
+msgid "Africa/Mogadishu"
+msgstr "非洲/摩加迪沙"
+
+msgid "Africa/Monrovia"
+msgstr "非洲/蒙罗维亚"
+
+msgid "Africa/Nairobi"
+msgstr "非洲/内罗毕"
+
+msgid "Africa/Ndjamena"
+msgstr "非洲/恩贾梅纳"
+
+msgid "Africa/Niamey"
+msgstr "非洲/尼亚美"
+
+msgid "Africa/Nouakchott"
+msgstr "非洲/努瓦克肖特"
+
+msgid "Africa/Ouagadougou"
+msgstr "非洲/瓦加杜古"
+
+msgid "Africa/Porto-Novo"
+msgstr "非洲/波多诺伏"
+
+msgid "Africa/Sao Tome"
+msgstr "非洲/圣多美"
+
+msgid "Africa/Tripoli"
+msgstr "非洲/的黎波里"
+
+msgid "Africa/Tunis"
+msgstr "非洲/突尼斯"
+
+msgid "Africa/Windhoek"
+msgstr "非洲/温得和克"
+
+msgid "America/Adak"
+msgstr "美洲/阿达克"
+
+msgid "America/Anchorage"
+msgstr "美洲/安克拉治"
+
+msgid "America/Anguilla"
+msgstr "美洲/安圭拉"
+
+msgid "America/Antigua"
+msgstr "美洲/安提瓜"
+
+msgid "America/Araguaina"
+msgstr "美洲/阿拉瓜伊纳"
+
+msgid "America/Argentina/Buenos Aires"
+msgstr "美洲/阿根廷/阿根廷布宜诺斯艾利斯"
+
+msgid "America/Argentina/Catamarca"
+msgstr "美洲/阿根廷/卡塔马卡"
+
+msgid "America/Argentina/Cordoba"
+msgstr "美洲/阿根廷/科尔多瓦"
+
+msgid "America/Argentina/Jujuy"
+msgstr "美洲/阿根廷/胡胡伊"
+
+msgid "America/Argentina/La Rioja"
+msgstr "美洲/阿根廷/拉里奥哈"
+
+msgid "America/Argentina/Mendoza"
+msgstr "美洲/阿根廷/门多萨"
+
+msgid "America/Argentina/Rio Gallegos"
+msgstr "美洲/阿根廷/里奥加耶戈斯"
+
+msgid "America/Argentina/Salta"
+msgstr "美洲/阿根廷/萨尔塔"
+
+msgid "America/Argentina/San Juan"
+msgstr "美洲/阿根廷/圣胡安"
+
+msgid "America/Argentina/Tucuman"
+msgstr "美洲/阿根廷/图库曼省"
+
+msgid "America/Argentina/Ushuaia"
+msgstr "美洲/阿根廷/乌斯怀亚"
+
+msgid "America/Aruba"
+msgstr "美洲/阿鲁巴"
+
+msgid "America/Asuncion"
+msgstr "美洲/亚松森"
+
+msgid "America/Atikokan"
+msgstr "美洲/阿蒂科肯"
+
+msgid "America/Bahia"
+msgstr "美洲/巴伊亚"
+
+msgid "America/Bahia Banderas"
+msgstr "美洲/巴伊亚班德拉斯"
+
+msgid "America/Barbados"
+msgstr "美洲/巴巴多斯"
+
+msgid "America/Belem"
+msgstr "美洲/贝伦"
+
+msgid "America/Belize"
+msgstr "美洲/伯利兹"
+
+msgid "America/Blanc-Sablon"
+msgstr "美洲/布兰科-萨布隆"
+
+msgid "America/Boa Vista"
+msgstr "美洲/博阿维斯塔"
+
+msgid "America/Bogota"
+msgstr "美洲/波哥大"
+
+msgid "America/Boise"
+msgstr "美洲/博伊西"
+
+msgid "America/Cambridge Bay"
+msgstr "美洲/剑桥湾"
+
+msgid "America/Campo Grande"
+msgstr "美洲/格兰德营"
+
+msgid "America/Cancun"
+msgstr "美洲/坎昆"
+
+msgid "America/Caracas"
+msgstr "美洲/加拉加斯"
+
+msgid "America/Cayenne"
+msgstr "美洲/卡宴"
+
+msgid "America/Cayman"
+msgstr "美洲/开曼"
+
+msgid "America/Chicago"
+msgstr "美洲/芝加哥"
+
+msgid "America/Chihuahua"
+msgstr "美洲/奇瓦瓦州"
+
+msgid "America/Costa Rica"
+msgstr "美洲/哥斯达黎加"
+
+msgid "America/Cuiaba"
+msgstr "美洲/库亚巴"
+
+msgid "America/Curacao"
+msgstr "美洲/库拉索岛"
+
+msgid "America/Danmarkshavn"
+msgstr "美洲/丹马沙文"
+
+msgid "America/Dawson"
+msgstr "美洲/道森"
+
+msgid "America/Dawson Creek"
+msgstr "美洲/道森克里克"
+
+msgid "America/Denver"
+msgstr "美洲/丹佛"
+
+msgid "America/Detroit"
+msgstr "美洲/底特律"
+
+msgid "America/Dominica"
+msgstr "美洲/多米尼克"
+
+msgid "America/Edmonton"
+msgstr "美洲/埃德蒙顿"
+
+msgid "America/Eirunepe"
+msgstr "美洲/埃鲁内佩"
+
+msgid "America/El Salvador"
+msgstr "美洲/萨尔瓦多"
+
+msgid "America/Fortaleza"
+msgstr "美洲/福塔莱萨"
+
+msgid "America/Glace Bay"
+msgstr "美洲/格莱斯贝"
+
+msgid "America/Goose Bay"
+msgstr "美洲/古斯贝"
+
+msgid "America/Grand Turk"
+msgstr "美洲/大特克岛"
+
+msgid "America/Grenada"
+msgstr "美洲/格林纳达"
+
+msgid "America/Guadeloupe"
+msgstr "美洲/瓜德罗普岛"
+
+msgid "America/Guatemala"
+msgstr "美洲/危地马拉"
+
+msgid "America/Guayaquil"
+msgstr "美洲/瓜亚基尔"
+
+msgid "America/Guyana"
+msgstr "美洲/圭亚那"
+
+msgid "America/Halifax"
+msgstr "美洲/哈利法克斯"
+
+msgid "America/Havana"
+msgstr "美洲/哈瓦那"
+
+msgid "America/Hermosillo"
+msgstr "美洲/埃莫西约"
+
+msgid "America/Indiana/Indianapolis"
+msgstr "美洲/印第安纳州/印第安纳波利斯"
+
+msgid "America/Indiana/Knox"
+msgstr "美洲/印第安纳州/诺克斯"
+
+msgid "America/Indiana/Marengo"
+msgstr "美洲/印第安纳州/马伦戈"
+
+msgid "America/Indiana/Petersburg"
+msgstr "美洲/印第安纳州/圣彼得堡"
+
+msgid "America/Indiana/Tell City"
+msgstr "美洲/印第安纳州/特尔城"
+
+msgid "America/Indiana/Vevay"
+msgstr "美洲/印第安纳州/韦韦"
+
+msgid "America/Indiana/Vincennes"
+msgstr "美洲/印第安纳州/文森斯"
+
+msgid "America/Indiana/Winamac"
+msgstr "美洲/印第安纳州/威纳马克"
+
+msgid "America/Inuvik"
+msgstr "美洲/伊努维克"
+
+msgid "America/Iqaluit"
+msgstr "美洲/伊魁特"
+
+msgid "America/Jamaica"
+msgstr "美洲/牙买加"
+
+msgid "America/Juneau"
+msgstr "美洲/朱诺"
+
+msgid "America/Kentucky/Louisville"
+msgstr "美洲/肯塔基州/路易斯维尔"
+
+msgid "America/Kentucky/Monticello"
+msgstr "美洲/肯塔基州/蒙蒂塞洛"
+
+msgid "America/Kralendijk"
+msgstr "美洲/克拉伦代克"
+
+msgid "America/La Paz"
+msgstr "美洲/拉巴斯"
+
+msgid "America/Lima"
+msgstr "美洲/利马"
+
+msgid "America/Los Angeles"
+msgstr "美洲/洛杉矶"
+
+msgid "America/Lower Princes"
+msgstr "美洲/荷属圣马丁"
+
+msgid "America/Maceio"
+msgstr "美洲/马塞约"
+
+msgid "America/Managua"
+msgstr "美洲/马那瓜"
+
+msgid "America/Manaus"
+msgstr "美洲/马瑙斯"
+
+msgid "America/Marigot"
+msgstr "美洲/马里戈特"
+
+msgid "America/Martinique"
+msgstr "美洲/马提尼克"
+
+msgid "America/Matamoros"
+msgstr "美洲/马塔莫罗斯"
+
+msgid "America/Mazatlan"
+msgstr "美洲/马萨特兰"
+
+msgid "America/Menominee"
+msgstr "美洲/梅诺米尼"
+
+msgid "America/Merida"
+msgstr "美洲/梅里达"
+
+msgid "America/Metlakatla"
+msgstr "美洲/梅特拉卡特拉"
+
+msgid "America/Mexico City"
+msgstr "美洲/墨西哥城"
+
+msgid "America/Miquelon"
+msgstr "美洲/密克隆岛"
+
+msgid "America/Moncton"
+msgstr "美洲/蒙克顿"
+
+msgid "America/Monterrey"
+msgstr "美洲/蒙特雷"
+
+msgid "America/Montevideo"
+msgstr "美洲/蒙得维的亚"
+
+msgid "America/Montreal"
+msgstr "美洲/蒙特利尔"
+
+msgid "America/Montserrat"
+msgstr "美洲/蒙特塞拉特"
+
+msgid "America/Nassau"
+msgstr "美洲/拿骚"
+
+msgid "America/New York"
+msgstr "美洲/纽约"
+
+msgid "America/Nipigon"
+msgstr "美洲/尼皮贡"
+
+msgid "America/Nome"
+msgstr "美洲/诺姆"
+
+msgid "America/Noronha"
+msgstr "美洲/迪诺罗尼亚"
+
+msgid "America/North Dakota/Beulah"
+msgstr "美洲/北达科塔州/榆树"
+
+msgid "America/North Dakota/Center"
+msgstr "美洲/北达科他州/中心"
+
+msgid "America/North Dakota/New Salem"
+msgstr "美洲/北达科塔州/新塞勒姆"
+
+msgid "America/Ojinaga"
+msgstr "美洲/奥希纳加"
+
+msgid "America/Panama"
+msgstr "美洲/巴拿马"
+
+msgid "America/Pangnirtung"
+msgstr "美洲/庞纳唐"
+
+msgid "America/Paramaribo"
+msgstr "美洲/帕拉马里博"
+
+msgid "America/Phoenix"
+msgstr "美洲/菲尼克斯(凤凰城)"
+
+msgid "America/Port of Spain"
+msgstr "美洲/西班牙港"
+
+msgid "America/Port-au-Prince"
+msgstr "美洲/太子港"
+
+msgid "America/Porto Velho"
+msgstr "美洲/波多韦柳"
+
+msgid "America/Puerto Rico"
+msgstr "美洲/波多黎各"
+
+msgid "America/Rainy River"
+msgstr "美洲/雷尼河区"
+
+msgid "America/Rankin Inlet"
+msgstr "美洲/兰金因莱特"
+
+msgid "America/Recife"
+msgstr "美洲/累西腓"
+
+msgid "America/Regina"
+msgstr "美洲/里贾纳"
+
+msgid "America/Resolute"
+msgstr "美洲/雷索卢特"
+
+msgid "America/Rio Branco"
+msgstr "美洲/里约布兰科"
+
+msgid "America/Santa Isabel"
+msgstr "美洲/圣伊莎贝尔"
+
+msgid "America/Santarem"
+msgstr "美洲/圣塔伦"
+
+msgid "America/Santo Domingo"
+msgstr "美洲/圣多明各"
+
+msgid "America/Sao Paulo"
+msgstr "美洲/巴西圣保罗"
+
+msgid "America/Scoresbysund"
+msgstr "美洲/斯科斯比松"
+
+msgid "America/Shiprock"
+msgstr "美洲/船岩"
+
+msgid "America/Sitka"
+msgstr "美洲/锡特卡"
+
+msgid "America/St Barthelemy"
+msgstr "美洲/圣巴泰勒米"
+
+msgid "America/St Johns"
+msgstr "美洲/圣约翰斯"
+
+msgid "America/St Kitts"
+msgstr "美洲/圣基茨"
+
+msgid "America/St Lucia"
+msgstr "美洲/圣露西亚"
+
+msgid "America/St Thomas"
+msgstr "美洲/圣托马斯岛"
+
+msgid "America/St Vincent"
+msgstr "美洲/圣文森特岛"
+
+msgid "America/Swift Current"
+msgstr "美洲/斯威夫特卡伦特"
+
+msgid "America/Tegucigalpa"
+msgstr "美洲/特古西加尔巴"
+
+msgid "America/Thule"
+msgstr "美洲/图勒"
+
+msgid "America/Thunder Bay"
+msgstr "美洲/雷湾"
+
+msgid "America/Tijuana"
+msgstr "美洲/蒂华纳"
+
+msgid "America/Toronto"
+msgstr "美洲/多伦多"
+
+msgid "America/Tortola"
+msgstr "美洲/托尔托拉"
+
+msgid "America/Vancouver"
+msgstr "美洲/温哥华"
+
+msgid "America/Whitehorse"
+msgstr "美洲/怀特霍斯"
+
+msgid "America/Winnipeg"
+msgstr "美洲/温尼伯"
+
+msgid "America/Yakutat"
+msgstr "美洲/亚库塔特"
+
+msgid "America/Yellowknife"
+msgstr "美洲/耶洛奈夫"
+
+msgid "Antarctica/Casey"
+msgstr "南极洲/凯西"
+
+msgid "Antarctica/Davis"
+msgstr "南极洲/戴维斯站"
+
+msgid "Antarctica/DumontDUrville"
+msgstr "南极洲/迪蒙迪维尔站"
+
+msgid "Antarctica/Macquarie"
+msgstr "南极洲/麦夸里岛"
+
+msgid "Antarctica/Mawson"
+msgstr "南极洲/莫森站"
+
+msgid "Antarctica/McMurdo"
+msgstr "南极洲/麦克默多站"
+
+msgid "Antarctica/Rothera"
+msgstr "南极洲/罗瑟拉站"
+
+msgid "Antarctica/South Pole"
+msgstr "南极洲/南极"
+
+msgid "Antarctica/Syowa"
+msgstr "南极洲/昭和站"
+
+msgid "Antarctica/Vostok"
+msgstr "南极洲/沃斯托克站(东方站)"
+
+msgid "Arctic/Longyearbyen"
+msgstr "北极/朗伊尔城"
+
+msgid "Asia/Aden"
+msgstr "亚洲/亚丁"
+
+msgid "Asia/Almaty"
+msgstr "亚洲/阿拉木图"
+
+msgid "Asia/Anadyr"
+msgstr "亚洲/阿纳德尔"
+
+msgid "Asia/Aqtau"
+msgstr "亚洲/阿克"
+
+msgid "Asia/Aqtobe"
+msgstr "亚洲/阿克纠宾斯克"
+
+msgid "Asia/Ashgabat"
+msgstr "亚洲/阿什哈巴"
+
+msgid "Asia/Baghdad"
+msgstr "亚洲/巴格达"
+
+msgid "Asia/Bahrain"
+msgstr "亚洲/巴林"
+
+msgid "Asia/Baku"
+msgstr "亚洲/巴库"
+
+msgid "Asia/Bangkok"
+msgstr "亚洲/曼谷"
+
+msgid "Asia/Beirut"
+msgstr "亚洲/贝鲁特"
+
+msgid "Asia/Beijing"
+msgstr "亚洲/北京"
+
+msgid "Asia/Bishkek"
+msgstr "亚洲/比什凯克"
+
+msgid "Asia/Brunei"
+msgstr "亚洲/文莱"
+
+msgid "Asia/Choibalsan"
+msgstr "亚洲/乔巴山"
+
+msgid "Asia/Chongqing"
+msgstr "亚洲/重庆"
+
+msgid "Asia/Colombo"
+msgstr "亚洲/科伦坡"
+
+msgid "Asia/Damascus"
+msgstr "亚洲/大马士革"
+
+msgid "Asia/Dhaka"
+msgstr "亚洲/达卡"
+
+msgid "Asia/Dili"
+msgstr "亚洲/帝力"
+
+msgid "Asia/Dubai"
+msgstr "亚洲/迪拜"
+
+msgid "Asia/Dushanbe"
+msgstr "亚洲/杜尚别"
+
+msgid "Asia/Gaza"
+msgstr "亚洲/加沙"
+
+msgid "Asia/Harbin"
+msgstr "亚洲/哈尔滨"
+
+msgid "Asia/Hebron"
+msgstr "亚洲/希伯伦"
+
+msgid "Asia/Ho Chi Minh"
+msgstr "亚洲/胡志明"
+
+msgid "Asia/Hong Kong"
+msgstr "亚洲/香港"
+
+msgid "Asia/Hovd"
+msgstr "亚洲/科布多"
+
+msgid "Asia/Irkutsk"
+msgstr "亚洲/伊尔库次克"
+
+msgid "Asia/Jakarta"
+msgstr "亚洲/雅加达"
+
+msgid "Asia/Jayapura"
+msgstr "亚洲/查亚普拉"
+
+msgid "Asia/Kabul"
+msgstr "亚洲/喀布尔"
+
+msgid "Asia/Kamchatka"
+msgstr "亚洲/堪察加半岛"
+
+msgid "Asia/Karachi"
+msgstr "亚洲/卡拉奇"
+
+msgid "Asia/Kashgar"
+msgstr "亚洲/喀什"
+
+msgid "Asia/Kathmandu"
+msgstr "亚洲/加德满都"
+
+msgid "Asia/Kolkata"
+msgstr "亚洲/加尔各答"
+
+msgid "Asia/Krasnoyarsk"
+msgstr "亚洲/克拉斯诺雅斯克"
+
+msgid "Asia/Kuala Lumpur"
+msgstr "亚洲/吉隆坡"
+
+msgid "Asia/Kuching"
+msgstr "亚洲/古晋"
+
+msgid "Asia/Kuwait"
+msgstr "亚洲/科威特"
+
+msgid "Asia/Macau"
+msgstr "亚洲/澳门"
+
+msgid "Asia/Magadan"
+msgstr "亚洲/马加丹州"
+
+msgid "Asia/Makassar"
+msgstr "亚洲/望加锡"
+
+msgid "Asia/Manila"
+msgstr "亚洲/马尼拉"
+
+msgid "Asia/Muscat"
+msgstr "亚洲/马斯喀特"
+
+msgid "Asia/Nicosia"
+msgstr "亚洲/尼科西亚"
+
+msgid "Asia/Novokuznetsk"
+msgstr "亚洲/新库兹涅茨克"
+
+msgid "Asia/Novosibirsk"
+msgstr "亚洲/新西伯利亚"
+
+msgid "Asia/Omsk"
+msgstr "亚洲/鄂木斯克"
+
+msgid "Asia/Oral"
+msgstr "亚洲/口头"
+
+msgid "Asia/Phnom Penh"
+msgstr "亚洲/金边"
+
+msgid "Asia/Pontianak"
+msgstr "亚洲/坤甸"
+
+msgid "Asia/Pyongyang"
+msgstr "亚洲/平壤"
+
+msgid "Asia/Qatar"
+msgstr "亚洲/卡塔尔"
+
+msgid "Asia/Qyzylorda"
+msgstr "亚洲/基兹"
+
+msgid "Asia/Rangoon"
+msgstr "亚洲/仰光"
+
+msgid "Asia/Riyadh"
+msgstr "亚洲/利雅得"
+
+msgid "Asia/Sakhalin"
+msgstr "亚洲/萨哈林岛"
+
+msgid "Asia/Samarkand"
+msgstr "亚洲/撒马尔罕"
+
+msgid "Asia/Seoul"
+msgstr "亚洲/首尔"
+
+msgid "Asia/Shanghai"
+msgstr "亚洲/上海"
+
+msgid "Asia/Singapore"
+msgstr "亚洲/新加坡"
+
+msgid "Asia/Taipei"
+msgstr "亚洲/台北"
+
+msgid "Asia/Tashkent"
+msgstr "亚洲/塔什干"
+
+msgid "Asia/Tbilisi"
+msgstr "亚洲/第比利斯"
+
+msgid "Asia/Tel Aviv"
+msgstr "亚洲/特拉维夫"
+
+msgid "Asia/Thimphu"
+msgstr "亚洲/廷布"
+
+msgid "Asia/Tokyo"
+msgstr "亚洲/东京"
+
+msgid "Asia/Ulaanbaatar"
+msgstr "亚洲/乌兰巴托"
+
+msgid "Asia/Urumqi"
+msgstr "亚洲/乌鲁木齐"
+
+msgid "Asia/Vientiane"
+msgstr "亚洲/万象"
+
+msgid "Asia/Vladivostok"
+msgstr "亚洲/海参崴"
+
+msgid "Asia/Yakutsk"
+msgstr "亚洲/雅库茨克"
+
+msgid "Asia/Yekaterinburg"
+msgstr "亚洲/叶卡特琳堡"
+
+msgid "Asia/Yerevan"
+msgstr "亚洲/埃里温"
+
+msgid "Atlantic/Azores"
+msgstr "大西洋/亚速尔群岛"
+
+msgid "Atlantic/Bermuda"
+msgstr "大西洋/百慕大"
+
+msgid "Atlantic/Canary"
+msgstr "大西洋/加那利群岛"
+
+msgid "Atlantic/Cape Verde"
+msgstr "大西洋/佛得角"
+
+msgid "Atlantic/Faroe"
+msgstr "大西洋/法罗群岛"
+
+msgid "Atlantic/Madeira"
+msgstr "大西洋/马德拉"
+
+msgid "Atlantic/Reykjavik"
+msgstr "大西洋/雷克雅未克"
+
+msgid "Atlantic/South Georgia"
+msgstr "大西洋/南乔治亚岛和南桑威奇群岛"
+
+msgid "Atlantic/St Helena"
+msgstr "大西洋/圣赫勒拿岛"
+
+msgid "Atlantic/Stanley"
+msgstr "大西洋/斯坦利(福克兰群岛)"
+
+msgid "Australia/Adelaide"
+msgstr "澳大利亚/阿德莱德"
+
+msgid "Australia/Brisbane"
+msgstr "澳大利亚/布里斯班"
+
+msgid "Australia/Broken Hill"
+msgstr "澳大利亚/布罗肯希尔"
+
+msgid "Australia/Currie"
+msgstr "澳大利亚/柯里"
+
+msgid "Australia/Darwin"
+msgstr "澳大利亚/达尔文"
+
+msgid "Australia/Eucla"
+msgstr "澳大利亚/尤克拉"
+
+msgid "Australia/Hobart"
+msgstr "澳大利亚/霍巴特"
+
+msgid "Australia/Lindeman"
+msgstr "澳大利亚/德曼"
+
+msgid "Australia/Lord Howe"
+msgstr "澳大利亚/主豪"
+
+msgid "Australia/Melbourne"
+msgstr "澳大利亚/墨尔本"
+
+msgid "Australia/Perth"
+msgstr "澳大利亚/珀斯"
+
+msgid "Australia/Sydney"
+msgstr "澳大利亚/悉尼"
+
+msgid "Europe/Amsterdam"
+msgstr "欧洲/阿姆斯特丹"
+
+msgid "Europe/Andorra"
+msgstr "欧洲/安道尔"
+
+msgid "Europe/Athens"
+msgstr "欧洲/雅典"
+
+msgid "Europe/Belgrade"
+msgstr "欧洲/贝尔格莱德"
+
+msgid "Europe/Berlin"
+msgstr "欧洲/柏林"
+
+msgid "Europe/Bratislava"
+msgstr "欧洲/布拉迪斯拉"
+
+msgid "Europe/Brussels"
+msgstr "欧洲/布鲁塞尔"
+
+msgid "Europe/Bucharest"
+msgstr "欧洲/布加勒斯特"
+
+msgid "Europe/Budapest"
+msgstr "欧洲/布达佩斯"
+
+msgid "Europe/Chisinau"
+msgstr "欧洲/基希讷乌"
+
+msgid "Europe/Copenhagen"
+msgstr "欧洲/哥本哈根"
+
+msgid "Europe/Dublin"
+msgstr "欧洲/都柏林"
+
+msgid "Europe/Gibraltar"
+msgstr "欧洲/直布罗陀"
+
+msgid "Europe/Guernsey"
+msgstr "欧洲/根西岛"
+
+msgid "Europe/Helsinki"
+msgstr "欧洲/赫尔辛基"
+
+msgid "Europe/Isle of Man"
+msgstr "欧洲/马恩岛人的"
+
+msgid "Europe/Istanbul"
+msgstr "欧洲/伊斯坦布尔"
+
+msgid "Europe/Jersey"
+msgstr "欧洲/泽西"
+
+msgid "Europe/Kaliningrad"
+msgstr "欧洲/加里宁格勒"
+
+msgid "Europe/Kiev"
+msgstr "欧洲/基辅"
+
+msgid "Europe/Lisbon"
+msgstr "欧洲/里斯本"
+
+msgid "Europe/Ljubljana"
+msgstr "欧洲/卢布尔雅那"
+
+msgid "Europe/London"
+msgstr "欧洲/伦敦"
+
+msgid "Europe/Luxembourg"
+msgstr "欧洲/卢森堡"
+
+msgid "Europe/Madrid"
+msgstr "欧洲/马德里"
+
+msgid "Europe/Malta"
+msgstr "欧洲/马耳他"
+
+msgid "Europe/Mariehamn"
+msgstr "欧洲/玛丽港"
+
+msgid "Europe/Minsk"
+msgstr "欧洲/明斯克"
+
+msgid "Europe/Monaco"
+msgstr "欧洲/摩纳哥"
+
+msgid "Europe/Moscow"
+msgstr "欧洲/莫斯科"
+
+msgid "Europe/Oslo"
+msgstr "欧洲/奥斯陆"
+
+msgid "Europe/Paris"
+msgstr "欧洲/巴黎"
+
+msgid "Europe/Podgorica"
+msgstr "欧洲/波德戈里察"
+
+msgid "Europe/Prague"
+msgstr "欧洲/布拉格"
+
+msgid "Europe/Riga"
+msgstr "欧洲/里加"
+
+msgid "Europe/Rome"
+msgstr "欧洲/罗马"
+
+msgid "Europe/Samara"
+msgstr "欧洲/萨马拉"
+
+msgid "Europe/San Marino"
+msgstr "欧洲/圣马力诺"
+
+msgid "Europe/Sarajevo"
+msgstr "欧洲/萨拉热窝"
+
+msgid "Europe/Simferopol"
+msgstr "欧洲/辛菲罗波尔"
+
+msgid "Europe/Skopje"
+msgstr "欧洲/斯科普里"
+
+msgid "Europe/Sofia"
+msgstr "欧洲/索非亚"
+
+msgid "Europe/Stockholm"
+msgstr "欧洲/斯德哥尔摩"
+
+msgid "Europe/Tallinn"
+msgstr "欧洲/塔林"
+
+msgid "Europe/Tirane"
+msgstr "欧洲/地拉那"
+
+msgid "Europe/Uzhgorod"
+msgstr "欧洲/乌日霍罗德"
+
+msgid "Europe/Vaduz"
+msgstr "欧洲/瓦杜兹"
+
+msgid "Europe/Vatican"
+msgstr "欧洲/梵蒂冈"
+
+msgid "Europe/Vienna"
+msgstr "欧洲/维也纳"
+
+msgid "Europe/Vilnius"
+msgstr "欧洲/维尔纽斯"
+
+msgid "Europe/Volgograd"
+msgstr "欧洲/伏尔加格勒"
+
+msgid "Europe/Warsaw"
+msgstr "欧洲/华沙"
+
+msgid "Europe/Zagreb"
+msgstr "欧洲/萨格勒布"
+
+msgid "Europe/Zaporozhye"
+msgstr "欧洲/扎波罗热"
+
+msgid "Europe/Zurich"
+msgstr "欧洲/苏黎世"
+
+msgid "Indian/Antananarivo"
+msgstr "印度洋/安塔那那利佛"
+
+msgid "Indian/Chagos"
+msgstr "印度洋/查戈斯"
+
+msgid "Indian/Christmas"
+msgstr "印度洋/圣诞岛"
+
+msgid "Indian/Cocos"
+msgstr "印度洋/可可斯(基林)群岛"，
+
+msgid "Indian/Comoro"
+msgstr "印度洋/科摩罗"
+
+msgid "Indian/Kerguelen"
+msgstr "印度洋/凯尔盖朗海"
+
+msgid "Indian/Mahe"
+msgstr "印度洋/马埃岛"
+
+msgid "Indian/Maldives"
+msgstr "印度洋/马尔代夫"
+
+msgid "Indian/Mauritius"
+msgstr "印度洋/毛里求斯"
+
+msgid "Indian/Mayotte"
+msgstr "印度洋/马约特岛"
+
+msgid "Indian/Reunion"
+msgstr "印度洋/留尼汪"
+
+msgid "Pacific/Apia"
+msgstr "太平洋/阿皮亚"
+
+msgid "Pacific/Auckland"
+msgstr "太平洋/奥克兰"
+
+msgid "Pacific/Chatham"
+msgstr "太平洋/查塔姆"
+
+msgid "Pacific/Chuuk"
+msgstr "太平洋/特鲁克岛(楚克岛)"
+
+msgid "Pacific/Efate"
+msgstr "太平洋/埃法特岛"
+
+msgid "Pacific/Enderbury"
+msgstr "太平洋/坎顿"
+
+msgid "Pacific/Fakaofo"
+msgstr "太平洋/法考福"
+
+msgid "Pacific/Fiji"
+msgstr "太平洋/斐济"
+
+msgid "Pacific/Funafuti"
+msgstr "太平洋/富纳富提"
+
+msgid "Pacific/Galapagos"
+msgstr "太平洋/加拉帕戈"
+
+msgid "Pacific/Gambier"
+msgstr "太平洋/甘比尔"
+
+msgid "Pacific/Guadalcanal"
+msgstr "太平洋/瓜达尔卡纳尔岛"
+
+msgid "Pacific/Guam"
+msgstr "太平洋/关岛"
+
+msgid "Pacific/Honolulu"
+msgstr "太平洋/檀香山"
+
+msgid "Pacific/Johnston"
+msgstr "太平洋/庄士敦"
+
+msgid "Pacific/Kiritimati"
+msgstr "太平洋/圣诞岛(基里巴斯)"
+
+msgid "Pacific/Kosrae"
+msgstr "太平洋/科斯雷"
+
+msgid "Pacific/Kwajalein"
+msgstr "太平洋/夸贾林"
+
+msgid "Pacific/Majuro"
+msgstr "太平洋/马朱罗"
+
+msgid "Pacific/Marquesas"
+msgstr "太平洋/马克萨斯群岛"
+
+msgid "Pacific/Midway"
+msgstr "太平洋/中途岛"
+
+msgid "Pacific/Nauru"
+msgstr "太平洋/瑙鲁"
+
+msgid "Pacific/Niue"
+msgstr "太平洋/纽埃"
+
+msgid "Pacific/Norfolk"
+msgstr "太平洋/诺福克"
+
+msgid "Pacific/Noumea"
+msgstr "太平洋/努美阿"
+
+msgid "Pacific/Pago Pago"
+msgstr "太平洋/帕果帕果"
+
+msgid "Pacific/Palau"
+msgstr "太平洋/帕劳"
+
+msgid "Pacific/Pitcairn"
+msgstr "太平洋/皮特凯恩"
+
+msgid "Pacific/Pohnpei"
+msgstr "太平洋/波纳佩"
+
+msgid "Pacific/Port Moresby"
+msgstr "太平洋/莫尔兹比港"
+
+msgid "Pacific/Rarotonga"
+msgstr "太平洋/拉罗汤加岛"
+
+msgid "Pacific/Saipan"
+msgstr "太平洋/塞班岛"
+
+msgid "Pacific/Tahiti"
+msgstr "太平洋/大溪地(塔希提)"
+
+msgid "Pacific/Tarawa"
+msgstr "太平洋/塔拉瓦岛"
+
+msgid "Pacific/Tongatapu"
+msgstr "太平洋/汤加塔布岛"
+
+msgid "Pacific/Wake"
+msgstr "太平洋/威克岛"
+
+msgid "Pacific/Wallis"
+msgstr "太平洋/瓦利斯岛群岛"
+
+msgid "Inquiry IP"
+msgstr "查询IP地址"
+
+msgid "Inquiry Phone Number"
+msgstr "查询电话号码"
+
+msgid "Configure WAN IP Address"
+msgstr "设置WAN口IP地址"
+
+msgid "Configure WAN Gateway"
+msgstr "设置WAN口网关"
+
+msgid "Configure WAN Subnet Mask"
+msgstr "设置WAN口子网掩码"
+
+msgid "Renew DHCP"
+msgstr "刷新DHCP"
+
+msgid "Reset Factory Config"
+msgstr "恢复出厂设置"
+
+msgid "Call Holding"
+msgstr "呼叫保持"
+
+msgid "Call Waiting Activate"
+msgstr "启用呼叫等待"
+
+msgid "Call Waiting Deactivate"
+msgstr "禁用呼叫等待"
+
+msgid "Blind Transfer"
+msgstr "盲转"
+
+msgid "Call Forwarding Uncondition Activate"
+msgstr "启用无条件呼转"
+
+msgid "Call Forwarding Uncondition Deactivate"
+msgstr "禁用无条件呼转"
+
+msgid "Call Forwarding Busy Activate"
+msgstr "启用遇忙呼转"
+
+msgid "Call Forwarding Busy Deactivate"
+msgstr "禁用遇忙呼转"
+
+msgid "Call Forwarding No Reply Activate"
+msgstr "启用无应答呼转"
+
+msgid "Call Forwarding No Reply Deactivate"
+msgstr "禁用无应答呼转"
+
+msgid "DND Activate"
+msgstr "启用免打扰"
+
+msgid "DND Deactivate"
+msgstr "禁用免打扰"
+
+msgid "Key"
+msgstr "按键"
+
+msgid "Send Mode"
+msgstr "发送模式"
+
+msgid "Tone Detection by Local"
+msgstr "本地检测传真音"
+
+msgid "Rate"
+msgstr "比特率"
+
+msgid "SDP Param"
+msgstr "SDP参数"
+
+msgid "Dialplan"
+msgstr "拨号规则"
+
+msgid "Dialplan Profile"
+msgstr "拨号规则配置"
+
+msgid "VoIP Config / Dialplan Profile"
+msgstr "VoIP配置 / 拨号规则配置"
+
+msgid "VoIP Config / Dialplan Profile / New"
+msgstr "VoIP配置 / 拨号规则配置 / 新建"
+
+msgid "VoIP Config / Dialplan Profile / Edit"
+msgstr "VoIP配置 / 拨号规则配置 / 编辑"
+
+msgid "Format"
+msgstr "格式"
+
+msgid "Regex"
+msgstr "正则表达式"
+
+msgid "DigitMap"
+msgstr "数图"
+
+msgid "Local extension call"
+msgstr "本地分机呼叫"
+
+msgid "Trunk"
+msgstr "中继"
+
+msgid "Flash Detection"
+msgstr "拍叉检测"
+
+msgid "Min Time (ms)"
+msgstr "最小时长(毫秒)"
+
+msgid "Max Time (ms)"
+msgstr "最大时长(毫秒)"
+
+msgid "Flash Detection Min Time (ms)"
+msgstr "拍叉检测最小时长(毫秒)"
+
+msgid "Flash Detection Max Time (ms)"
+msgstr "拍叉检测最大时长(毫秒)"
+
+msgid "DTMF Parameters"
+msgstr "DTMF参数"
+
+msgid "CID Send Mode"
+msgstr "CID发送方式"
+
+msgid "Message Mode"
+msgstr "消息类型"
+
+msgid "Message Format"
+msgstr "消息格式"
+
+msgid "Display Name and CID"
+msgstr "Display Name 和 CID"
+
+msgid "Only Display Name"
+msgstr "只发送Display Name"
+
+msgid "Only CID"
+msgstr "只发送CID"
+
+msgid "Send Before RING"
+msgstr "振铃前发送"
+
+msgid "Send After RING"
+msgstr "振铃后发送"
+
+msgid "CID Send Timing"
+msgstr "CID发送时机"
+
+msgid "Delay Timeout After Ring(ms)"
+msgstr "振铃后延迟发送时长(毫秒)"
+
+msgid "Do Not Disturb"
+msgstr "免打扰"
+
+msgid "Call Forward Unconditional"
+msgstr "无条件呼叫转移"
+
+msgid "Call Forward Unconditional Dest Number"
+msgstr "无条件呼叫转移被叫号码"
+
+msgid "Call Forward Busy"
+msgstr "遇忙呼叫转移"
+
+msgid "Call Forward Busy Dest Number"
+msgstr "遇忙呼叫转移被叫号码"
+
+msgid "Call Forward No Reply"
+msgstr "无应答呼叫转移"
+
+msgid "Call Forward No Reply Dest Number"
+msgstr "无应答呼叫转移被叫号码"
+
+msgid "Call Forward No Reply Timeout(s)"
+msgstr "无应答呼叫转移超时时长(秒)"
+
+msgid "Menu"
+msgstr "菜单"
+
+msgid "Repeat Loops"
+msgstr "重复次数"
+
+msgid "Enable DID"
+msgstr "允许DID"
+
+msgid "Destination Number"
+msgstr "目的号码"
+
+msgid "Upload File"
+msgstr "上传文件"
+
+msgid "Attended Transfer"
+msgstr "指定转接"
+
+msgid "WAN IP Address Config Mode"
+msgstr "WAN口IP地址配置模式"
+
+msgid "Set IPv4 Address 192.168.1.10 by dial *152*192*168*1*10#"
+msgstr "通过拨打 *152*192*168*1*10# 将IPv4地址设置为192.168.1.10"
+
+msgid "Set IPv4 Gateway 192.168.1.1 by dial *156*192*168*1*1#"
+msgstr "通过拨打 *156*192*168*1*1# 将网关设置为192.168.1.1"
+
+msgid "Set IPv4 Netmask 255.255.0.0 by dial *153*255*255*0*0#"
+msgstr "通过拨打 *153*255*255*0*0# 将子网掩码设置为255.255.0.0"
+
+msgid "Please upload the English IVR welcome audio !"
+msgstr "请上传英文版IVR欢迎词音频文件!"
+
+msgid "Please upload the Chinese IVR welcome audio !"
+msgstr "请上传中文版IVR欢迎词音频文件!"
+
+msgid "Fail,the audio file must be wav format!"
+msgstr "失败 音频文件必须是wav格式"
+ 
+msgid "Fail,the audio file must be Mono!"
+msgstr "失败,音频文件必须是单声道"
+
+msgid "Fail,the audio file must be 8000HZ!"
+msgstr "失败,音频文件必须是8000HZ"
+
+msgid "Fail,the audio file must be 16 bit!"
+msgstr "失败,音频文件必须是16bit"
+
+msgid "Fail,the audio file size must be less than 550 kb!"
+msgstr "失败,音频文件大小必须小于550kb"
+
+msgid "Fail,upload audio file failed!"
+msgstr "失败,上传音频文件失败"
+
+msgid "Fail,system error!"
+msgstr "失败,内部错误"
+
+msgid "fail"
+msgstr "失败"
+
+msgid "sendto"
+msgstr "发送"
+
+msgid "recvfrom"
+msgstr "接收"
+
+msgid "Language of Tone"
+msgstr "提示音语言"
+
+msgid "Detect Caller ID"
+msgstr "检测主叫号码"
+
+msgid "Dest Number"
+msgstr "目的号码"
+
+msgid "Call Timeout(s)"
+msgstr "呼叫超时(秒)"
+
+msgid "Automatch Impedance"
+msgstr "阻抗匹配"
+
+msgid "Automatch FXO Impedance"
+msgstr "FXO自动阻抗匹配"
+
+msgid "FXO Endpoint"
+msgstr "FXO端点"
+
+msgid "Current Impedance"
+msgstr "当前阻抗值"
+
+msgid "Automatch Optimum Impedance"
+msgstr "最优匹配阻抗值"
+
+msgid "Detection"
+msgstr "检测"
+
+msgid "Impedance matching..."
+msgstr "阻抗匹配中..."
+
+msgid "Impedance matching success"
+msgstr "阻抗匹配成功"
+
+msgid "Impedance matching fail"
+msgstr "阻抗匹配失败"
+
+msgid "DTMF Send Interval(ms)"
+msgstr "DTMF发送间隔(毫秒)"
+
+msgid "DTMF Detect Interval(ms)"
+msgstr "DTMF检测间隔(毫秒)"
+
+msgid "DTMF Duration(ms)"
+msgstr "DTMF持续时长(毫秒)"
+
+msgid "DTMF Gain"
+msgstr "DTMF增益"
+
+msgid "Only support the max count of number is 32."
+msgstr "最大支持32个群发号码"
+
+msgid "Enable Direct Extension"
+msgstr "允许直通分机号"
+
+msgid "read"
+msgstr "已读"
+
+msgid "unread"
+msgstr "未读"
+
+msgid "sending"
+msgstr "发送中"
+
+msgid "success"
+msgstr "成功"
+
+msgid "Hangup"
+msgstr "挂断"
+
+msgid "Local Extension"
+msgstr "本地分机"
+
+msgid "Detect Timing"
+msgstr "检测时间"
+
+msgid "Detect before ring"
+msgstr "振铃前检测"
+
+msgid "Detect after ring"
+msgstr "振铃后检测"
+
+msgid "Priority"
+msgstr "优先级"
+
+msgid "Prefix"
+msgstr "前缀"
+
+msgid "Caller Number"
+msgstr "主叫号码"
+
+msgid "Called Number"
+msgstr "被叫号码"
+
+msgid "Caller Length"
+msgstr "主叫长度"
+
+msgid "Called Length"
+msgstr "被叫长度"
+
+msgid "Caller Number Prefix"
+msgstr "主叫号码前缀"
+
+msgid "Called Number Prefix"
+msgstr "被叫号码前缀"
+
+msgid "Num Profile"
+msgstr "号码配置"
+
+msgid "Caller number regex match"
+msgstr "主叫号码正则匹配"
+
+msgid "Called number regex match"
+msgstr "被叫号码正则匹配"
+
+msgid "Caller Match"
+msgstr "主叫匹配"
+
+msgid "Called Match"
+msgstr "被叫匹配"
+
+msgid "NoAnswer"
+msgstr "无应答"
+
+msgid "Delay Offhook(秒)"
+msgstr "延时摘机(秒)"
+
+msgid "< Impedance Automatch >"
+msgstr "< 主动匹配阻抗 >"
+
+msgid "Impedance"
+msgstr "阻抗"
+
+msgid "Config name can not be empty, less than 32 characters"
+msgstr "配置名称不能为空，且长度小于32字符"
+
+msgid "A single Class A/B/C IPv4 address or network segment, Example: 192.168.11.1 or 192.168.11.1/24 or 192.168.11.1/255.255.255.0"
+msgstr "单个A/B/C类IPv4地址或网络段, 例如:192.168.11.1 或 192.168.11.1/24 或 192.168.11.1/255.255.255.0"
+
+msgid "Class A/B/C IPv4 address or domain, Example: 192.168.1.1"
+msgstr "A/B/C类IPv4地址格式或域名,例如:192.168.1.1"
+
+msgid "A valid domain can contain digit(0-9), letter(a-Z), dash(-), at least one dot(.) between them"
+msgstr "合法的域名可包含数字(0-9),字母(a-Z),符号(-),且中间至少要包含一个点符号(.)"
+
+msgid "Extension should be number, not same with existing"
+msgstr "分机号应该为数字,且不与其它已配置的分机号相同"
+
+msgid "IPv4 address, Example: 192.168.1.1"
+msgstr "IPv4地址格式,例如:192.168.1.1"
+
+msgid "Class A/B/C IPv4 address, Example: 192.168.1.1"
+msgstr "A/B/C类IPv4地址格式,例如:192.168.1.1"
+
+msgid "Port should be a number between 1 and 65535"
+msgstr "端口号应该是在1到65535之间的数字"
+
+msgid "Port should be a number between 1 and 65535, separate multi-port with '|'"
+msgstr "端口号应该是在1到65535之间的数字, 多个端口之间用符号'|'隔开"
+
+msgid "IPv4 address, separate multi-address with '|'"
+msgstr "IPv4地址, 多个地址之间用符号'|'隔开"
+
+msgid "One or two port separated by a dash(-),and the number between 1 and 65535, Example: 5000-6000"
+msgstr "一个或者两个端口号,号码在1到65535之间,其中用(-)符号分离隔开,例如:5000-6000"
+
+msgid "Number begin with 0-9 or +/*, Max length is 32, Support multi-prefix by OR operation(|), Example: +86|852"
+msgstr "号码可以包含0-9或者+和*字符，最大长度为32，支持多个输入用(|)符号隔开,例如:+86|825"
+
+msgid "One or more number length separated by a comma(,), or range by dash(-), Example: 8,10-12"
+msgstr "一个或者多个数字,多个之间用(,)符号隔开,数字区间用(-)符号标注,例如:8,10-12"
+
+msgid "SIP Register Status"
+msgstr "SIP注册状态"
+
+msgid "Unregistered"
+msgstr "未注册"
+
+msgid "IDLE"
+msgstr "空闲"
+
+msgid "RING"
+msgstr "振铃"
+
+msgid "TALKING"
+msgstr "通话中"
+
+msgid "Reged(Master)"
+msgstr "已注册(主)"
+
+msgid "Reged(Slave)"
+msgstr "已注册(从)"
+
+msgid "Reged(All)"
+msgstr "已注册(主/从)"
+
+msgid "Register to SIP Server"
+msgid "注册到SIP服务器"
+
+msgid "Master Server"
+msgid "主用服务器"
+
+msgid "Slave Server"
+msgid "备用服务器"
+
+msgid "REGED/UP"
+msgstr "注册成功/可用"
+
+msgid "NOREG/UP"
+msgstr "未注册/可用"
+
+msgid "NOREG/DOWN"
+msgstr "未注册/故障"
+
+msgid "FAIL_WAIT"
+msgstr "重试..."
+
+msgid "TRYING/DOWN"
+msgstr "正在连接..."
+
+msgid "FAILED/DOWN"
+msgstr "失败/故障"
+
+msgid "Registered(TCP)"
+msgstr "已注册(TCP)"
+
+msgid "Registered(UDP)"
+msgstr "已注册(UDP)"
+
+msgid "RUNNING"
+msgstr "运行正常"
+
+msgid "Uploading audio file..."
+msgstr "上传音频文件中..."
+
+msgid "ORIGINATOR_CANCEL"
+msgstr "主叫呼叫取消"
+
+msgid "NORMAL_CLEARING"
+msgstr "正常挂机"
+
+msgid "NO_ROUTE_DESTINATION"
+msgstr "无可用路由"
+
+msgid "NORMAL_TEMPORARY_FAILURE"
+msgstr "暂时不可用"
+
+msgid "CALL_REJECTED"
+msgstr "呼叫拒绝"
+
+msgid "RECOVERY_ON_TIMER_EXPIRE"
+msgstr "定时器超时的恢复"
+
+msgid "NO_ANSWER"
+msgstr "无用户应答"
+
+msgid "EXCHANGE_ROUTING_ERROR"
+msgstr "路由错误"
+
+msgid "INCOMPATIBLE_DESTINATION"
+msgstr "不兼容的目的地"
+
+msgid "INVALID_GATEWAY"
+msgstr "无效的中继"
+
+msgid "USER_BUSY"
+msgid "用户忙"
+
+msgid "NORMAL_CIRCUIT_CONGESTION"
+msgstr "线路拥挤"
+
+msgid "UNALLOCATED_NUMBER"
+msgstr "未分配的号码"
+
+msgid "GATEWAY_DOWN"
+msgstr "中继不可用"
+
+msgid "USER_NOT_REGISTERED"
+msgstr "用户未注册"
+
+msgid "NONE"
+msgstr "无"
+
+msgid "DID"
+msgstr "直拨号码"
+
+msgid "Call Transfer"
+msgstr "呼叫转移"
+
+msgid "Autodial Num"
+msgstr "代拨号码"
+
+msgid "IPv4 address,you can separation by '|' if more"
+msgstr "IPv4地址，多地址用'|'隔开"
+
+msgid "Failed,Please check your fxo outbound line"
+msgstr "失败，请检测FXO是否接有外线"
+
+msgid "The format of wav audio file should be monaural, 8000hz, 16bit, and a size of no more than 550kb."
+msgstr "上传的wav音频文件应当是单声道,8000HZ,16bit,小于550kb的."
+
+msgid "Enable Call Waiting service"
+msgstr "开启呼叫等待服务"
+
+msgid "Disable Call Waiting service"
+msgstr "关闭呼叫等待服务"
+
+msgid "Example:*18000#,you can blind transfer to the extension number 8000."
+msgstr "例子:*18000#,可以盲转到分机号8000."
+
+msgid "Example:*28000#,you can attended transfer to the extension number 8000."
+msgstr "例子:*28000#,可以指定转接到分机号8000."
+
+msgid "Enable Call Forwarding Uncondition service.Example:*72*8000,set the call forwarding number to 8000."
+msgstr "开启无条件转移服务,例子:*72*8000,设置呼叫转移号码为8000."
+
+msgid "Disable Call Forwarding Uncondition service"
+msgstr "关闭无条件转移服务"
+
+msgid "Enable Call Forwarding Busy service.Example:*90*8000,set the call forwarding number to 8000."
+msgstr "开启遇忙呼叫转移服务,例子:*90*8000,设置呼叫转移号码为8000."
+
+msgid "Disable Call Forwarding Busy service"
+msgstr "关闭遇忙呼叫转移服务"
+
+msgid "Enable Call Forwarding No Reply service.Example:*92*8000,set the call forwarding number to 8000."
+msgstr "开启无应答呼叫转移服务,例子:*92*8000,设置呼叫转移号码为8000."
+
+msgid "Disable Call Forwarding No Reply service"
+msgstr "关闭无应答转移服务"
+
+msgid "Enable Do Not Disturb service"
+msgstr "开启免打扰服务"
+
+msgid "Disable Do Not Disturb service"
+msgstr "关闭免打扰服务"
+
+msgid "Send List"
+msgstr "发送列表"
+
+msgid "Receive List"
+msgstr "接收列表"
+
+msgid "Session Timer"
+msgstr "会话超时定时器"
+
+msgid "Session Timeout(s)"
+msgstr "会话超时时长(秒)"
+
+msgid "Value range: "
+msgstr "有效值范围: "
+
+msgid "Value can not less than "
+msgstr "值不能小于"
+
+msgid "Value can not greater than "
+msgstr "值不能大于"
+
+msgid "PIN Code must be 4 to 8 digits in length"
+msgstr "PIN码必须8位的数字"
+
+msgid "Regular expression should not contain other characters except digits(0-9),letter(a-Z),symbols(,.-?!()[]{}\\+*^$|), totally less than 32 characters."
+msgstr "正则表达式不能包含除了数字(0-9),字母(a-Z),符号(,.-?!()[]{}\\+*^$|)以外的字符，总共不超过32个字符"
+
+msgid "Regular expression should not contain other characters except digits(0-9),letter(a-Z),symbols(,.-?!()[]{}\\+*^$|)."
+msgstr "正则表达式不能包含除了数字(0-9),字母(a-Z),符号(,.-?!()[]{}\\+*^$|)以外的字符"
+
+msgid "Welcome"
+msgstr "欢迎词"
+
+msgid "The IVR welcome audio"
+msgstr "IVR欢迎词音频文件"
+
+msgid "Session Timeout"
+msgstr "会话超时"
+
+msgid "Default Gateway"
+msgstr "默认网关"
+
+msgid "Server Name"
+msgstr "服务器名称"
+
+msgid "Channel"
+msgstr "信道"
+
+msgid "Signal"
+msgstr "信号"
+
+msgid "Encryption"
+msgstr "加密方式"
+
+msgid "Network Model"
+msgstr "网络模式"
+
+msgid "Bridge"
+msgstr "桥接"
+
+msgid "WIFI Client"
+msgstr "无线客户端"
+
+msgid "The length must more than 8 characters and less than 32 characters"
+msgstr "密码长度应当大于8个字符且小于32个字符"
+
+msgid "Firewall"
+msgstr "防火墙"
+
+msgid "Firewall Setting"
+msgstr "防火墙配置"
+
+msgid "Accept"
+msgstr "允许"
+
+msgid "Reject"
+msgstr "禁止"
+
+msgid "LAN IP"
+msgstr "内网主机IP地址"
+
+msgid "LAN Port"
+msgstr "内网主机端口号"
+
+msgid "LAN MAC"
+msgstr "内网主机MAC地址"
+
+msgid "WAN IP"
+msgstr "外网主机IP地址"
+
+msgid "WAN Port"
+msgstr "外网主机端口号"
+
+msgid "Port Mapping"
+msgstr "端口映射"
+
+msgid "DMZ Setting"
+msgstr "DMZ配置"
+
+msgid "DMZ Server"
+msgstr "DMZ服务器"
+
+msgid "Remote Access"
+msgstr "远程访问"
+
+msgid "Remote Access Control"
+msgstr "远程访问控制"
+
+msgid "Enable http service"
+msgstr "开启远程http服务"
+
+msgid "Enable ssh service"
+msgstr "开启远程ssh服务"
+
+msgid "Enable telnet service"
+msgstr "开启远程telnet服务"
+
+msgid "DHCP Server Setting"
+msgstr "DHCP服务器配置"
+
+msgid "Start Address"
+msgstr "起始地址"
+
+msgid "End Address"
+msgstr "结束地址"
+
+msgid "Lease time"
+msgstr "租约时间"
+
+msgid "Domain"
+msgstr "域名"
+
+msgid "Master DNS Server"
+msgstr "主DNS服务器"
+
+msgid "Slave DNS Server"
+msgstr "备用DNS服务器"
+
+msgid "Status / DHCP Client List"
+msgstr "状态 / DHCP客户端列表"
+
+msgid "Client List"
+msgstr "客户端列表"
+
+msgid "Inquiry LAN IP"
+msgstr "查询LAN口IP地址"
+
+msgid "Inquiry WAN IP"
+msgstr "查询WAN口IP地址"
+
+msgid "Network Work Mode"
+msgstr "网络模式"
+
+msgid "Restart Device"
+msgstr "重启设备"
+
+msgid "Group Pickup"
+msgstr "组内代接"
+
+msgid "Pick up the ringing extension which in the same ringgroup, Example:**8000, pick up the extension(8000)"
+msgstr "代接同一个振铃组内的正在振铃的电话，例如: 拨**8000代接分机号为8000的电话"
+
+msgid "ACCEPT"
+msgstr "接受"
+
+msgid "REJECT"
+msgstr "拒绝"
+
+msgid "DMZ IP Address"
+msgstr "DMZ IP地址"
+
+msgid "DMZ service"
+msgstr "DMZ 服务"
+
+msgid "Security / Firewall / Filter Rules / Edit"
+msgstr "安全 / 防火墙 / 过滤规则 / 编辑"
+
+msgid "Security / Firewall / Filter Rules / New"
+msgstr "安全 / 防火墙 / 过滤规则 / 新建"
+
+msgid "Port Mapping / Edit"
+msgstr "端口映射 / 编辑"
+
+msgid "Port Mapping / New"
+msgstr "端口映射 / 新建"
+
+msgid "DHCP Setting"
+msgstr "DHCP 设置"
+
+msgid "Leasetime"
+msgstr "有效期"
+
+msgid "Master DNS"
+msgstr "主用DNS服务器"
+
+msgid "Slave DNS"
+msgstr "备用DNS服务器"
+
+msgid "Connection Time"
+msgstr "连接时长"
+
+msgid "WAN Network"
+msgstr "WAN网络"
+
+msgid "LAN Network"
+msgstr "LAN网络"
+
+msgid "WIFI Network"
+msgstr "WIFI网络"
+
+msgid "Action about Anyone does not match the IP Filter rules"
+msgstr "没有匹配到任何一条IP过滤规则的操作"
+
+msgid "Action about the MAC is not in MAC Filter List"
+msgstr "没有匹配到任何一条MAC过滤规则的操作"
+
+msgid "Dail *157*0 to set route mode.Dail *157*1 to set bridge mode"
+msgstr "拨打*157*0 设置成路由模式.拨打*157*1 设置成桥接模式"
+
+msgid "Local Listening Interface"
+msgstr "本地监听网络接口"
+
+msgid "Interface"
+msgstr "接口"
+
+msgid "The wifi name only could use letters,digits,periods,underscores,and dashes,length must less then 32"
+msgstr "WIFI名称由字母、数字、点、下划线、横线构成,且长度要小于32"
+
+msgid "DNS Server"
+msgstr "DNS 服务器"
+
+msgid "Switch Core Service is initializing, please wait for a moment !"
+msgstr "核心服务正在初始化，请稍等!"
+
+msgid "Switch Core Service stoped !"
+msgstr "核心服务未启动!"
+
+msgid "WIFI Status"
+msgstr "WIFI 状态"
+
+msgid "Allow WAN access"
+msgstr "允许WAN口访问"
+
+msgid "WAN Access Control"
+msgstr "WAN口访问控制"
+
+msgid "*160*1# - Allow HTTP WAN access, *160*0# - Deny HTTP WAN access"
+msgstr "*160*1# - 开启HTTP WAN口访问, *160*0# - 关闭HTTP WAN口访问"
+
+msgid "Allow HTTP WAN access"
+msgstr "允许HTTP从WAN口访问"
+
+msgid "Allow HTTPS WAN access"
+msgstr "允许HTTPS从WAN口访问"
+
+msgid "Allow Telnet WAN access"
+msgstr "允许Telnet从WAN口访问"
+
+msgid "Allow SSH WAN access"
+msgstr "允许SSH从WAN口访问"
+
+msgid "Leasetime(Hour)"
+msgstr "有效期(小时)"
+
+msgid "Hours"
+msgstr "小时"
+
+msgid "Client Name"
+msgstr "客户端名称"
+
+msgid "One or two Class A/B/C ipv4 separated by a dash(-),Example: 192.168.1.1-192.168.1.199"
+msgstr "一个IP地址或者两个用符合(-)隔开的A/B/C类IP地址,例如:192.168.1.1-192.168.1.199"
+
+msgid "MAC address,Example: xx:xx:xx:xx:xx:xx"
+msgstr "MAC 地址,格式: xx:xx:xx:xx:xx:xx"
+
+msgid "Unicast MAC address,Example: xx:xx:xx:xx:xx:xx"
+msgstr "单播 MAC 地址,格式: xx:xx:xx:xx:xx:xx"
+
+msgid "Class A/B/C IPv4 address,and match format: "
+msgstr "A/B/C类IPv4 地址,并且格式匹配:"
+
+msgid "IP Filter Rule"
+msgstr "IP过滤规则"
+
+msgid "MAC Filter Rule"
+msgstr "MAC地址过滤规则"
+
+msgid "Action of matching the IP Filter List"
+msgstr "匹配IP过滤规则表的操作"
+
+msgid "Action of matching the MAC Filter List"
+msgstr "匹配MAC过滤规则表的操作"
+
+msgid "DMZ Status"
+msgstr "DMZ服务状态"
+
+msgid "Network Interface"
+msgstr "网络接口"
+
+msgid "The length of 64bit WEP must be 5 characters,and 128bit must be 13 characters"
+msgstr "WEP 64bit的密码长度必须5个字符，WEP 128bit的密码长度必须13个字符"
+
+msgid "Default action outside the filter rules"
+msgstr "过滤规则外的默认操作"
+
+msgid "DESTINATION_OUT_OF_ORDER"
+msgstr "目的故障"
+
+msgid "Hangup By"
+msgstr "挂机方"
+
+msgid "NO_USER_RESPONSE"
+msgstr "无用户响应"
+
+msgid "Feature Code Service"
+msgstr "特性码服务"
+
+msgid "GSM Tools"
+msgstr "GSM工具"
+
+msgid "Modify IMEI"
+msgstr "修改IMEI"
+
+msgid "Current IMEI"
+msgstr "当前IMEI"
+
+msgid "New IMEI"
+msgstr "新IMEI"
+
+msgid "Modify"
+msgstr "修改"
+
+msgid "GSM channel not ready ! Modify IMEI unavailable !"
+msgstr "GSM通道未准备好! 修改IMEI不可用!"
+
+msgid "Modify IMEI Success !"
+msgstr "修改IMEI成功!"
+
+msgid "Modify IMEI Fail !"
+msgstr "修改IMEI失败!"
+
+msgid "Detect CNG/CED"
+msgstr "检测CNG/CED"
+
+msgid "DHCP Client List"
+msgstr "DHCP客户端列表"
+
+msgid "User Online"
+msgstr "在线用户"
+
+msgid "Interface List"
+msgstr "接口列表"
+
+msgid "IP Address/Netmask"
+msgstr "IP地址/子网掩码"
+
+msgid "L2TP User Online"
+msgstr "L2TP在线用户"
+
+msgid "L2TP User List"
+msgstr "L2TP用户列表"
+
+msgid "User Online List"
+msgstr "在线用户列表"
+
+msgid "Connected Epoch"
+msgstr "连接时间"
+
+msgid "Basic Setting"
+msgstr "基本设置"
+
+msgid "Route Table"
+msgstr "路由表"
+
+msgid "DMZ/Port Mapping"
+msgstr "DMZ/端口映射"
+
+msgid "WAN Config"
+msgstr "WAN配置"
+
+msgid "WAN Subinterface Config"
+msgstr "WAN子接口配置"
+
+msgid "WAN Subinterface List"
+msgstr "WAN子接口列表"
+
+msgid "Network Mode"
+msgstr "网络模式"
+
+msgid "Binding Ports"
+msgstr "端口绑定"
+
+msgid "LAN Side"
+msgstr "LAN侧"
+
+msgid "WAN Side"
+msgstr "WAN侧"
+
+msgid "VLAN IP Address"
+msgstr "VLAN IP地址"
+
+msgid "VLAN Netmask"
+msgstr "VLAN 子网掩码"
+
+msgid "LAN Config"
+msgstr "LAN 配置"
+
+msgid "WLAN Config"
+msgstr "WLAN 配置"
+
+msgid "WLAN Service"
+msgstr "无线服务"
+
+msgid "Band Width"
+msgstr "带宽"
+
+msgid "Isolation"
+msgstr "无线隔离"
+
+msgid "Interface Binding"
+msgstr "绑定接口"
+
+msgid "Wireless Multimedia Extensions"
+msgstr "无线多媒体扩展"
+
+msgid "VLAN Config"
+msgstr "VLAN 配置"
+
+msgid "Port Config"
+msgstr "端口 配置"
+
+msgid "Ports"
+msgstr "端口"
+
+msgid "Binding WAN"
+msgstr "WAN绑定"
+
+msgid "Interface Name"
+msgstr "接口名称"
+
+msgid "Binding WAN Subinterface"
+msgstr "绑定WAN子接口"
+
+msgid "Address Pool"
+msgstr "地址池"
+
+msgid "IPSEC roadwarrior"
+msgstr "IPSEC 点对网"
+
+msgid "IPSEC site to site"
+msgstr "IPSEC 网对网"
+
+msgid "Local WAN IP"
+msgstr "本端WAN IP地址"
+
+msgid "Local LAN IP/Netmask"
+msgstr "本端LAN IP地址/子网掩码"
+
+msgid "IKE Encryption/AUTH/DHGroup"
+msgstr "IKE 加密/验证/DH组密钥"
+
+msgid "ESP Encryption/AUTH/DHGroup"
+msgstr "ESP 加密/验证/DH组密钥"
+
+msgid "Local WAN IP/LAN IP"
+msgstr "本端WAN IP地址/LAN IP地址"
+
+msgid "Remote WAN IP/LAN IP"
+msgstr "对端 WAN IP地址/LAN IP地址"
+
+msgid "Local LAN IP"
+msgstr "本地 LAN IP地址"
+
+msgid "Local LAN Netmask"
+msgstr "本地 LAN 子网掩码"
+
+msgid "Shared Key"
+msgstr "密钥"
+
+msgid "AUTH"
+msgstr "验证方式"
+
+msgid "DH Group Key"
+msgstr "DH组密钥"
+
+msgid "Advanced"
+msgstr "高级"
+
+msgid "IKE Life Time(H)"
+msgstr "IKE 生命周期(小时)"
+
+msgid "Key Life(H)"
+msgstr "密钥生命周期(小时)"
+
+msgid "Key Margin(M)"
+msgstr ""
+
+msgid "Key Tries"
+msgstr "密钥重试次数"
+
+msgid "DPD Delay(S)"
+msgstr "DPD 延时(秒)"
+
+msgid "DPD Timeout(S)"
+msgstr "DPD 超时(秒)"
+
+msgid "Remote Tunnel IP"
+msgstr "对端隧道地址"
+
+msgid "Remote LAN IP"
+msgstr "对端 LAN IP地址"
+
+msgid "Remote LAN Netmask"
+msgstr "对端 LAN 子网掩码"
+
+msgid "L2TP Server"
+msgstr "L2TP 服务端"
+
+msgid "L2TP Client"
+msgstr "L2TP 客户端"
+
+msgid "L2TP Config"
+msgstr "L2TP 配置"
+
+msgid "Start IP Address"
+msgstr "起始IP地址"
+
+msgid "End IP Address"
+msgstr "结束IP地址"
+
+msgid "Tunnel Encryption"
+msgstr "隧道加密"
+
+msgid "WAN IP Address"
+msgstr "WAN IP地址"
+
+msgid "Tunnel Password"
+msgstr "隧道密码"
+
+msgid "L2TP Client Config"
+msgstr "L2TP 客户端配置"
+
+msgid "Server IP Address"
+msgstr "服务端IP地址"
+
+msgid "GRE Config"
+msgstr "GRE 配置"
+
+msgid "Gre Service Status"
+msgstr "GRE 服务状态"
+
+msgid "Remote Subnet"
+msgstr "对端子网"
+
+msgid "Static Route"
+msgstr "静态路由"
+
+msgid "Static Route List"
+msgstr "静态路由列表"
+
+msgid "Target IP"
+msgstr "目的IP"
+
+msgid "Policy Route"
+msgstr "策略路由"
+
+msgid "Policy Route / New"
+msgstr "策略路由 / 新建"
+
+msgid "Policy Route ／ Edit"
+msgstr "策略路由 / 编辑"
+
+msgid "Policy Route List"
+msgstr "策略路由列表"
+
+msgid "Dest IP"
+msgstr "目的IP地址"
+
+msgid "Dest Port"
+msgstr "目的端口"
+
+msgid "NAT List"
+msgstr "NAT列表"
+
+msgid "NAT Rule"
+msgstr "NAT 规则"
+
+msgid "Internal Address"
+msgstr "内网IP地址"
+
+msgid "Authentication"
+msgstr "用户认证"
+
+msgid "Authentication Config"
+msgstr "用户认证配置"
+
+msgid "Local Authentication User"
+msgstr "本地认证用户"
+
+msgid "Portal Config"
+msgstr "Portal 配置"
+
+msgid "Auth Type"
+msgstr "认证类型"
+
+msgid "Timeout(m)"
+msgstr "超时(分)"
+
+msgid "IP Auth"
+msgstr "IP 验证"
+
+msgid "MAC Auth"
+msgstr "MAC 验证"
+
+msgid "Multipath User"
+msgstr "每个用户可拨入多个连接"
+
+msgid "Local User List"
+msgstr "本地用户列表"
+
+msgid "VoIP Config"
+msgstr "VoIP 配置"
+
+msgid "SIP Reg"
+msgstr "SIP 注册"
+
+msgid "DTMF Min Detect Interval(ms)"
+msgstr "DTMF最小检测间隔(毫秒)"
+
+msgid "IVR Voice"
+msgstr "IVR 语音"
+
+msgid "IVR Config"
+msgstr "IVR 配置"
+
+msgid "DDNS Setting"
+msgstr "DDNS 配置"
+
+msgid "DDNS Service"
+msgstr "DDNS 服务"
+
+msgid "Service Providers List"
+msgstr "服务器列表"
+
+msgid "IP Source"
+msgstr "地址源"
+
+msgid "IP Check Period(m)"
+msgstr "地址检查周期(分)"
+
+msgid "Service Update Interval(h)"
+msgstr "服务更新间隔(小时)"
+
+msgid "Retry Interval When Fail(s)"
+msgstr "失败重试间隔(秒)"
+
+msgid "External Address"
+msgstr "外部地址"
+
+msgid "Device Address"
+msgstr "设备地址"
+
+msgid "IPSEC roadwarrior List"
+msgstr "IPSEC点对网列表"
+
+msgid "Local LAN IP/Mask"
+msgstr "本端LAN IP地址/掩码"
+
+msgid "Remote LAN IP/Mask"
+msgstr "对端LAN IP地址/掩码"
+
+msgid "IPSEC site to site List"
+msgstr "IPSEC网对网列表"
+
+msgid "Metric"
+msgstr "度量值(Metric)"
+
+msgid "Multi Path"
+msgstr "多验证次数"
+
+msgid "Login Tries"
+msgstr "登入次数"
+
+msgid "L2TP Client Status"
+msgstr "L2TP客户端信息"
+
+msgid "PPTP Client Status"
+msgstr "PPTP 客户端状态"
+
+msgid "Auth User Online"
+msgstr "在线认证用户"
+
+msgid "Status / Auth User Online List"
+msgstr "状态 / 在线认证用户列表"
+
+msgid "Auth User Online List"
+msgstr "在线认证用户列表"
+
+msgid "L2TP Server Access List"
+msgstr "L2TP服务接入列表"
+
+msgid "Local Subnet Address"
+msgstr "本端子网地址"
+
+msgid "Local Subnet"
+msgstr "本端子网"
+
+msgid "Local Subnet Mask"
+msgstr "本端子网掩码"
+
+msgid "Remote Subnet Address"
+msgstr "对端子网地址"
+
+msgid "Remote Subnet Mask"
+msgstr "对端子网掩码"
+
+msgid "Local IP Address"
+msgstr "本端IP地址"
+
+msgid "Remote IP Address"
+msgstr "对端IP地址"
+
+msgid "Local LAN Subnet"
+msgstr "本端LAN子网"
+
+msgid "Remote LAN Subnet"
+msgstr "对端LAN子网"
+
+msgid "Local WAN IP/LAN Subnet"
+msgstr "本端WAN地址/LAN子网"
+
+msgid "Remote WAN IP/LAN Subnet"
+msgstr "对端WAN地址/LAN子网"
+
+msgid "Send CID Before RING"
+msgstr "振铃前发送CID"
+
+msgid "Send CID After Ring(ms)"
+msgstr "振铃后发送CID(毫秒)"
+
+msgid "Polarity Reverse"
+msgstr "极性反转"
+
+msgid "Static Route / New"
+msgstr "静态路由 / 新建"
+
+msgid "Static Route / Edit"
+msgstr "静态路由 / 编辑"
+
+msgid "Strategy Route / New"
+msgstr "策略路由 / 新建"
+
+msgid "Strategy Route / Edit"
+msgstr "策略路由 / 编辑"
+
+msgid "The current is enabled, click disable"
+msgstr "当前已启用,点击禁用"
+
+msgid "The current is disabled, click enable"
+msgstr "当前已禁用,点击启用"
+
+msgid "More Info"
+msgstr "更多信息"
+
+msgid "IPv4 address, and not same with existing"
+msgstr "IPv4地址,且未被使用"
+
+msgid "VLAN IPv4 address, and not same with existing"
+msgstr "VLAN IPv4地址,且未被使用"
+
+msgid "VLANID,range:3-4094,and not same with existing"
+msgstr "VLANID,取值范围:3-4094,且未被使用"
+
+msgid "Name should begin and end witch letters or numbers,contain decimals(.),underline(_) or dash(-),less then 32 characters,and not same with existing"
+msgstr "名称取值以字母和数字开头,可以包含符号(.)下划线(_)和破折号(-),长度小于32个字符,且未被使用"
+
+msgid "Subnet address,Example: 192.168.1.0"
+msgstr "子网地址,例如:192.168.1.0"
+
+msgid "One or more number length separated by OR operation(|), or range by dash(-), Example: 8|10-12, totally less than 32 characters."
+msgstr "一个或者多个号码长度用竖线(|)分开,破折号表示区间取值,例如:8|10-12,长度小于32个字符"
+
+msgid "Number,range:11-90,and not same with existing"
+msgstr "数字,取值范围:11-90,且未被使用"
+
+msgid "LTE Config"
+msgstr "LTE配置"
+
+msgid "APN"
+msgstr "接入点"
+
+msgid "Dial Number"
+msgstr "接入号码"
+
+msgid "Service"
+msgstr "服务"
+
+msgid "Track IP"
+msgstr "跟踪IP地址"
+
+msgid "Ping Count"
+msgstr "Ping 次数"
+
+msgid "Timeout(s)"
+msgstr "超时(秒)"
+
+msgid "Interval(s)"
+msgstr "间隔(秒)"
+
+msgid "Count of Up"
+msgstr "标识为Up的成功次数"
+
+msgid "Count of Down"
+msgstr "标识为Down的失败次数"
+
+msgid "Uplink Strategy"
+msgstr "上行策略"
+
+msgid "Uplink Config"
+msgstr "上行配置"
+
+msgid "WAN Master,LTE Slave"
+msgstr "主WAN,备LTE"
+
+msgid "LTE Master,WAN Slave"
+msgstr "主LTE,备WAN"
+
+msgid "Current Uplink Model"
+msgstr "当前上行模式"
+
+msgid "Uplink Status"
+msgstr "上行状态"
+
+msgid "WAN Track Status"
+msgstr "WAN跟踪状态"
+
+msgid "LTE Track Status"
+msgstr "LTE跟踪状态"
+
+msgid "Current Uplink Interface"
+msgstr "当前上行接口"
+
+msgid "System Status"
+msgstr "系统状态"
+
+msgid "Register Status"
+msgstr "注册状态"
+
+msgid "Deregistered"
+msgstr "注销"
+
+msgid "Registered"
+msgstr "注册"
+
+msgid "Chipset Status"
+msgstr "芯片状态"
+
+msgid "Vendor ID"
+msgstr "厂商ID"
+
+msgid "Chip Model"
+msgstr "芯片Model"
+
+msgid "IC_Version/Date"
+msgstr "IC版本/日期"
+
+msgid "ONU SN"
+msgstr "ONU 序列号"
+
+msgid "ONU Model"
+msgstr "ONU Model"
+
+msgid "Software Version"
+msgstr "软件版本"
+
+msgid "ONU Status"
+msgstr "ONU 状态"
+
+msgid "Temperature"
+msgstr "工作温度"
+
+msgid "Voltage"
+msgstr "供电电压"
+
+msgid "Bias"
+msgstr "偏置电流"
+
+msgid "Tx Optical Power"
+msgstr "发送光功率"
+
+msgid "Rx Optical Power"
+msgstr "接收光功率"
+
+msgid "ONU Register Config"
+msgstr "ONU 注册配置"
+
+msgid "Security / URL Filter"
+msgstr "安全 / URL 过滤"
+
+msgid "URL Filter"
+msgstr "URL 过滤"
+
+msgid "Default Filter Type"
+msgstr "默认过滤类型"
+
+msgid "White List"
+msgstr "白名单"
+
+msgid "Black List"
+msgstr "黑名单"
+
+msgid "URL Filter List"
+msgstr "URL 过滤列表"
+
+msgid "Time Option"
+msgstr "时间段"
+
+msgid "Filter Type"
+msgstr "过滤类型"
+
+msgid "URL Filter / Edit"
+msgstr "URL 过滤 / 编辑"
+
+msgid "URL Filter / New"
+msgstr "URL 过滤 / 新建"
+
+msgid "MAC Filter"
+msgstr "MAC 过滤"
+
+msgid "WDS Config"
+msgstr "WDS 配置"
+
+msgid "WDS Service"
+msgstr "WDS 服务"
+
+msgid "Physical Mode"
+msgstr "物理模式"
+
+msgid "WDS / Edit"
+msgstr "WDS / 编辑"
+
+msgid "WDS / New"
+msgstr "WDS / 新建"
+
+msgid "Next Hop"
+msgstr "下一跳"
+
+msgid "Address Pool,Example: 192.168.1.1-20"
+msgstr "IP地址池,例如:192.168.1.1-20"
+
+msgid "PPTP Server"
+msgstr "PPTP服务端"
+
+msgid "PPTP Client"
+msgstr "PPTP客户端"
+
+msgid "PPTP Config"
+msgstr "PPTP配置"
+
+msgid "Local Server IP"
+msgstr "本地服务IP地址"
+
+msgid "Client IP Address Pool"
+msgstr "客户端IP地址池"
+
+msgid "PPTP Client Config"
+msgstr "PPTP客户端配置"
+
+msgid "Default Route"
+msgstr "默认路由"
+
+msgid "L2TP/PPTP Server Access List"
+msgstr "L2TP/PPTP 服务接入列表"
+
+msgid "File Name"
+msgstr "文件名"
+
+msgid "File Size"
+msgstr "文件大小"
+
+msgid "Modify Time"
+msgstr "修改时间"
+
+msgid "New Folder"
+msgstr "新建文件夹"
+
+msgid "Safe Popup"
+msgstr "安全弹出"
+
+msgid "Net U-Disk"
+msgstr "网络U盘"
+
+msgid "Failed to check out the usb device"
+msgstr "未检测到USB设备"
+
+msgid "Call Control / Diagnostics"
+msgstr "呼叫控制 / 诊断"
+
+msgid "Call Trace"
+msgstr "呼叫跟踪"
+
+msgid "Select the module you want to trace"
+msgstr "选择需要跟踪的模块"
+
+msgid "SIP Stack"
+msgstr "SIP协议栈"
+
+msgid "SIP Message"
+msgstr "SIP消息"
+
+msgid "Call Trace is working..."
+msgstr "正在进行呼叫跟踪..."
+
+msgid "Qos Service Status"
+msgstr "Qos 服务状态"
+
+msgid "Qos Model"
+msgstr "Qos 模式"
+
+msgid "Qos Direction"
+msgstr "Qos 方向"
+
+msgid "Upload Bandwith(Mbits)"
+msgstr "上传带宽(Mbits)"
+
+msgid "Download Bandwith(Mbits)"
+msgstr "下载带宽(Mbits)"
+
+msgid "Queue"
+msgstr "队列"
+
+msgid "Download Rate(%)"
+msgstr "下载最小值(%)"
+
+msgid "Download Ceil(%)"
+msgstr "下载最大值(%)"
+
+msgid "Upload Rate(%)"
+msgstr "上传最小值(%)"
+
+msgid "Upload Ceil(%)"
+msgstr "上传最大值(%)"
+
+msgid "IP Address Field"
+msgstr "IP地址范围"
+
+msgid "Packet Length"
+msgstr "数据包长度"
+
+msgid "DSCP Match"
+msgstr "DSCP 匹配"
+
+msgid "Direction"
+msgstr "方向"
+
+msgid "DSCP Remark"
+msgstr "DSCP Remark"
+
+msgid "Bidirection"
+msgstr "双向"
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "ARP Protect"
+msgstr "ARP保护"
+
+msgid "ARP Static Binding"
+msgstr "ARP静态绑定"
+
+msgid "Static IP Addressing"
+msgstr "静态IP地址分配"
+
+msgid "LAN IP Address Config Mode"
+msgstr "LAN口IP地址配置模式"
+
+msgid "Config LAN IP Address"
+msgstr "设置LAN口IP地址"
+
+msgid "Config LAN Gateway"
+msgstr "设置LAN口网关"
+
+msgid "Config LAN Subnet Mask"
+msgstr "设置LAN口子网掩码"
+
+msgid "Set IPv4 Address 172.16.1.10 by dial *162*172*16*1*10#"
+msgstr "通过拨打 *162*172*16*1*10# 将IPv4地址设置为172.16.1.10"
+
+msgid "Set IPv4 Gateway 172.16.1.1 by dial *166*172*16*1*1#"
+msgstr "通过拨打 *166*172*16*1*1# 将网关设置为172.16.1.1"
+
+msgid "Set IPv4 Netmask 255.255.255.0 by dial *163*255*255*255*0#"
+msgstr "通过拨打 *163*255*255*255*0# 将子网掩码设置为255.255.255.0"
+
+msgid "TX POWER"
+msgstr "发射功率"
+
+msgid "Keyword"
+msgstr "关键字"
+
+msgid "Effective Time"
+msgstr "生效时间"
+
+msgid "Filename Extensions"
+msgstr "文件扩展名"
+
+msgid "DHCP Address Pool / Edit"
+msgstr "DHCP地址池 / 编辑"
+
+msgid "DHCP Address Pool / New"
+msgstr "DHCP地址池 / 新建"
+
+msgid "Network / Qos / New"
+msgstr "网络 / Qos / 新建"
+
+msgid "Network / Qos / Edit"
+msgstr "网络 / Qos / 编辑"
+
+msgid "IP address range,Example:192.168.1.1 , 192.168.1.1-192.168.1.100 or 192.168.1.0/24"
+msgstr "IP地址范围,例如:192.168.1.1 , 192.168.1.1-192.168.1.100 or 192.168.1.0/24"
+
+msgid "Binding User IP"
+msgstr "用户IP绑定"
+
+msgid "Binding User MAC"
+msgstr "用户MAC绑定"
+
+msgid "NAT / Edit"
+msgstr "NAT / 编辑"
+
+msgid "NAT / New"
+msgstr "NAT / 新建"
+
+msgid "IPSEC / Edit"
+msgstr "IPSEC / 编辑"
+
+msgid "IPSEC / New"
+msgstr "IPSEC / 新建"
+
+msgid "L2TP User / New"
+msgstr "L2TP用户 / 新建"
+
+msgid "L2TP User / Edit"
+msgstr "L2TP用户 / 编辑"
+
+msgid "PPTP User / New"
+msgstr "PPTP用户 / 新建"
+
+msgid "PPTP User / Edit"
+msgstr "PPTP用户 / 编辑"
+
+msgid "WAN Subinterface / New"
+msgstr "WAN子接口 / 新建"
+
+msgid "WAN Subinterface / Edit"
+msgstr "WAN子接口 / 编辑"
+
+msgid "WLAN / Edit"
+msgstr "WLAN / 编辑"
+
+msgid "WLAN / New"
+msgstr "WLAN / 新建"
+
+msgid "VLAN / New"
+msgstr "VLAN / 新建"
+
+msgid "VLAN / Edit"
+msgstr "VLAN / 编辑"
+
+msgid "Qos / New"
+msgstr "Qos / 新建"
+
+msgid "Qos / Edit"
+msgstr "Qos / 编辑"
+
+msgid "Bidirectional"
+msgstr "双向"
+
+msgid "Local Authentication User / New"
+msgstr "本地认证用户 / 新建"
+
+msgid "Local Authentication User / Edit"
+msgstr "本地认证用户 / 编辑"
+
+msgid "Server IP Address or Domain Name"
+msgstr "服务端IP地址或者域名"
+
+msgid "GRE / New"
+msgstr "GRE / 新建"
+
+msgid "GRE / Edit"
+msgstr "GRE / 编辑"
+
+msgid "Tunnel Index"
+msgstr "隧道接口编号"
+
+msgid "Tunnel IP Address"
+msgstr "隧道IP地址"
+
+msgid "Tunnel IP Address Netmask"
+msgstr "隧道子网掩码"
+
+msgid "Tunnel Source IP Address"
+msgstr "隧道源IP地址"
+
+msgid "Tunnel Destination IP Address"
+msgstr "隧道目的IP地址"
+
+msgid "Tunnel IP Address/Netmask"
+msgstr "隧道地址/子网掩码"
+
+msgid "Tunnel Source IP"
+msgstr "隧道源IP地址"
+
+msgid "Tunnel Destination IP"
+msgstr "隧道目的IP地址"
+
+msgid "Client Start Address"
+msgstr "客户端起始地址"
+
+msgid "Client End Address"
+msgstr "客户端结束地址"
+
+msgid "The length range:"
+msgstr "字符长度范围:"
+
+msgid "DSP Version"
+msgstr "DSP版本"
+
+msgid "FXS / Edit"
+msgstr "FXS / 编辑"
+
+msgid "FXS / New"
+msgstr "FXS / 新建"
+
+msgid "Uploading..."
+msgstr "上传中..."
+
+msgid "Total Size:"
+msgstr "总空间: "
+
+msgid "Available Size:"
+msgstr "可用空间: "
+
+msgid "Tunnel Source Interface"
+msgstr "隧道源接口"
+
+msgid "Tunnel Interface"
+msgstr "隧道接口"
+
+msgid "Local Interface"
+msgstr "本端接口"
+
+msgid "Local Tunnel Interface/LAN Subnet"
+msgstr "本端隧道接口/LAN子网"
+
+msgid "From Header Username"
+msgstr "From域Username字段"
+
+msgid "Specify Transport Protocol on Register URL"
+msgstr "注册URL中指定传输协议"
+
+msgid "Detect Extension is Online"
+msgstr "检测分机是否在线"
+
+msgid "Detect Period(s)"
+msgstr "检测周期(秒)"
+
+msgid "Allow Unknown Call"
+msgstr "允许未知来源的呼叫"
+
+msgid "Inbound Source Filter"
+msgstr "呼入来源过滤"
+
+msgid "Register Source Filter"
+msgstr "注册来源过滤"
+
+msgid "Remote Tunnel IP/LAN Subnet"
+msgstr "对端隧道地址/子网地址"
+
+msgid "Tunnel Authentication"
+msgstr "隧道加密"
+
+msgid "Authentication Password"
+msgstr "隧道验证密码"
+
+msgid "Local Tunnel Interface"
+msgstr "本端隧道接口"
+
+msgid "Local Tunnel IP"
+msgstr "本端隧道地址"
+
+msgid "Current Mode"
+msgstr "当前模式"
+
+msgid "Local Tunnel Interface/Subnet"
+msgstr "本端隧道接口/子网"
+
+msgid "Remote Tunnel IP/Subnet"
+msgstr "对端隧道地址/子网"
+
+msgid "Tunnel Interface Index"
+msgstr "隧道接口编号"
+
+msgid "Tunnel Destination Address"
+msgstr "隧道目的地址"
+
+msgid "The length of packet,Example: 56:128"
+msgstr "数据包长度,例如: 56:128"
+
+msgid "One or two port separated by a colon(:),and the number between 1 and 65535, Example: 5000:6000"
+msgstr "一个或者两个端口用冒号(:)分隔,端口号在1到65535之间,例如: 5000:6000"
+
+msgid "The MTU is 546-1492 when protocol is PPPoE,otherwise 576-1500"
+msgstr "协议为PPPoE时MTU取值范围是546-1492,否则取值范围是576-1500"
+
+msgid "IPSEC connections"
+msgstr "IPSEC连接数"
+
+msgid "Firmware Upgrade"
+msgstr "固件升级"
+
+msgid "Firmware Upgrading..."
+msgstr "固件升级中..."
+
+msgid "failed,not acception,Please check upgrade file!"
+msgstr "失败,不被接受,请检查升级文件!"
+
+msgid "failed,Upgrade type Error!"
+msgstr "失败,升级类型错误!"
+
+msgid "failed,Unpack ld file failed!"
+msgstr "失败,解压LD文件失败!"
+
+msgid "failed,Call upgrade API failed!"
+msgstr "失败,调用升级API接口失败!"
+
+msgid "failed,Call post file API failed!"
+msgstr "失败,调用上传文件API接口失败!"
+
+msgid "System / Command Line"
+msgstr "系统 / 命令行"
+
+msgid "Command Line"
+msgstr "命令行"
+
+msgid "Execute"
+msgstr "执行"
+
+msgid "DDNS"
+msgstr "动态域名"
+
+msgid "DDNS Setting"
+msgstr "动态域名设置"
+
+msgid "DDNS Service"
+msgstr "动态域名服务"
+
+msgid "Update Url"
+msgstr "更新地址"
+
+msgid "Service Providers"
+msgstr "服务商"
+
+msgid "Service Providers List"
+msgstr "服务商列表"
+
+msgid "Service Answer"
+msgstr "服务器应答"
+
+msgid "Retry Interval When Fail(s)"
+msgstr "失败重试时间(秒)"
+
+msgid "IP Check Period(m)"
+msgstr "IP地址变化检测周期(分)"
+
+msgid "Service Update Interval(h)"
+msgstr "服务器地址更新间隔(时)"
+
+msgid "Device Address '%s' is a private or invalid IP ! DDNS can not to be updated !"
+msgstr "设备地址 '%s' 是个私网地址或者非法地址 ! 动态域名无法更新 !"
+
+msgid "Can not get external address via IP Check URL '%s' !"
+msgstr "无法通过IP检查地址 '%s' 获取外部地址 !"
+
+msgid "Connecting to '%s' fail, connection reset by peer !"
+msgstr "连接 '%s' 失败, 连接被对端重置 !"
+
+msgid "retry in %d seconds (%d)"
+msgstr "%d秒后重试第%d次"
+
+msgid "DDNS kernel program missed, please upgrade system !"
+msgstr "动态域名核心程序缺失,请升级系统 !"
+
+msgid "Ready to connect DDNS Provider..."
+msgstr "准备连接动态域名服务商..."
+
+msgid "Connecting to DDNS Provider by '%s'"
+msgstr "正在连接动态域名服务商,更新地址:%s"
+
+msgid "Connecting to '%s' fail, DDNS Provider returned error: HTTP/1.1 404 Not Found !"
+msgstr "连接 '%s' 失败, 动态域名服务商反回错误: HTTP/1.1 404 未找到 !"
+
+msgid "Error sending update to DDNS Provider !"
+msgstr "连接动态域名服务商发生错误 !"
+
+msgid "Address '%s' can not be resolved, please check the address or DNS is correct !"
+msgstr "地址 '%s' 无法解析, 请检查地址及DNS配置是否正确 !"
+
+msgid "DDNS Provider Answered! [%s]"
+msgstr "动态域名服务商已应答 [%s] !"
+
+msgid "Username or Password is not correct !"
+msgstr "用户名或密码错误 !"
+
+msgid "DDNS update fail because requests too frequently !"
+msgstr "请求过于频繁, 动态域名更新失败 !"
+
+msgid "Domain '%s' doesn't exit !"
+msgstr "域名 '%s' 不存在 !"
+
+msgid "Update url doesn't follow DDNS Provider's specifications !"
+msgstr "更新地址不符合动态域名提供商要求 !"
+
+msgid "DDNS update success !"
+msgstr "动态域名更新成功 !"
+
+msgid "There is a problem [%s] on DDNS Provider !"
+msgstr "动态域名服务商发生错误 [%s] !"
+
+msgid "Domain '%s' can not be resolved ! "
+msgstr "域名 '%s' 无法解析 !"
+
+msgid "Domain '%s' can not be resolved ! DDNS update fail !"
+msgstr "域名 '%s' 无法解析, 动态域名更新失败 !"
+
+msgid "IP Source"
+msgstr "IP来源"
+
+msgid "External Address"
+msgstr "外部地址"
+
+msgid "Device Address"
+msgstr "设备地址"
+
+msgid "IP Check URL"
+msgstr "IP检查地址"
+
+msgid "Detecting IP address"
+msgstr "正在检测IP地址"
+
+msgid "Detecting external address via IP Check URL '%s'"
+msgstr "正在通过IP检查地址 '%s' 检测外部地址"
+
+msgid "IP address doesn't change, will recheck in %s minutes !"
+msgstr "IP地址未发生改变, 将于 %s 分钟后重新检查 !"
+
+msgid "System / Setting"
+msgstr "系统 / 设置"
+
+msgid "System / User Manager"
+msgstr "系统 / 用户管理"
+
+msgid "System / Provision"
+msgstr "系统 / Provision"
+
+msgid "System / Operation Log"
+msgstr "系统 / 操作日志"
+
+msgid "System / Service Log"
+msgstr "系统 / 服务运行日志"
+
+msgid "System / Voice"
+msgstr "系统 / 语音"
+
+msgid "System / Reboot"
+msgstr "系统 / 重启"
+
+msgid "System / Command Line"
+msgstr "系统 / 命令行"
+
+msgid "Command Line"
+msgstr "命令行"
+
+msgid "Execute"
+msgstr "执行"
+
+msgid "System / Cloud Service"
+msgstr "系统 / 云服务"
+
+msgid "Cloud Service"
+msgstr "云服务"
+
+msgid "Server Address"
+msgstr "服务器地址"
+
+msgid "Server Port"
+msgstr "服务器端口"
+
+msgid "Disconnected"
+msgstr "未连接"
+
+msgid "Cloud Server"
+msgstr "云服务器"
+
+msgid "Upgrade Log"
+msgstr "升级日志"
+
+msgid "Uploading..."
+msgstr "正在上传..."
+
+msgid "Upgrading..."
+msgstr "正在升级..."
+
+msgid "Applying..."
+msgstr "正在应用..."
+
+msgid "Send Flash Hook via SIP INFO / RFC2833"
+msgstr "通过SIP INFO或RFC2833发送拍叉信号"
+
+msgid "Status / FXO"
+msgstr "状态 / FXO"
+
+msgid "FXO Profile / Edit"
+msgstr "FXO 配置 / 编辑"
+
+msgid "FXO Profile / New"
+msgstr "FXO 配置 / 新建"
+
+msgid "BusyTone Detect Parameters"
+msgstr "忙音检测参数"
+
+msgid "Intermittent Ratio"
+msgstr "断续比"
+
+msgid "BusyTone Detect Intermittent Ratio"
+msgstr "忙音检测断续比"
+
+msgid "On Time(ms)"
+msgstr "持续时间(毫秒)"
+
+msgid "Off Time(ms)"
+msgstr "中断时间(毫秒)"
+
+msgid "Tone 1 On Time(ms)"
+msgstr "第一节拍 持续时间(毫秒)"
+
+msgid "Tone 1 Off Time(ms)"
+msgstr "第一节拍 中断时间(毫秒)"
+
+msgid "Tone 2 On Time(ms)"
+msgstr "第二节拍 持续时间(毫秒)"
+
+msgid "Tone 2 Off Time(ms)"
+msgstr "第二节拍 中断时间(毫秒)"
+
+msgid "FXO Trunk / Edit"
+msgstr "FXO 中继 / 编辑"
+
+msgid "FXO Trunk / New"
+msgstr "FXO 中继 / 新建"
+
+msgid "Display Name / Username Format"
+msgstr "显示名 / 用户名 格式"
+
+msgid "Display Name / Username Format when CID unavailable"
+msgstr "显示名 / 用户名 格式(检测不到主叫号码时)"
+
+msgid "Extension / Caller ID"
+msgstr "分机号码 / 主叫号码"
+
+msgid "Extension / Extension"
+msgstr "分机号码 / 分机号码"
+
+msgid "Caller ID / Caller ID"
+msgstr "主叫号码 / 主叫号码"
+
+msgid "Caller ID / Extension"
+msgstr "主叫号码 / 分机号码"
+
+msgid "Display Name / Extension"
+msgstr "显示名 / 分机号码"
+
+msgid "Display Name / Caller ID"
+msgstr "显示名 / 主叫号码"
+
+msgid "Data Encryption"
+msgstr "数据加密"
+
+msgid "Work Model"
+msgstr "工作模式"
+
+msgid "Remote Tunnel Address"
+msgstr "对端隧道地址"
+
+msgid "Attack Defense"
+msgstr "攻击防御"
+
+msgid "Security / Attack Defense"
+msgstr "安全 / 攻击防御"
+
+msgid "Attack Log"
+msgstr "攻击日志"
+
+msgid "ICMP-Flood Attack Defense"
+msgstr "ICMP-Flood 攻击防御"
+
+msgid "Max Packages Per Second"
+msgstr "每秒最大包数量"
+
+msgid "Response Of Ping Request"
+msgstr "外网PING请求的响应"
+
+msgid "UDP-Flood Attack Defense"
+msgstr "UDP-Flood 攻击防御"
+
+msgid "TCP-NULL Attack Defense"
+msgstr "TCP-NULL 攻击防御"
+
+msgid "TCP XMAS TREE Attack Defense"
+msgstr "TCP XMAS TREE 攻击防御"
+
+msgid "TCP-Flood Attack Defense"
+msgstr "TCP-Flood 攻击防御"
+
+msgid "Config Changes Log"
+msgstr "配置更改日志"
+
+msgid "Config Changes Log is empty !"
+msgstr "配置更改记录为空 !"
+
+msgid "System / Config Changes Log"
+msgstr "系统 / 配置更改日志"
+
+msgid "Login Time"
+msgstr "接入时间"
+
+msgid "Work Mode"
+msgstr "工作模式"
+
+msgid "Valid"
+msgstr "有效值"
+
+msgid "Connect Name"
+msgstr "连接名称"
+
+msgid "IP Address / Netmask"
+msgstr "IP地址 / 子网掩码"
+
+msgid "low:Download Rate(%)"
+msgstr "low:下载最小值(%)"
+
+msgid "low:Download Ceil(%)"
+msgstr "low:下载最大值(%)"
+
+msgid "low:Upload Rate(%)"
+msgstr "low:上传最小值(%)"
+
+msgid "low:Upload Ceil(%)"
+msgstr "low:上传最大值(%)"
+
+msgid "default:Download Rate(%)"
+msgstr "default:下载最小值(%)"
+
+msgid "default:Download Ceil(%)"
+msgstr "default:下载最大值(%)"
+
+msgid "default:Upload Rate(%)"
+msgstr "default:上传最小值(%)"
+
+msgid "default:Upload Ceil(%)"
+msgstr "default:上传最大值(%)"
+
+msgid "high:Download Rate(%)"
+msgstr "high:下载最小值(%)"
+
+msgid "high:Download Ceil(%)"
+msgstr "high:下载最大值(%)"
+
+msgid "high:Upload Rate(%)"
+msgstr "high:上传最小值(%)"
+
+msgid "high:Upload Ceil(%)"
+msgstr "high:上传最大值(%)"
+
+msgid "highest:Download Rate(%)"
+msgstr "highest:下载最小值(%)"
+
+msgid "highest:Download Ceil(%)"
+msgstr "highest:下载最大值(%)"
+
+msgid "highest:Upload Rate(%)"
+msgstr "highest:上传最小值(%)"
+
+msgid "highest:Upload Ceil(%)"
+msgstr "highest:上传最大值(%)"
+
+msgid "Connection lost, please check the network..."
+msgstr "连接中断,请检查网络..."
+
+msgid "Start Extension"
+msgstr "起始分机"
+
+msgid "Extension Count"
+msgstr "分机个数"
+
+msgid "Step"
+msgstr "步进"
+
+msgid "Password Policy"
+msgstr "密码策略"
+
+msgid "All Same"
+msgstr "所有相同"
+
+msgid "Same with Extension"
+msgstr "与分机号码相同"
+
+msgid "Prefix + Extension"
+msgstr "前缀 + 分机号码"
+
+msgid "Extension + Suffix"
+msgstr "分机号码 + 后缀"
+
+msgid "Prefix + Extension + Suffix"
+msgstr "前缀 + 分机号码 + 后缀"
+
+msgid "Auto VPN"
+msgstr "自动VPN"
+
+msgid "Domain List"
+msgstr "域名列表"
+
+msgid "is not exist!"
+msgstr "不存在 !"
+
+msgid "Patch"
+msgstr "补丁"
+
+msgid "System / Patch"
+msgstr "系统 / 补丁"
+
+msgid "Active"
+msgstr "激活"
+
+msgid "Deactive"
+msgstr "去激活"
+
+msgid "Actived"
+msgstr "已激活"
+
+msgid "Deactived"
+msgstr "未激活"
+
+msgid "Upload Patch Succ !"
+msgstr "上传补丁成功 !"
+
+msgid "DTMF value is invalid, cannot start detect !"
+msgstr "DTMF值无效, 无法开始检测 !"
+
+msgid "Feature code should only begin with *, and could only use 0-9 or *, not same with existing"
+msgstr "特性码只能是*开头，可包含数字0-9及*，且不能与已配置的相同"
+
+msgid "Login IP"
+msgstr "登录IP"
+
+msgid "Assigned IP"
+msgstr "分配IP"
+
+msgid "RX / TX Bytes"
+msgstr "接收 / 发送 流量"
+
+msgid "Total"
+msgstr "总计"
+
+msgid "Connection Number"
+msgstr "连接数"
+
+msgid "Detail"
+msgstr "详情"
+
+msgid "NAT Connection List"
+msgstr "NAT连接列表"
+
+msgid "ARP List"
+msgstr "ARP列表"
+
+msgid "SIP Message DSCP Value"
+msgstr "SIP消息DSCP值"
+
+msgid "RTP DSCP Value"
+msgstr "RTP DSCP值"
+
+msgid "License Invalid !"
+msgstr "许可证无效 !"
+
+msgid "Invalid license info"
+msgstr "无效的许可证信息"
+
+msgid "DSP Auth"
+msgstr "DSP授权"
+
+msgid "Please take a photo of the label on the device box and then send it together with hardware ID to technical support."
+msgstr "请将设备外壳上的标签拍照以及硬件ID一起发给技术支持 !"
+
+msgid "OpenVPN Client"
+msgstr "OpenVPN 客户端"
+
+msgid "Certificate"
+msgstr "证书"
+
+msgid "Certificate Upload Succ !"
+msgstr "证书上传成功 !"
+
+msgid "Certificate is not uploaded yet !"
+msgstr "证书尚未上传 !"
+
+msgid "Certificate has been uploaded !"
+msgstr "证书已上传 !"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Online Record"
+msgstr "在线记录"
+
+msgid "History Records"
+msgstr "历史记录"
+
+msgid "Dial Delay(ms)"
+msgstr "延时拨号(毫秒)"
+
+msgid "Offhook Current Detect Threshold"
+msgstr "摘机电流检测阈值"
+
+msgid "Onhook Current Detect Threshold"
+msgstr "挂机电流检测阈值"
+
+msgid "mA"
+msgstr "毫安"
+
+msgid "WAN/GPON Switch"
+msgstr "WAN/GPON 切换"
+
+msgid "WAN/GPON switch needs to take effect after reboot !"
+msgstr "WAN/GPON 切换需要重启后生效 !"
