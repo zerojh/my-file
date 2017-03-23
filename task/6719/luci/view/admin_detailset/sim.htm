@@ -1,0 +1,210 @@
+<%+header%>
+
+<style type="text/css">
+table td {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+table {table-layout:fixed;}
+.description {
+	border: 1px solid;
+	padding: 15px 30px;
+}
+.line {
+	white-space: normal;
+	text-align: left;
+	text-indent: 2em;
+	margin-bottom: 0;
+	margin-left: 0;
+	line-height: 16px;
+	font-size: 14px;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script language="javascript" type="text/javascript">
+var max_line=1500;
+var cbi_union;
+function form_check()
+{
+	if(document.getElementById('submit_action').value=="cancel")
+		return true
+	var dest=phonenumber_check('<%=destination_number_id%>')
+	var text=text_check('<%=send_text_id%>')
+	var from=phonenumber_check('<%=from_number_id%>')
+	var key=text_check('<%=keywords_id%>')
+	if(dest && text && from && key)
+		return true
+	else
+		alert("<%:Some fields are invalid, cannot save values!%>")
+	return false
+}
+function enable_check()
+{
+	var val = document.getElementById("<%=enable_id%>").value;
+	var obj = document.getElementById("cbi.<%=enable_id%>");
+	var union_id=document.getElementById("cbi.union")
+	if (val == "1") {
+		if (!union_id && cbi_union) {
+			obj.parentNode.appendChild(cbi_union);
+			cbi_union.style.display = "";
+		} else if (union_id && !cbi_union) {
+			cbi_union = union_id;
+			cbi_union.style.display = "";
+		}
+	} else {
+		if (union_id) {
+			if (!cbi_union)
+				cbi_union = union_id;
+			obj.parentNode.removeChild(cbi_union);
+			cbi_union.style.display = "";
+		}
+	}
+}
+function phonenumber_check(id){
+	var val=document.getElementById(id).value
+	if(val.length==0 || !cbi_validators.phonenumber(val))
+	{
+		switch_tip_status(id,"show")
+		return false
+	}
+	else
+	{
+		switch_tip_status(id,"hide")
+		return true
+	}
+}
+function text_check(id){
+	if(document.getElementById(id).value.length == 0)
+	{
+		switch_tip_status(id,"show")
+		return false
+	}
+	else
+	{
+		switch_tip_status(id,"hide")
+		return true
+	}
+}
+function switch_tip_status(id,flag)
+{
+	var id_obj=document.getElementById(id)
+	var id_tip_obj=document.getElementById(id+".tip")
+	if("show" == flag)
+	{
+		if(id_obj.className.match(/cbi\-input\-invalid/) == null)
+			id_obj.className += ' cbi-input-invalid'
+		id_tip_obj.style.display="table"
+	}
+	else
+	{
+		id_obj.className = id_obj.className.replace(/ cbi-input-invalid/g, '')
+		id_tip_obj.style.display="none"
+	}
+}
+function matching_test(obj)
+{
+	if("<%:Matching Test%>" == obj.value)
+	{
+		document.getElementById("test_content").style.display=""
+		document.getElementById("test_content_result").style.display=""
+		obj.value="<%:Test End%>"
+	}
+	else
+	{
+		document.getElementById("test_content").style.display="none"
+		document.getElementById("test_content_result").style.display="none"
+		obj.value="<%:Matching Test%>"
+	}
+}
+function keywords_check(id)
+{
+	text_check(id)
+	if("<%:Matching Test%>" != document.getElementById("matching_test_btn").value && document.getElementById("test_content_val").value.length != 0)
+		refresh_test_result()
+}
+function refresh_test_result()
+{
+	var keyword=document.getElementById("<%=keywords_id%>").value
+	var content=document.getElementById("test_content_val").value
+	var reg = new RegExp(keyword+"([+#0-9]+)")
+	var result=content.match(reg)
+	if(keyword.length > 0 && result)
+	{
+		document.getElementById("test_content_result_val").innerHTML=RegExp.$1
+		document.getElementById("test_content_result_val").style.backgroundColor="#beefc2"
+	}
+	else
+	{
+		if(keyword.length == 0)
+		{
+			text_check('<%=keywords_id%>')
+			document.getElementById("test_content_result_val").innerHTML="<%:Keywords%> <%:Can not be empty!%>"
+			document.getElementById("test_content_result_val").style.backgroundColor="#f4c1c0"
+		}
+		else if(content.length == 0)
+		{
+			document.getElementById("test_content_result_val").innerHTML="&nbsp;"
+			document.getElementById("test_content_result_val").style.backgroundColor="#f4c1c0"
+		}
+		else
+		{
+			document.getElementById("test_content_result_val").innerHTML="<%:Matching Failed%>"
+			document.getElementById("test_content_result_val").style.backgroundColor="#f4c1c0"
+		}
+	}
+}
+window.onload=function (){
+	enable_check();
+};
+</script>
+<form method="post" name="cbi" action="<%=REQUEST_URI%>" enctype="multipart/form-data" onsubmit="return form_check(this);">
+<h2><a id="content" name="content">配置 / SIM卡</a></h2>
+<fieldset>
+<div>
+	<div class="cbi-value" id="cbi.<%=enable_id%>">
+		<div class="cbi-value-title">启动号码学习功能</div>
+		<div class="cbi-value-field">
+		<select id='<%=enable_id%>' name='<%=enable_id%>' onchange="enable_check();">
+			<option value='0' <%=(enable_value=="0" and "selected" or "")%>>禁用</option>
+			<option value='1' <%=(enable_value=="1" and "selected" or "")%>>启用</option>
+		</select>
+		</div>
+	</div>
+	<div id="cbi.union" style="display:none;">
+	<div class="cbi-value" id="cbi.<%=destination_number_id%>">
+		<div class="cbi-value-title"><%:Destination Number%></div>
+		<div class="cbi-value-field"><input type="text" class="cbi-input-text" id='<%=destination_number_id%>' name='<%=destination_number_id%>' onchange="phonenumber_check('<%=destination_number_id%>')" onblur="phonenumber_check('<%=destination_number_id%>')" onkeyup="phonenumber_check('<%=destination_number_id%>')" value='<%=destination_number_value%>'></input></div>
+		<div class="cbi-input-tip" id='<%=destination_number_id%>.tip' style="display:none"><div style="display:table-cell;vertical-align:middle;"><%:Number only could use 0-9,a-Z or +/*/#, Max length is 32%></div></div>
+	</div>
+	<div class="cbi-value" id="cbi.<%=send_text_id%>">
+		<div class="cbi-value-title"><%:Send Text%></div>
+		<div class="cbi-value-field"><input type="text" id='<%=send_text_id%>' name='<%=send_text_id%>' onblur="text_check('<%=send_text_id%>')" onkeyup="text_check('<%=send_text_id%>')" value="<%=send_text_value%>"></input></div>
+		<div class="cbi-input-tip" id='<%=send_text_id%>.tip' style="display:none;"><div style="display:table-cell;vertical-align:middle;"><%:Send Text%> <%:Can not be empty!%></div></div>
+	</div>
+	<div class="cbi-value" id="cbi.<%=from_number_id%>">
+		<div class="cbi-value-title"><%:Check SMS From Number%></div>
+		<div class="cbi-value-field"><input type="text" class="cbi-input-text" id='<%=from_number_id%>' name='<%=from_number_id%>' onchange="phonenumber_check('<%=from_number_id%>')" onblur="phonenumber_check('<%=from_number_id%>')" onkeyup="phonenumber_check('<%=from_number_id%>')" value='<%=from_number_value%>'></input></div>
+		<div class="cbi-input-tip" id='<%=from_number_id%>.tip' style="display:none"><div style="display:table-cell;vertical-align:middle;"><%:Number only could use 0-9,a-Z or +/*/#, Max length is 32%></div></div>
+	</div>
+	<div class="cbi-value" id="cbi.<%=keywords_id%>">
+		<div class="cbi-value-title"><%:Keywords%></div>
+		<div class="cbi-value-field"><input type="text" id='<%=keywords_id%>' name='<%=keywords_id%>' onblur="keywords_check('<%=keywords_id%>')" onkeyup="keywords_check('<%=keywords_id%>')" value="<%=keywords_value%>"></input><input id="matching_test_btn" type="button" class="cbi-button cbi-button-apply" style="font-size:13px;margin-left:2px;" value="<%:Matching Test%>" onclick="return matching_test(this)" /></div>
+		<div class="cbi-input-tip" id='<%=keywords_id%>.tip' style="display:none;width:20%;margin-left:20px;"><div style="display:table-cell;vertical-align:middle;"><%:Keywords%> <%:Can not be empty!%></div></div>
+	</div>
+	<div class="cbi-value" id="test_content" style="display:none">
+		<div class="cbi-value-title"><%:Test SMS Content%></div>
+		<div class="cbi-value-field"><textarea type="text" class="cbi-input-textarea" style="width:60%; height: 100px; max-height:100px; max-width:60%; margin: 0px;" id='test_content_val' onblur="refresh_test_result()" onkeyup="refresh_test_result()" onchange="refresh_test_result()"></textarea></div>
+	</div>
+	<div class="cbi-value" id="test_content_result" style="display:none">
+		<div class="cbi-value-title"><%:Matching Test Result%></div>
+		<div class="cbi-value-field"><pre style="width:57%;" id="test_content_result_val">&nbsp;</pre></div>
+	</div>
+	</div>
+</div>
+</fieldset>
+
+<div class="cbi-value cbi-value-last" style="text-align:center;">
+<input class="cbi-button" type="submit" name="cancel" value="取消" onclick="document.getElementById('submit_action').value='cancel'"/>
+<input class="cbi-button cbi-button-save" type="submit" name="save" value="保存" onclick="document.getElementById('submit_action').value='save'"/>
+<input class="cbi-button" type="reset" value="重置" onclick="cbi.reset();enable_check();"/>
+<input type="hidden" id="submit_action" name="submit_action" value="" />
+<script type="text/javascript">enable_check()</script>
+</div>
+</form>
