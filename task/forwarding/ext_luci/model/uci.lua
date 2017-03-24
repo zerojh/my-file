@@ -371,7 +371,7 @@ function Cursor.check_cfg_deps(self,config,section,param)
 			local cfg_tb
 
 			if "endpoint_siptrunk" == config then
-				cfg_tb = self:get_all("endpoint_fxso")
+				cfg_tb = self:get_all("endpoint_fxso") or {}
 				if cfg_tb and "table" == type(cfg_tb) then
 					for k,v in pairs(cfg_tb) do
 						if cur_index == v.port_1_server_1 or cur_index == v.port_1_server_2 or cur_index == v.port_2_server_1 or cur_index == v.port_2_server_2 then
@@ -383,7 +383,7 @@ function Cursor.check_cfg_deps(self,config,section,param)
 						end
 					end
 				end
-				cfg_tb = self:get_all("endpoint_mobile")
+				cfg_tb = self:get_all("endpoint_mobile") or {}
 				if cfg_tb and "table" == type(cfg_tb) then
 					for k,v in pairs(cfg_tb) do
 						if cur_index == v.port_server_1 or cur_index == v.port_server_2 then
@@ -398,7 +398,7 @@ function Cursor.check_cfg_deps(self,config,section,param)
 			end
 			
 			if ("endpoint_fxso" == config and "FXS" == slot_type) or "endpoint_sipphone" == config then
-				cfg_tb = self:get_all("endpoint_ringgroup")
+				cfg_tb = self:get_all("endpoint_ringgroup") or {}
 				if cfg_tb and "table" == type(cfg_tb) then
 					for k,v in pairs(cfg_tb) do
 						if v.members_select and type(v.members_select) == "table" then
@@ -414,7 +414,7 @@ function Cursor.check_cfg_deps(self,config,section,param)
 				end
 			end
 			
-			cfg_tb = self:get_all("endpoint_routegroup")
+			cfg_tb = self:get_all("endpoint_routegroup") or {}
 			for k,v in pairs(cfg_tb) do
 				if v.members_select and type(v.members_select) == "table" then
 					for _,v2 in pairs(v.members_select) do
@@ -429,7 +429,7 @@ function Cursor.check_cfg_deps(self,config,section,param)
 				end 
 			end
 
-			cfg_tb = self:get_all("route")
+			cfg_tb = self:get_all("route") or {}
 			if cfg_tb and "table" == type(cfg_tb) then
 				for k,v in pairs(cfg_tb) do
 					if "-1" == v.from and v.custom_from and "table" == type(v.custom_from) then
@@ -488,28 +488,32 @@ function Cursor.check_cfg_deps(self,config,section,param)
 	return "return true",true
 end
 
-function Cursor.get_destination_detail(param,number)
+function Cursor.get_destination_detail(dest,num)
 	local i18n = require "luci.i18n"
 	local uci = require "luci.model.uci".cursor()
-	if not param then
+	local interface = uci:get("system","main","interface") or ""
+
+	if not dest then
 		return i18n.translate("Error")
 	end
-	local dest,time,num = param:match("([^:]+)::([^:]*)::([^:]+)")
-	if not dest then
-		dest,time = param:match("([^:]+)::([^:]*)")
-		if not dest then
-			dest = param
-		end
-	end
-	num = number or num
 
 	if dest:match("^gsmopen") then
 		return i18n.translate("GSM Trunk").."/"..(num or "")
 	elseif dest:match("^FXO") then
-		return i18n.translate("FXO Trunk").."/"..(num or "")
+		if interface:match("1[Oo]") then
+			return i18n.translate("FXO Trunk").."/"..(num or "")
+		else
+			local slot,port = dest:match("(%d+)/(%d+)")
+			if slot and port then
+				port = (slot-1)*2+port-1
+				return i18n.translate("FXO Trunk").."/"..i18n.translate("Port").." "..port.."/"..(num or "")
+			else
+				return i18n.translate("FXO Trunk").."/"..(num or "")
+			end
+		end
 	elseif dest:match("^SIPT") then
 		local profile,idx = dest:match("^SIPT%-(%d+)_(%d+)")
-		for k,v in pairs(uci:get_all("endpoint_siptrunk")) do
+		for k,v in pairs(uci:get_all("endpoint_siptrunk") or {}) do
 			if v.index and v.index == idx and v.profile and v.profile == profile and v.name then
 				if v.status == "Enabled" then
 					return i18n.translate("SIP Trunk").."/"..v.name.."/"..(num or "")
@@ -519,8 +523,15 @@ function Cursor.get_destination_detail(param,number)
 			end
 		end
 		return i18n.translate("Error")..":"..i18n.translate("SIP Trunk").." ("..i18n.translate("Index")..":"..(idx or "unknown").." "..i18n.translate("Profile")..":"..(profile or "unknown")..") "..i18n.translate("is not exist!")
+	elseif dest:match("^FORWARD%-%d+$") then
+		local idx = dest:match("^FORWARD%-(%d+)$")
+		for k,v in pairs(uci:get_all("endpoint_forwardgroup") or {}) do
+			if v.index and v.index == idx and v.name then
+				return i18n.translate("Call Forward Group").." "..v.name
+			end
+		end
 	elseif dest:match("^%d+$") then
-		for k,v in pairs(uci:get_all("endpoint_fxso")) do
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 			if "fxs" == v['.type'] and v.number_1 and v.number_1 == dest then
 				if v.status == "Enabled" then
 					return i18n.translate("FXS Extension").."/"..dest
@@ -529,7 +540,7 @@ function Cursor.get_destination_detail(param,number)
 				end
 			end
 		end
-		for k,v in pairs(uci:get_all("endpoint_sipphone")) do
+		for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
 			if v.user and v.user == dest and v.name then
 				if v.status == "Enabled" then
 					return i18n.translate("SIP Extension").."/"..v.name.."/"..v.user
@@ -547,7 +558,7 @@ end
 function Cursor.get_siptrunk_server(server_index)
 	local i18n = require "luci.i18n"
 	local uci = require "luci.model.uci".cursor()
-	local siptrunk = uci:get_all("endpoint_siptrunk")
+	local siptrunk = uci:get_all("endpoint_siptrunk") or {}
 	
 	for i,j in pairs(siptrunk) do
 		if j.index and j.name and server_index == j.index then
@@ -562,8 +573,8 @@ function Cursor.get_custom_source(name)
 	local i18n = require "luci.i18n"
 	local uci = require "luci.model.uci".cursor()
 	local interface = uci:get("system","main","interface") or ""
-	local sipt = uci:get_all("endpoint_siptrunk")
-	local sipp = uci:get_all("endpoint_sipphone")
+	local sipt = uci:get_all("endpoint_siptrunk") or {}
+	local sipp = uci:get_all("endpoint_sipphone") or {}
 
 	if name:match("^GSM%-%d+$") then
 		return i18n.translate("GSM Trunk")

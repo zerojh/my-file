@@ -1,0 +1,19 @@
+
+msgid "Call Forward Group"
+msgstr "呼叫转移组"
+
+msgid "Call Forward Destination"
+msgstr "呼叫转移目的地"
+
+msgid "Call Forward Destination / Time Profile"
+msgstr "呼叫转移目的地 / 时间配置"
+
+msgid "Call Control / Call Forward Group / New"
+msgstr "呼叫控制 / 呼叫转移组 / 新建"
+
+msgid "Call Control / Call Forward Group / Edit"
+msgstr "呼叫控制 / 呼叫转移组 / 编辑"
+
+msgid "Call Control / Call Forward Group"
+msgstr "呼叫控制 / 呼叫转移组"
+

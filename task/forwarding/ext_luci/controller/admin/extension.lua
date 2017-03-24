@@ -111,31 +111,30 @@ function sip()
 				end
 				more_info[cnt] = i18n.translate("Call Waiting").." : "..((v.waiting and "Activate" == v.waiting) and i18n.translate("On") or i18n.translate("Off")).."<br>"
 				more_info[cnt] = more_info[cnt]..i18n.translate("Do Not Disturb").." : "..((v.notdisturb and "Activate" == v.notdisturb) and i18n.translate("On") or i18n.translate("Off")).."<br>"
-
-				local forward_uncondition = (type(v.forward_uncondition) == "string" and v.forward_uncondition) or (type(v.forward_uncondition) == "table" and v.forward_uncondition[1])
-				if not forward_uncondition or "Deactivate" == forward_uncondition then
+				if not v.forward_uncondition or (v.forward_uncondition and "Deactivate" == v.forward_uncondition) then
 					more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("Off").."<br>"
-
-					local forward_unregister = (type(v.forward_unregister) == "string" and v.forward_unregister) or (type(v.forward_unregister) == "table" and v.forward_unregister[1])
-					local forward_busy = (type(v.forward_busy) == "string" and v.forward_busy) or (type(v.forward_busy) == "table" and v.forward_busy[1])
-					local forward_noreply = (type(v.forward_noreply) == "string" and v.forward_noreply) or (type(v.forward_noreply) == "table" and v.forward_noreply[1])
-					if not forward_unregister or "Deactivate" == forward_unregister then
+					if not v.forward_unregister or (v.forward_unregister and "Deactivate" == v.forward_unregister) then
 						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unregister").." : "..i18n.translate("Off").."<br>"
-					else
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unregister").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_unregister,v.forward_unregister_dst).."...<br>"
+					elseif v.forward_unregister then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unregister").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_unregister,v.forward_unregister_dst).."<br>"
 					end
-					if not forward_busy or "Deactivate" == forward_busy then
+					if not v.forward_busy or (v.forward_busy and "Deactivate" == v.forward_busy) then
 						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("Off").."<br>"
-					else
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_busy,v.forward_busy_dst).."...<br>"
+					elseif v.forward_busy then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_busy,v.forward_busy_dst).."<br>"
 					end
-					if not forward_noreply or "Deactivate" == forward_noreply then
+					if not v.forward_noreply or (v.forward_noreply and "Deactivate" == v.forward_noreply) then
 						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("Off").."<br>"
 					else
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_noreply,v.forward_noreply_dst).."...<br>"
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_noreply,v.forward_noreply_dst)
+						if v.forward_noreply_timeout then
+							more_info[cnt] = more_info[cnt].."/"..v.forward_noreply_timeout.."<br>"
+						else
+							more_info[cnt] = more_info[cnt].."<br>"
+						end
 					end
 				else
-					more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_uncondition,v.forward_uncondition_dst).."...<br>"
+					more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v.forward_uncondition,v.forward_uncondition_dst).."<br>"
 				end
 				if v.callin_filter == "blacklist" or v.callin_filter == "whitelist" then
 					local filter_idx = (v.callin_filter == "blacklist" and v.callin_filter_blacklist or v.callin_filter_whitelist)
@@ -344,10 +343,7 @@ function fxs()
 					tmp[4] = (v["waiting_"..port] == "Activate") and i18n.translate("On") or i18n.translate("Off")
 					tmp[5] = (v["notdisturb_"..port] == "Activate") and i18n.translate("On") or i18n.translate("Off")
 					
-					local forward_uncondition = (type(v["forward_uncondition_"..port]) == "string" and v["forward_uncondition_"..port]) or (type(v["forward_uncondition_"..port]) == "table" and v["forward_uncondition_"..port][1])
-					local forward_busy = (type(v["forward_busy_"..port]) == "string" and v["forward_busy_"..port]) or (type(v["forward_busy_"..port]) == "table" and v["forward_busy_"..port][1])
-					local forward_noreply = (type(v["forward_noreply_"..port]) == "string" and v["forward_noreply_"..port]) or (type(v["forward_noreply_"..port]) == "table" and v["forward_noreply_"..port][1])
-					if (forward_uncondition and forward_uncondition ~= "Deactivate") or (forward_busy and forward_busy ~= "Deactivate") or (forward_noreply and forward_noreply ~= "Deactivate") then
+					if v["forward_uncondition_"..port] ~= "Deactivate" or (v["forward_busy_"..port] and v["forward_busy_"..port] ~= "Deactivate") or (v["forward_noreply_"..port] and v["forward_noreply_"..port] ~= "Deactivate") then
 						tmp[6] = i18n.translate("On")
 					else
 						tmp[6] = i18n.translate("Off")
@@ -391,25 +387,25 @@ function fxs()
 						more_info[cnt] = more_info[cnt]..i18n.translate("Hot Line").." : "..i18n.translate("Off").."</br>"
 					end
 					
-					if forward_uncondition and "Deactivate" ~= forward_uncondition then
-						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_uncondition,v["forward_uncondition_dst_"..port]).."...<br>"
-					elseif "Deactivate" == forward_uncondition then
+					if v["forward_uncondition_"..port] and "Deactivate" ~= v["forward_uncondition_"..port] then
+						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_uncondition_"..port],v["forward_uncondition_dst_"..port]).."<br>"
+					elseif "Deactivate" == v["forward_uncondition_"..port] then
 						more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Unconditional").." : "..i18n.translate("Off").."<br>"
-						if forward_busy and "Deactivate" ~= forward_busy then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_busy,v["forward_busy_dst_"..port]).."...<br>"
-						else
+						if v["forward_busy_"..port] and "Deactivate" == v["forward_busy_"..port] then
 							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("Off").."<br>"
+						elseif v["forward_busy_"..port] then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward Busy").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_busy_"..port],v["forward_busy_dst_"..port]).."<br>"
 						end
 						
-						if forward_noreply and "Deactivate" ~= forward_noreply then
-							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("On").."->"..uci.get_destination_detail(forward_noreply,v["forward_noreply_dst_"..port])
+						if v["forward_noreply_"..port] and "Deactivate" == v["forward_noreply_"..port] then
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("Off").."<br>"
+						else
+							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("On").."->"..uci.get_destination_detail(v["forward_noreply_"..port],v["forward_noreply_dst_"..port])
 							if v["forward_noreply_timeout_"..port] then
-								more_info[cnt] = more_info[cnt].."/"..v["forward_noreply_timeout_"..port].."...<br>"
+								more_info[cnt] = more_info[cnt].."/"..v["forward_noreply_timeout_"..port].."<br>"
 							else
 								more_info[cnt] = more_info[cnt].."<br>"
 							end
-						else
-							more_info[cnt] = more_info[cnt]..i18n.translate("Call Forward No Reply").." : "..i18n.translate("Off").."<br>"
 						end
 					end
 					if v["callin_filter_"..port] == "blacklist" or v["callin_filter_"..port] == "whitelist" then
@@ -511,7 +507,7 @@ function ringgroup()
 	local more_info = {}
 	local addnewable = true
 	local cnt = 0
-	local ringgrp = uci:get_all("endpoint_ringgroup")
+	local ringgrp = uci:get_all("endpoint_ringgroup") or {}
 	for i=1,MAX_RING_GRP do
 		for k,v in pairs(ringgrp) do
 			if v.index and v.name and i == tonumber(v.index) then

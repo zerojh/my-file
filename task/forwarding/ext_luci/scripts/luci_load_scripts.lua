@@ -1240,40 +1240,32 @@ function check_sip_trunk_ref()
 		end
 	end
 	local flag=false
-	local forward_str_tb = {"forward_uncondition","forward_busy","forward_noreply","followme"}
+	local forward_option_tb = {"forward_uncondition","forward_busy","forward_noreply"}
 	local port_tb = {"1","2"}
 	for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 		if v[".type"] == "fxs" then
 			for _,port_index in ipairs(port_tb) do
-				for _,forward_str in ipairs(forward_str_tb) do
-					local port_forward_str = forward_str.."_"..port_index
-					if port_forward_str == ("followme_"..port_index) then
-					else
-						if v[port_forward_str] and v[port_forward_str] ~= "Deactivate" then
-							local forward_tb
-							if v[port_forward_str] == "Followme" then
-								forward_tb = v.followme
-							elseif v[port_forward_str] == "Custom" then
-								forward_tb = v["custom_"..port_forward_str]
-							end
-							if forward_tb and type(forward_tb) == "string" then
-								local tmp_tb = {}
-								table.insert(tmp_tb, forward_tb)
-								forward_tb = tmp_tb
-							end
-							if forward_tb and type(forward_tb) == "table" and next(forward_tb) then
-								for x,y in ipairs(forward_tb) do
-									if y:match("^SIPT%-%d+_%d+") then
-										local profile,idx = y:match("^SIPT%-(%d+)_(%d+)")
-										if sipt[idx] ~= profile then
-											forward_tb[x] = string.gsub(y,"^SIPT%-%d+_%d+","SIPT-"..(sipt[idx] or "unknown").."_"..idx)
-										end
+				for _,forward_option in ipairs(forward_option_tb) do
+					local port_forward_option = forward_option.."_"..port_index
+
+					if v[port_forward_option] then
+						if type(v[port_forward_option]) == "string" then
+							local tmp_tb = {}
+							table.insert(tmp_tb, v[port_forward_option])
+							v[port_forward_option] = tmp_tb
+						end
+						if type(v[port_forward_option]) == "table" and next(v[port_forward_option]) then
+							for x,y in ipairs(v[port_forward_option]) do
+								if y:match("^SIPT%-%d+_%d+") then
+									local profile,idx = y:match("^SIPT%-(%d+)_(%d+)")
+									if sipt[idx] ~= profile then
+										v[port_forward_option][x] = string.gsub(y,"^SIPT%-%d+_%d+","SIPT-"..(sipt[idx] or "unknown").."_"..idx)
 									end
 								end
 							end
-							uci:set("endpoint_fxso", k, port_forward_option, v[port_forward_option])
-							flag=true
 						end
+						uci:set("endpoint_fxso", k, port_forward_option, v[port_forward_option])
+						flag=true
 					end
 				end
 			end
@@ -1284,9 +1276,9 @@ function check_sip_trunk_ref()
 		uci:commit("endpoint_fxso")
 	end
 	flag=false
-	forward_str_tb = {"forward_uncondition","forward_unregister","forward_busy","forward_noreply"}
+	forward_option_tb = {"forward_uncondition","forward_unregister","forward_busy","forward_noreply"}
 	for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
-		for _,forward_option in ipairs(forward_str_tb) do
+		for _,forward_option in ipairs(forward_option_tb) do
 			if v[forward_option] then
 				if type(v[forward_option]) == "string" then
 					local tmp_tb = {}

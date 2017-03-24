@@ -45,6 +45,7 @@ local config_file = {
 	["static_route"] = "Static Route",
 	["upnpc"] = "UPnP Client",
 	["user"] = "User Manager",
+	["endpoint_forwardgroup"] = "Call Forward Group",
 }
 local config = {
 	["profile_sip"] = {
@@ -161,6 +162,7 @@ local config = {
 			["20"]="Turkey",
 			["21"]="Dutch",
 			["ph"]="Philippines",
+			["za"]="South Africa",
 		},
 		["digit"]="Digit Timeout(s)",
 		["dialTimeout"]="Dial Timeout(s)",
@@ -491,12 +493,12 @@ local config = {
 			["4g"]="4G",
 			["2g-3g"]="2G & 3G",
 		},
-        ["hide_callernumber"]="CLIR",
-        ["__hide_callernumber_value"]={     
-                ["0"]="Auto",         
-                ["1"]="On",     
-                ["2"]="Off",      
-        },
+		["hide_callernumber"]="CLIR",
+		["__hide_callernumber_value"]={
+			["0"]="Auto",
+			["1"]="On",
+			["2"]="Off",
+		},
 		["reg_fail_reactive"]="Reactive when register fail",
 		["at_sms_encoding"]="SMS Encoding",
 		["at_smsc_number"]="SMS Center Number",
@@ -1402,6 +1404,11 @@ local config = {
 		["callcontrol_sms_route"]="Call Control / SMS Route",
 		["callcontrol_diagnostics"]="Call Control / Diagnostics",
 	},
+	["endpoint_forwardgroup"] = {
+		["index"]="Index",
+		["name"]="Name",
+		["destination"]="Call Forward Destination",
+	},
 }
 
 function translate_multi_value(value)
@@ -1422,22 +1429,8 @@ function get_siptrunk_server(server_index)
 	return translate("Not Config")
 end
 
-function get_endpoint_name(dest,dest_type)
+function get_endpoint_name(value,dest_type)
 	local interface=uci:get("system","main","interface") or ""
-
-	local value = dest
-	local time, dest_number
-	local time_str = ""
-	if "forward" == dest_type then
-		value,time,dest_number = dest:match("([^:]+)::([^:]*)::([^:]+)")
-		if not value then
-			value,time = dest:match("([^:]+)::([^:]*)")
-			if not value then
-				value = dest
-			end
-		end
-		time_str = " , "..translate("Time Profile").." = "..(time and time ~= "" and time or translate("Alaways"))
-	end
 
 	if value:match("^%d+$") then
 		local number=value:match("^(%d+)$")
@@ -1445,110 +1438,62 @@ function get_endpoint_name(dest,dest_type)
 		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 			if v[".type"] == "fxs" then
 				if number == v.number_1 or number == v.number_2 then
-					if "forward" == dest_type then
-						return translate("FXS Extension").." / "..number..time_str
-					else
-						return translate("FXS Extension").." / "..number
-					end
+					return translate("FXS Extension").." / "..number
 				end
 			end
 		end
 		for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
 			if number == v.user and v.name then
-				if "forward" == dest_type then
-					return translate("SIP Extension").." / "..v.name.." / "..number..time_str
-				else
-					return translate("SIP Extension").." / "..v.name.." / "..number
-				end
+				return translate("SIP Extension").." / "..v.name.." / "..number
 			end
 		end
 	end
 
-	if value:match("^FXO%-%d+%-%d+$") or value:match("^FXO%-%d+/%d+$") or value:match("^FXO/%d+%-%d+$") or value:match("^FXO/%d+/%d+$") then
+	if value:match("^FXO%-%d+%-%d+$") or value:match("^FXO%-%d+%/%d+$") then
 		local slot,port=value:match("^FXO%-(%d+)%-(%d+)$")
 		if not slot then
-			slot,port=value:match("^FXO%-(%d+)/(%d+)$")
-			if not slot then
-				slot,port=value:match("^FXO/(%d+)%-(%d+)$")
-				if not slot then
-					slot,port=value:match("^FXO/(%d+)/(%d+)$")
-				end
-			end
+			slot,port=value:match("^FXO%-(%d+)%/(%d+)$")
 		end
 		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 			if v[".type"] == "fxo" and v.index and slot == v.index then
 				if interface:match("1O") then
-					if "forward" == dest_type then
-						return translate("FXO Trunk").." / "..(dest_number or translate("Unknown"))..time_str
-					else
-						return translate("FXO Trunk")
-					end
+					return translate("FXO Trunk")
 				else
 					if "0" == port or ("1"==port and "from" == dest_type) then
-						if "forward" == dest_type then
-							return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1)).." / "..(dest_number or translate("Unknown"))..time_str
-						else
-							return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1))
-						end
+						return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)
 					else
-						if "forward" == dest_type then
-							return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1)+1).." / "..(dest_number or translate("Unknown"))..time_str
-						else
-							return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1)+1)
-						end
+						return translate("FXO Trunk").." / "..translate("Port").." "..2*(tonumber(slot)-1)+1
 					end
 				end
 			end
 		end
 	end
 
-	if value:match("^FXS%-%d+%-%d+$") or value:match("^FXS%-%d+/%d+$") or value:match("^FXS/%d+%-%d+$") or value:match("^FXS/%d+/%d+$") then
+	if value:match("^FXS%-%d+%-%d+$") or value:match("^FXS%-%d+%/%d+$") then
 		local slot,port=value:match("^FXS%-(%d+)%-(%d+)$")
 		if not slot then
-			slot,port=value:match("^FXS%-(%d+)/(%d+)$")
-			if not slot then
-				slot,port=value:match("^FXS/(%d+)%-(%d+)$")
-				if not slot then
-					slot,port=value:match("^FXS/(%d+)/(%d+)$")
-				end
-			end
+			slot,port=value:match("^FXS%-(%d+)%/(%d+)$")
 		end
 		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 			if v[".type"] == "fxs" and v.index and v.name and slot == v.index then
 				if "0" == port or ("1"==port and "from" == dest_type) then
-					if "forward" == dest_type then
-						return translate("FXS Extension").." / "..v.number_1..time_str
-					else
-						return translate("FXS Extension").." / "..v.number_1
-					end
+					return translate("FXS Extension").." / "..v.number_1
 				else
-					if "forward" == dest_type then
-						return translate("FXS Extension").." / "..v.number_2..time_str
-					else
-						return translate("FXS Extension").." / "..v.number_2
-					end
+					return translate("FXS Extension").." / "..v.number_2
 				end
 			end
 		end
 	end
 
 	if value:match("^GSM%-%d+$") or value:match("^gsmopen") then
-		if "forward" == dest_type then
-			return translate("GSM Trunk").." / "..(dest_number or translate("Unknown"))..time_str
-		else
-			return translate("GSM Trunk")
-		end
+		return translate("GSM Trunk")
 	end
 
 	if value:match("^SIPP%-%d+$") then
 		local sipp_number = value:match("^SIPP%-(%d+)$")
 		for k, v in pairs(uci:get_all("endpoint_sipphone") or {}) do
 			if v.index and v.name and sipp_number == v.index then
-				if "forward" == dest_type then
-					return translate("SIP Extension").." / "..v.name.." / "..v.user..time_str
-				else
-					return translate("SIP Extension").." / "..v.name.." / "..v.user
-				end
+				return translate("SIP Extension").." / "..v.name.." / "..v.user
 			end
 		end
 	end
@@ -1557,11 +1502,7 @@ function get_endpoint_name(dest,dest_type)
 		local sipt_number = value:match("^SIPT%-(%d+)$") or value:match("^SIPT%-(%d+%_%d+)$")
 		for k, v in pairs(uci:get_all("endpoint_siptrunk") or {}) do
 			if v.index and v.name and (sipt_number == v.index or sipt_number == v.profile.."_"..v.index) then
-				if "forward" == dest_type then
-					return translate("SIP Trunk").." / "..v.name.." / "..(dest_number or translate("Unknown"))..time_str
-				else
-					return translate("SIP Trunk").." / "..v.name
-				end
+				return translate("SIP Trunk").." / "..v.name
 			end
 		end
 	end
@@ -1601,7 +1542,7 @@ function get_ivr_dest(name)
 	local desttype,param = name:match("(.+),(.+)")
 	if desttype and param then
 		if "Extensions" == desttype then
-			for k,v in pairs(uci:get_all("endpoint_sipphone")) do
+			for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
 				if "fxs" == v[".type"] and param == v.number then
 					return "SIP Extension / "..v.name.." / "..v.user
 				end
@@ -1860,6 +1801,90 @@ function get_config_option_name(cfg_name,section,option)
 	end
 end
 
+function get_forward_destination(dest)
+	local interface=uci:get("system","main","interface") or ""
+
+	local value,time,dest_number = dest:match("([^:]+)::([^:]*)::([^:]+)")
+	local time_str = ""
+	if not value then
+		value,time = dest:match("([^:]+)::([^:]*)")
+		if not value then
+			value = dest
+		end
+	end
+	local time_str = " , "..translate("Time Profile").." = "..(time and time ~= "" and time or translate("Alaways"))
+
+	if value:match("^%d+$") then
+		local number=value:match("^(%d+)$")
+
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxs" then
+				if number == v.number_1 or number == v.number_2 then
+					return translate("FXS Extension").." / "..number..time_str
+				end
+			end
+		end
+		for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
+			if number == v.user and v.name then
+				return translate("SIP Extension").." / "..v.name.." / "..number..time_str
+			end
+		end
+	elseif value:match("^FXO%-%d+%-%d+$") or value:match("^FXO%-%d+/%d+$") or value:match("^FXO/%d+%-%d+$") or value:match("^FXO/%d+/%d+$") then
+		local slot,port=value:match("^FXO%-(%d+)%-(%d+)$")
+		if not slot then
+			slot,port=value:match("^FXO%-(%d+)/(%d+)$")
+			if not slot then
+				slot,port=value:match("^FXO/(%d+)%-(%d+)$")
+				if not slot then
+					slot,port=value:match("^FXO/(%d+)/(%d+)$")
+				end
+			end
+		end
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxo" and v.index and slot == v.index then
+				if interface:match("1O") then
+					return translate("FXO Trunk").." / "..(dest_number or translate("Unknown"))..time_str
+				else
+					if "0" == port then
+						return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1)).." / "..(dest_number or translate("Unknown"))..time_str
+					else
+						return translate("FXO Trunk").." / "..translate("Port").." "..(2*(tonumber(slot)-1)+1).." / "..(dest_number or translate("Unknown"))..time_str
+					end
+				end
+			end
+		end
+	elseif value:match("^FXS%-%d+%-%d+$") or value:match("^FXS%-%d+/%d+$") or value:match("^FXS/%d+%-%d+$") or value:match("^FXS/%d+/%d+$") then
+		local slot,port=value:match("^FXS%-(%d+)%-(%d+)$")
+		if not slot then
+			slot,port=value:match("^FXS%-(%d+)/(%d+)$")
+			if not slot then
+				slot,port=value:match("^FXS/(%d+)%-(%d+)$")
+				if not slot then
+					slot,port=value:match("^FXS/(%d+)/(%d+)$")
+				end
+			end
+		end
+		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
+			if v[".type"] == "fxs" and v.index and v.name and slot == v.index then
+				if "0" == port then
+					return translate("FXS Extension").." / "..v.number_1..time_str
+				else
+					return translate("FXS Extension").." / "..v.number_2..time_str
+				end
+			end
+		end
+	elseif value:match("^GSM%-%d+$") or value:match("^gsmopen") then
+		return translate("GSM Trunk").." / "..(dest_number or translate("Unknown"))..time_str
+	elseif value:match("^SIPT%-%d+$") or value:match("^SIPT%-%d+%_%d+$") then
+		local sipt_number = value:match("^SIPT%-(%d+)$") or value:match("^SIPT%-(%d+%_%d+)$")
+		for k, v in pairs(uci:get_all("endpoint_siptrunk") or {}) do
+			if v.index and v.name and (sipt_number == v.index or sipt_number == v.profile.."_"..v.index) then
+				return translate("SIP Trunk").." / "..v.name.." / "..(dest_number or translate("Unknown"))..time_str
+			end
+		end
+	end
+end
+
 function get_config_option_value(cfg_name,section,option,value)
 	if "true" == value or "on" == value or "Activate" == value then
 		return translate("On")
@@ -1872,7 +1897,7 @@ function get_config_option_value(cfg_name,section,option,value)
 	elseif "profile_fxso" == cfg_name and option:match("hook_current_threshold") and value then
 		return value.."mA"
 	elseif ("endpoint_fxso" == cfg_name or "endpoint_sipphone") and (option:match("forward_uncondition") or option:match("forward_unregister") or option:match("forward_busy") or option:match("forward_noreply")) and value then
-		return get_endpoint_name(value,"forward")
+		return get_endpoint_name(value)
 	elseif "ivr" == cfg_name and "destination" == option and value then
 		return get_ivr_dest(value)
 	elseif "dhcp" == cfg_name and ("start" == option or "limit" == option or "dhcp_option" == option) and value then
@@ -1893,6 +1918,8 @@ function get_config_option_value(cfg_name,section,option,value)
 		else
 			return translate("View,Edit")
 		end
+	elseif "endpoint_forwardgroup" == cfg_name and "destination" == option and value then
+		return get_forward_destination(value)
 	else
 		return translate(config[cfg_name] and config[cfg_name]["__"..option.."_value"] and config[cfg_name]["__"..option.."_value"][value] or value)
 	end

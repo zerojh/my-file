@@ -474,18 +474,25 @@ function cbi_callforwarding_init(name, respath, input_depends)
 
 		if (c1.value == "Deactivate" || (c3.value == "" && c5.value == "")) {
 			obj.value = c1.value;
+			if (!obj.name || obj.name == "")
+				obj.name = obj.name1;
 		} else {
 			if (c3.value.indexOf("addnew_") >= 0) {
 				obj.value = "";
+				if (!obj.name1 || obj.name1 == "")
+					obj.name1 = obj.name;
 				obj.removeAttribute("name");
-				c1.removeAttribute("name");
-				c5.removeAttribute("name");
-			} else if (c3.value == "" && c5.value != "") {
-				obj.value = c1.value + "::::" + c5.value;
-			} else if (c3.value != "" && c5.value == "") {
-				obj.value = c1.value + "::" + c3.value;
 			} else {
-				obj.value = c1.value + "::" + c3.value + "::" + c5.value;
+				if (!obj.name || obj.name == "")
+					obj.name = obj.name1;
+
+				if (c3.value == "" && c5.value != "") {
+					obj.value = c1.value + "::::" + c5.value;
+				} else if (c3.value != "" && c5.value == "") {
+					obj.value = c1.value + "::" + c3.value;
+				} else {
+					obj.value = c1.value + "::" + c3.value + "::" + c5.value;
+				}
 			}
 		}
 	}
@@ -529,6 +536,7 @@ function cbi_callforwarding_init(name, respath, input_depends)
 			c5.removeAttribute("name");
 		}
 		c1.click();
+		c3.click();
 	}
 
 	if(selobjs.length > 1 && selobjs.length + deactivate_num < options_len) {

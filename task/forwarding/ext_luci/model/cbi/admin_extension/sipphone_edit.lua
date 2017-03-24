@@ -9,7 +9,12 @@ uci:check_cfg("endpoint_sipphone")
 uci:check_cfg("endpoint_siptrunk")
 uci:check_cfg("endpoint_fxso")
 uci:check_cfg("endpoint_mobile")
-uci:check_cfg("profile_time")
+uci:check_cfg("profile_number")
+
+local current_user = dsp.context.authuser
+local number_access = uci:get("user",current_user.."_web","profile_number")
+local profile_access = uci:get("user",current_user.."_web","profile_sip")
+local numprofile_tb = uci:get_all("profile_number") or {}
 
 local current_section = arg[1]
 
@@ -19,6 +24,11 @@ else
 	m = Map("endpoint_sipphone",translate("Extension / SIP / New"))
 	m.addnew = true
 	m.new_section = arg[1]
+end
+
+local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
+if arg[3] then
+	continue_param = continue_param .. ";" .. arg[3]
 end
 
 m.redirect = dsp.build_url("admin","extension","sip")
@@ -33,7 +43,7 @@ s.addremove = false
 s.anonymous = true
 
 local this_index = uci:get("endpoint_sipphone",arg[1],"index")
-local profile = uci:get_all("endpoint_sipphone")
+local profile = uci:get_all("endpoint_sipphone") or {}
 
 if arg[2] == "edit" then
 	index = s:option(DummyValue,"index",translate("Index"))
@@ -63,9 +73,9 @@ user.rmempty = false
 local str = ""
 --# sip_extension
 for k,v in pairs(profile) do
-	if  v.index ~= this_index and v.user then
-		str = str..v.user.."&"
-	end
+    if  v.index ~= this_index and v.user then
+    	str = str..v.user.."&"
+    end
 end
 --# fxs /fxo
 local fxso_profile = uci:get_all("endpoint_fxso") or {}
@@ -133,9 +143,10 @@ call_notdisturb:value("Activate",translate("On"))
 --@ get table of forward dst
 local forward_extension_dst = {}
 local forward_trunk_dst = {}
+local forward_group = {}
 
 if luci.version.license and luci.version.license.fxs then--check fxs license
-	for k,v in pairs(uci:get_all("endpoint_fxso")) do
+	for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 		if "fxs" == v['.type'] and v.index and "Enabled" == v.status then
 			if luci.version.license.fxs > 1 then
 				table.insert(forward_extension_dst,{index=v.number_1,name=translate("FXS Extension").." / "..v.number_1})
@@ -148,7 +159,7 @@ if luci.version.license and luci.version.license.fxs then--check fxs license
 end
 
 for i=1,32 do
-	for k,v in pairs(uci:get_all("endpoint_sipphone")) do
+	for k,v in pairs(uci:get_all("endpoint_sipphone") or {}) do
 		if v.index and v.name and tonumber(v.index) == i and "Enabled" == v.status and v.user then
 			table.insert(forward_extension_dst,{index=v.user,name=translate("SIP Extension").." / "..v.name.." / "..v.user})
 			break
@@ -157,7 +168,7 @@ for i=1,32 do
 end
 
 if luci.version.license and luci.version.license.fxo then--check fxo license
-	for k,v in pairs(uci:get_all("endpoint_fxso")) do
+	for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 		if "fxo" == v['.type'] and v.index and "Enabled" == v.status then
 			if luci.version.license.fxo > 1 then
 				table.insert(forward_trunk_dst,{index="FXO/"..v.index.."/1",name=translate("FXO Trunk").." / "..translate("Port").." 0"})
@@ -170,7 +181,7 @@ if luci.version.license and luci.version.license.fxo then--check fxo license
 end
 
 for i=1,12 do
-	for k,v in pairs(uci:get_all("endpoint_mobile")) do
+	for k,v in pairs(uci:get_all("endpoint_mobile") or {}) do
 		if v.index and tonumber(v.index) == i and "Enabled" == v.status and v.slot_type and v.slot_type:match("GSM$") and v.name then
 			table.insert(forward_trunk_dst,{index="gsmopen/"..v.slot_type,name=translate("GSM Trunk")})
 			break
@@ -179,7 +190,7 @@ for i=1,12 do
 end
 
 for i=1,12 do
-	for k,v in pairs(uci:get_all("endpoint_mobile")) do
+	for k,v in pairs(uci:get_all("endpoint_mobile") or {}) do
 		if v.index and tonumber(v.index) == i and "Enabled" == v.status and v.slot_type and v.slot_type:match("CDMA$") and v.name then
 			table.insert(forward_trunk_dst,{index="gsmopen/"..v.slot_type,name=translate("CDMA Trunk")})
 			break
@@ -188,7 +199,7 @@ for i=1,12 do
 end
 
 for i=1,32 do
-	for k,v in pairs(uci:get_all("endpoint_siptrunk")) do
+	for k,v in pairs(uci:get_all("endpoint_siptrunk") or {}) do
 		if v.index and tonumber(v.index) == i and "Enabled" == v.status and v.index and v.name and v.profile then
 			table.insert(forward_trunk_dst,{index="SIPT-"..v.profile.."_"..v.index,name=translate("SIP Trunk").." / "..v.name})
 			break
@@ -196,87 +207,148 @@ for i=1,32 do
 	end
 end
 
-local profile_time = uci:get_all("profile_time") or {}
+for i=1,32 do
+	for k,v in pairs(uci:get_all("endpoint_forwardgroup") or {}) do
+		if v.index and tonumber(v.index) == i and v.name and v.destination then
+			table.insert(forward_group,{index="FORWARD-"..v.index,name=translate("Call Forward Group").." / "..v.name})
+		end
+	end
+end
 --@ Forward uncondition
-call_forward_uncondition = s:option(CallForwarding, "forward_uncondition", translate("Call Forward Unconditional").." / "..translate("Time Profile"))
-call_forward_uncondition.datatype = "phonenumber"
-call_forward_uncondition:s1_value("Deactivate",translate("Off"))
+call_forward_uncondition = s:option(ListValue,"forward_uncondition",translate("Call Forward Unconditional"))
+call_forward_uncondition.default = "Deactivate"
+call_forward_uncondition:value("Deactivate",translate("Off"))
 for k,v in pairs(forward_extension_dst) do
-	call_forward_uncondition:s1_value(v.index, v.name)
+	call_forward_uncondition:value(v.index,v.name)
 end
 for k,v in pairs(forward_trunk_dst) do
-	call_forward_uncondition:s1_depvalue(v.index, v.name)
+	call_forward_uncondition:value(v.index,v.name)
 end
-call_forward_uncondition:s2_value("",translate("Alaways"))
-for k,v in pairs(profile_time) do
-	if v.index and v.name then
-		call_forward_uncondition:s2_value(v.index, v.name)
+for k,v in pairs(forward_group) do
+	call_forward_uncondition:value(v.index,v.name)
+end
+if #forward_trunk_dst > 0 then
+	local forward_dst_uncondition = s:option(Value,"forward_uncondition_dst",translate("Dest Number"))
+	forward_dst_uncondition.margin = "30px"
+	forward_dst_uncondition.datatype = "phonenumber"
+	forward_dst_uncondition.rmempty = "false"
+	for k,v in pairs(forward_trunk_dst) do
+		forward_dst_uncondition:depends("forward_uncondition",v.index)
 	end
-end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_uncondition:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
---@ end
---@ Unregister uncondition
-call_forward_unregister = s:option(CallForwarding, "forward_unregister", translate("Call Forward Unregister").." / "..translate("Time Profile"))
-call_forward_unregister:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
-call_forward_unregister.datatype = "phonenumber"
-call_forward_unregister:s1_value("Deactivate",translate("Off"))
-for k,v in pairs(forward_extension_dst) do
-	call_forward_unregister:s1_value(v.index, v.name)
-end
-for k,v in pairs(forward_trunk_dst) do
-	call_forward_unregister:s1_depvalue(v.index, v.name)
-end
-call_forward_unregister:s2_value("",translate("Alaways"))
-for k,v in pairs(profile_time) do
-	if v.index and v.name then
-		call_forward_unregister:s2_value(v.index, v.name)
-	end
-end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_unregister:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
---@ end
---@ Forward busy
-call_forward_busy = s:option(CallForwarding, "forward_busy", translate("Call Forward Busy").." / "..translate("Time Profile"))
-call_forward_busy:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
-call_forward_busy.datatype = "phonenumber"
-call_forward_busy:s1_value("Deactivate",translate("Off"))
-for k,v in pairs(forward_extension_dst) do
-	call_forward_busy:s1_value(v.index, v.name)
-end
-for k,v in pairs(forward_trunk_dst) do
-	call_forward_busy:s1_depvalue(v.index, v.name)
-end
-call_forward_busy:s2_value("",translate("Alaways"))
-for k,v in pairs(profile_time) do
-	if v.index and v.name then
-		call_forward_busy:s2_value(v.index, v.name)
-	end
-end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_busy:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
---@ end
---@ Forward noreply
-call_forward_noreply = s:option(CallForwarding, "forward_noreply", translate("Call Forward No Reply").." / "..translate("Time Profile"))
-call_forward_noreply:depends("forward_uncondition","Deactivate")
-call_forward_noreply.datatype = "phonenumber"
-call_forward_noreply:s1_value("Deactivate",translate("Off"))
-for k,v in pairs(forward_extension_dst) do
-	call_forward_noreply:s1_value(v.index, v.name)
-end
-for k,v in pairs(forward_trunk_dst) do
-	call_forward_noreply:s1_depvalue(v.index, v.name)
-end
-call_forward_noreply:s2_value("",translate("Alaways"))
-for k,v in pairs(profile_time) do
-	if v.index and v.name then
-		call_forward_noreply:s2_value(v.index, v.name)
-	end
-end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-call_forward_noreply:s2_value("addnew_profile_time/"..continue_param, translate("< Add New ...>"))
 
-forward_noreply_timeout = s:option(Value,"forward_noreply_timeout",translate("Call Timeout(s)"))
+	function forward_dst_uncondition.validate(self, value)
+		local tmp = string.sub((m:get(arg[1],"forward_uncondition") or ""),1,3)
+		if  tmp == "FXO" or tmp == "SIP" or tmp == "gsm" then
+			return Value.validate(self, value)
+		else 
+			m:del(arg[1],"forward_uncondition_dst")
+			return value or ""
+		end
+	end
+end
+--@ Unregister uncondition
+call_forward_unregister = s:option(ListValue,"forward_unregister",translate("Call Forward Unregister"))
+call_forward_unregister:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
+call_forward_unregister.default = "Deactivate"
+call_forward_unregister:value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	call_forward_unregister:value(v.index,v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	call_forward_unregister:value(v.index,v.name)
+end
+for k,v in pairs(forward_group) do
+	call_forward_unregister:value(v.index,v.name)
+end
+if #forward_trunk_dst > 0 then
+	local forward_dst_unregister = s:option(Value,"forward_unregister_dst",translate("Dest Number"))
+	forward_dst_unregister.margin = "30px"
+	forward_dst_unregister.datatype = "phonenumber"
+	forward_dst_unregister.rmempty = "false"
+	for k,v in pairs(forward_trunk_dst) do
+		forward_dst_unregister:depends("forward_unregister",v.index)
+	end
+
+	function forward_dst_unregister.validate(self, value)
+		local tmp = string.sub((m:get(arg[1],"forward_unregister") or ""),1,3)
+		if  tmp == "FXO" or tmp == "SIP" or tmp == "gsm" then
+			return Value.validate(self, value)
+		else 
+			m:del(arg[1],"forward_unregister_dst")
+			return value or ""
+		end
+	end
+end
+--@ Forward busy
+call_forward_busy = s:option(ListValue,"forward_busy",translate("Call Forward Busy"))
+call_forward_busy:depends({waiting="Deactivate",forward_uncondition="Deactivate"})
+call_forward_busy.default = "Deactivate"
+call_forward_busy:value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	call_forward_busy:value(v.index,v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	call_forward_busy:value(v.index,v.name)
+end
+for k,v in pairs(forward_group) do
+	call_forward_busy:value(v.index,v.name)
+end
+
+if #forward_trunk_dst > 0 then
+	local forward_dst_busy = s:option(Value,"forward_busy_dst",translate("Dest Number"))
+	forward_dst_busy.margin = "30px"
+	forward_dst_busy.datatype = "phonenumber"
+	forward_dst_busy.rmempty = "false"
+	for k,v in pairs(forward_trunk_dst) do
+		forward_dst_busy:depends("forward_busy",v.index)
+	end
+
+	function forward_dst_busy.validate(self, value)
+		local tmp = string.sub((m:get(arg[1],"forward_busy") or ""),1,3)
+		if  tmp == "FXO" or tmp == "SIP" or tmp == "gsm" then
+			return Value.validate(self, value)
+		else 
+			m:del(arg[1],"forward_busy_dst")
+			return value or ""
+		end
+	end
+end
+--@ Forward noreply
+call_forward_noreply = s:option(ListValue,"forward_noreply",translate("Call Forward No Reply"))
+call_forward_noreply:depends("forward_uncondition","Deactivate")
+call_forward_noreply.default = "Deactivate"
+call_forward_noreply:value("Deactivate",translate("Off"))
+for k,v in pairs(forward_extension_dst) do
+	call_forward_noreply:value(v.index,v.name)
+end
+for k,v in pairs(forward_trunk_dst) do
+	call_forward_noreply:value(v.index,v.name)
+end
+for k,v in pairs(forward_group) do
+	call_forward_noreply:value(v.index,v.name)
+end
+
+if #forward_trunk_dst > 0 then
+	local forward_dst_noreply = s:option(Value,"forward_noreply_dst",translate("Dest Number"))
+	forward_dst_noreply.margin = "30px"
+	forward_dst_noreply.datatype = "phonenumber"
+	forward_dst_noreply.rmempty = "false"
+	for k,v in pairs(forward_trunk_dst) do
+		forward_dst_noreply:depends("forward_noreply",v.index)
+	end
+
+	function forward_dst_noreply.validate(self, value)
+		local tmp = string.sub((m:get(arg[1],"forward_noreply") or ""),1,3)
+		if  tmp == "FXO" or tmp == "SIP" or tmp == "gsm" then
+			return Value.validate(self, value)
+		else 
+			m:del(arg[1],"forward_noreply_dst")
+			return value or ""
+		end
+	end	
+end
+
+local forward_noreply_timeout = s:option(Value,"forward_noreply_timeout",translate("Call Timeout(s)"))
 forward_noreply_timeout.default = "20"
 forward_noreply_timeout.margin = "30px"
 forward_noreply_timeout.datatype = "range(1,3600)"
@@ -287,16 +359,19 @@ end
 for k,v in pairs(forward_trunk_dst) do
 	forward_noreply_timeout:depends("forward_noreply",v.index)
 end
+for k,v in pairs(forward_group) do
+	forward_noreply_timeout:depends("forward_noreply",v.index)
+end
+
 function forward_noreply_timeout.validate(self, value)
 	local tmp = m:get(arg[1],"forward_noreply")
-	if not tmp or tmp == "Deactivate" or tmp == "" then
+	if tmp == "Deactivate" then
 		m:del(arg[1],"forward_noreply_timeout")
-		return value or ""
-	else
+		return value or ""	
+	else 
 		return Value.validate(self, value)
 	end
-end
---@ end
+end	
 
 nat = s:option(ListValue,"nat",translate("NAT"))
 nat.rmempty = false
@@ -312,7 +387,7 @@ in_filter:value("whitelist",translate("White List"))
 in_filter_blacklist = s:option(ListValue,"callin_filter_blacklist",translate("Call In Black List"))
 in_filter_blacklist:depends("callin_filter","blacklist")
 in_filter_blacklist.margin = "32px"
-local numprofile_tb = uci:get_all("profile_number")
+
 for i=1,32 do
 	for k,v in pairs(numprofile_tb) do
 		if v.index and v.name then
@@ -325,24 +400,22 @@ for i=1,32 do
 		end
 	end
 end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-if arg[3] then
-	continue_param = continue_param .. ";" .. arg[3]
-end
-in_filter_blacklist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
-function in_filter_blacklist.cfgvalue(...)
-	local v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_blacklist")
-	if v and v:match("^addnew") then
-		m.uci:revert("endpoint_sipphone",current_section, "callin_filter_blacklist")
-		v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_blacklist")
+if "admin" == current_user or (number_access and number_access:match("edit")) then
+	in_filter_blacklist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
+	function in_filter_blacklist.cfgvalue(...)
+		local v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_blacklist")
+		if v and v:match("^addnew") then
+			m.uci:revert("endpoint_sipphone",current_section, "callin_filter_blacklist")
+			v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_blacklist")
+		end
+		return v
 	end
-	return v
 end
 
 in_filter_whitelist = s:option(ListValue,"callin_filter_whitelist",translate("Call In White List"))
 in_filter_whitelist:depends("callin_filter","whitelist")
 in_filter_whitelist.margin = "32px"
-local numprofile_tb = uci:get_all("profile_number")
+
 for i=1,32 do
 	for k,v in pairs(numprofile_tb) do
 		if v.index and v.name then
@@ -355,19 +428,17 @@ for i=1,32 do
 		end
 	end
 end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-if arg[3] then
-	continue_param = continue_param .. ";" .. arg[3]
-end
-in_filter_whitelist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
+if "admin" == current_user or (number_access and number_access:match("edit")) then
+	in_filter_whitelist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
 
-function in_filter_whitelist.cfgvalue(...)
-	local v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_whitelist")
-	if v and v:match("^addnew") then
-		m.uci:revert("endpoint_sipphone",current_section, "callin_filter_whitelist")
-		v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_whitelist")
+	function in_filter_whitelist.cfgvalue(...)
+		local v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_whitelist")
+		if v and v:match("^addnew") then
+			m.uci:revert("endpoint_sipphone",current_section, "callin_filter_whitelist")
+			v = m.uci:get("endpoint_sipphone",current_section, "callin_filter_whitelist")
+		end
+		return v
 	end
-	return v
 end
 
 out_filter = s:option(ListValue,"callout_filter",translate("Call Out Filter"))
@@ -378,7 +449,7 @@ out_filter:value("whitelist",translate("White List"))
 out_filter_blacklist = s:option(ListValue,"callout_filter_blacklist",translate("Call Out Black List"))
 out_filter_blacklist:depends("callout_filter","blacklist")
 out_filter_blacklist.margin = "32px"
-local numprofile_tb = uci:get_all("profile_number")
+
 for i=1,32 do
 	for k,v in pairs(numprofile_tb) do
 		if v.index and v.name then
@@ -391,24 +462,22 @@ for i=1,32 do
 		end
 	end
 end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-if arg[3] then
-	continue_param = continue_param .. ";" .. arg[3]
-end
-out_filter_blacklist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
-function out_filter_blacklist.cfgvalue(...)
-	local v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_blacklist")
-	if v and v:match("^addnew") then
-		m.uci:revert("endpoint_sipphone",current_section, "callout_filter_blacklist")
-		v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_blacklist")
+if "admin" == current_user or (number_access and number_access:match("edit")) then
+	out_filter_blacklist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
+	function out_filter_blacklist.cfgvalue(...)
+		local v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_blacklist")
+		if v and v:match("^addnew") then
+			m.uci:revert("endpoint_sipphone",current_section, "callout_filter_blacklist")
+			v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_blacklist")
+		end
+		return v
 	end
-	return v
 end
 
 out_filter_whitelist = s:option(ListValue,"callout_filter_whitelist",translate("Call Out White List"))
 out_filter_whitelist:depends("callout_filter","whitelist")
 out_filter_whitelist.margin = "32px"
-local numprofile_tb = uci:get_all("profile_number")
+
 for i=1,32 do
 	for k,v in pairs(numprofile_tb) do
 		if v.index and v.name then
@@ -421,23 +490,21 @@ for i=1,32 do
 		end
 	end
 end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-if arg[3] then
-	continue_param = continue_param .. ";" .. arg[3]
-end
-out_filter_whitelist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
-function out_filter_whitelist.cfgvalue(...)
-	local v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_whitelist")
-	if v and v:match("^addnew") then
-		m.uci:revert("endpoint_sipphone",current_section, "callout_filter_whitelist")
-		v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_whitelist")
+if "admin" == current_user or (number_access and number_access:match("edit")) then
+	out_filter_whitelist:value("addnew_profile_number/"..continue_param,translate("< Add New ...>"))
+	function out_filter_whitelist.cfgvalue(...)
+		local v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_whitelist")
+		if v and v:match("^addnew") then
+			m.uci:revert("endpoint_sipphone",current_section, "callout_filter_whitelist")
+			v = m.uci:get("endpoint_sipphone",current_section, "callout_filter_whitelist")
+		end
+		return v
 	end
-	return v
 end
 
 pf = s:option(ListValue,"profile",translate("SIP Profile"))
 pf.rmempty = false
-local profile_tb = uci:get_all("profile_sip")
+local profile_tb = uci:get_all("profile_sip") or {}
 for i=1,32 do
 	for k,v in pairs(profile_tb) do
 		if v.index and v.name then
@@ -451,18 +518,16 @@ for i=1,32 do
 		end
 	end
 end
-local continue_param = "extension-sip-"..arg[1].."-"..arg[2]
-if arg[3] then
-	continue_param = continue_param .. ";" .. arg[3]
-end
-pf:value("addnew_profile_sip/"..continue_param,translate("< Add New ...>"))
-function pf.cfgvalue(...)
-	local v = m.uci:get("endpoint_sipphone",current_section, "profile")
-	if v and v:match("^addnew") then
-		m.uci:revert("endpoint_sipphone",current_section, "profile")
-		v = m.uci:get("endpoint_sipphone",current_section, "profile")
+if "admin" == current_user or (profile_access and profile_access:match("edit")) then
+	pf:value("addnew_profile_sip/"..continue_param,translate("< Add New ...>"))
+	function pf.cfgvalue(...)
+		local v = m.uci:get("endpoint_sipphone",current_section, "profile")
+		if v and v:match("^addnew") then
+			m.uci:revert("endpoint_sipphone",current_section, "profile")
+			v = m.uci:get("endpoint_sipphone",current_section, "profile")
+		end
+		return v
 	end
-	return v
 end
 
 status = s:option(ListValue,"status",translate("Status"))
