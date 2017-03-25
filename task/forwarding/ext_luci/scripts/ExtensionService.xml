@@ -87,10 +87,6 @@
 				<action application="set" data="bridge_answer_timeout=55"/>
 				<action application="transfer" data="${1}" />
 			</condition>
-			<condition break="on-true">
-				<action application="hangup" data="${last_bridge_hangup_cause}"/>
-			</condition>
-
 		</extension>
 	</context>
 </include>

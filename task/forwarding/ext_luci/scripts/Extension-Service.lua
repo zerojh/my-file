@@ -5,7 +5,13 @@ local uci = require "uci".cursor()
 local bridge_str = argv[1]
 local sip_ex_tb = {}
 local fxs_ex_tb = {}
+local interface = ""
+local voice_lang = ""
+local sip_trunk_name = {}
 local endpoint_interface = {}
+local bind_transfer_dtmf = ""
+local attended_transfer_dtmf = ""
+
 --@ endpoint_fxso or endpoint_sipphone
 local call_waiting_status = "Deactivate"
 local call_notdisturb_status = "Deactivate"
@@ -13,11 +19,7 @@ local call_forward_unregister_status = "Deactivate"
 local call_forward_uncondition_status = "Deactivate"
 local call_forward_busy_status = "Deactivate"
 local call_forward_noreply_status = "Deactivate"
-local sipuser_reg_query = ""
-
---@ feature_code
-local bind_transfer_dtmf = ""
-local attended_transfer_dtmf = ""
+local sip_extension_reg_status_query=""
 
 if not bridge_str then
 	--@ Error Log
@@ -60,13 +62,6 @@ elseif bridge_str:match("user/")  then
 	end
 end
 
-for k,v in pairs(uci:get_all("feature_code")) do
-	if v.index == "12" and v.status == "Enabled" and v.code then
-		bind_transfer_dtmf = string.sub(v.code,2,string.len(v.code))
-	elseif v.index == "13" and v.status == "Enabled" and v.code then
-		attended_transfer_dtmf = string.sub(v.code,2,string.len(v.code))
-	end
-end
 
 --@ check 
 function check_channel_idle_state(bridge_param)
@@ -102,7 +97,7 @@ function check_channel_idle_state(bridge_param)
 				return "true"
 			elseif reply_str and (reply_str:match("false\nDEV_READY\nUP\n1\n") and not string.find(reply_str,"online") and not string.find(reply_str,"offline")) then
 				return "waiting"
-			end 			
+			end
 		end
 	end
 
@@ -178,7 +173,7 @@ if session:ready() then
 		end
 	end
 
-	--@ service of call_notdisturb 
+	--@ service of call_notdisturb
 	if call_notdisturb_status == "Activate" then
 		session:consoleLog("info","ROUTING:service of call_notdisturb")	
 
@@ -195,7 +190,7 @@ if session:ready() then
 		--@ HERE IS ROUTING END
 	else
 		--@ take the first service,call_forward_uncondition
-		if "Activate" == call_forward_uncondition_status then
+		if "Deactivate" ~= call_forward_uncondition_status then
 			session:consoleLog("info","ROUTING:service of call_forward_uncondition")
 			session:setVariable("my_fail_fw_uncondition_flag","true")
 		else
@@ -241,7 +236,7 @@ if session:ready() then
 			--@ END
 
 			--@ USER_BUSY
-			if "Activate" == call_forward_busy_status then
+			if "Deactivate" ~= call_forward_busy_status then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "USER_BUSY"
 				end
@@ -251,7 +246,7 @@ if session:ready() then
 			--@ END
 
 			--@ NO_ANSWER or NO_USER_RESPONSE
-			if call_forward_noreply_status == "Activate" then
+			if call_forward_noreply_status == "Deactivate" then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "NO_ANSWER,NO_USER_RESPONSE"
 				else

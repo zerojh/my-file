@@ -1143,6 +1143,8 @@ function forwardgroup()
 	local ds = require "luci.dispatcher"
 	local i18n = require "luci.i18n"
 
+	uci:check_cfg("endpoint_")
+
 	local interface=uci:get("system","main","interface") or ""
 
 	local del_target = luci.http.formvaluetable("Delete")

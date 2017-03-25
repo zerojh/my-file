@@ -8,57 +8,64 @@ local now_minute = tonumber(now_time_tb.hour) * 60 + tonumber(now_time_tb.min)
 
 local bridge_str = argv[1]
 local forward_type = argv[2]
-local forward_uncondition_tb = {}
-local forward_unregister_tb = {}
-local forward_busy_tb = {}
-local forward_noreply_tb = {}
-local forward_noreply_timeout_tb = {}
-local sipuser_reg_query = {}
+local interface = ""
+local voice_lang = ""
+local bind_transfer_dtmf = ""
+local attended_transfer_dtmf = ""
+local sip_ex_tb = {}
+local fxs_ex_tb = {}
 local endpoint_interface = {}
---@ endpoint_fxso or endpoint_sipphone
-
+local sip_trunk_name = {}
+local forward_group_tb = {}
 local profile_time_tb = {}
+
 local profile_time_check_tb = {}
+
+local call_forward_noreply_timeout = "20"
 
 if not bridge_str or not forward_type then
 	--@ Error Log
 	return
 end
 
+local current_forward_tb = {}
 local bridge_type = bridge_str:match("([a-z]+)/.*")
 local destidx
 if bridge_type == "freetdm" then
-	local slot_port = bridge_str:match("freetdm/([0-9]+/[0-9]+)/")
-	if slot_port then
-		destidx = slot_port
-	else
-		session:hangup()
-		return
+	local slot,port = bridge_str:match("freetdm/([0-9]+)/([0-9]+)/")
+	if slot and fxs_ex_tb[slot] and port then
+		local tmp_str = fxs_ex_tb[slot]["forward_"..forward_type.."_"..port]
+		if tmp_str and tmp_str ~= "" and tmp_str ~= "Deactivate" then
+			if tmp_str:match("^FORWARD%-%d+$") then
+				current_forward_tb = forward_group_tb[tmp_str] or {}
+			else
+				table.insert(current_forward_tb,{tmp_str,"",fxs_ex_tb[slot]["forward_"..forward_type.."_dst_"..port]})
+			end
+		end
+		if forward_type == "noreply" then
+			call_forward_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout_"..port] or "20"
+		end
 	end
 elseif bridge_str:match("user/")  then
 	local user = bridge_str:match("user/([0-9]+)@")
-	if user then
-		destidx = user
-	else
-		session:hangup()
-		return
+	if user and sip_ex_tb[user] then
+		local tmp_str = sip_ex_tb[user]["forward_"..forward_type]
+		if tmp_str and tmp_str ~= "" and tmp_str ~= "Deactivate" then
+			if tmp_str:match("^FORWARD%-%d+$") then
+				current_forward_tb = forward_group_tb[tmp_str] or {}
+			else
+				table.insert(current_forward_tb,{tmp_str,"",sip_ex_tb[user]["forward_"..forward_type.."_dst"]})
+			end
+		end
+		if forward_type == "noreply" then
+			call_forward_noreply_timeout = fxs_ex_tb[slot]["forward_noreply_timeout"] or "20"
+		end
 	end
 end
 
-local current_forward_tb = {}
-if forward_type == "uncondition" then
-	current_forward_tb = forward_uncondition_tb[destidx]
-elseif forward_type == "unregister" then
-	current_forward_tb = forward_unregister_tb[destidx]
-elseif forward_type == "userbusy" then
-	current_forward_tb = forward_busy_tb[destidx]
-else
-	current_forward_tb = forward_noreply_tb[destidx]
-end
-
 if forward_type == "noreply" then
-	session:setVariable("call_timeout", forward_noreply_timeout_tb[destidx] or "20")
-	session:setVariable("bridge_answer_timeout", forward_noreply_timeout_tb[destidx] or "20")
+	session:setVariable("call_timeout", call_forward_noreply_timeout)
+	session:setVariable("bridge_answer_timeout", call_forward_noreply_timeout)
 else
 	session:setVariable("call_timeout", "55")
 	session:setVariable("bridge_answer_timeout", "55")
@@ -149,7 +156,7 @@ function check_channel_idle_state(bridge_param)
 				return false
 			end
 
-			local ret = api:executeString(sipuser_reg_query[user_number] or "")
+			local ret = api:executeString(sip_ex_tb[user_number]["reg_query"] or "")
 			if ret and ret:match("User:%s*"..user_number) then
 				return true
 			else
@@ -229,7 +236,7 @@ if session:ready() then
 				if gw_name and number then
 					call_forward_str = "sofia/gateway/"..gw_name.."/"..number
 					if check_channel_idle_state(call_forward_str) then
-						session:setVariable("dest_chan_name","SIP Trunk/"..get_siptrunk_uci_name(gw_name))
+						session:setVariable("dest_chan_name","SIP Trunk/"..sip_trunk_name[gw_name])
 						if forward_type == "userbusy" or forward_type == "noreply" then
 							-- userbusy, noreply
 							local from = session:getVariable("chan_name")
@@ -301,10 +308,10 @@ if session:ready() then
 					freeswitch.bridge(session,bridge_session)
 				end
 
-				local hangup_cause = bridge_session:getVariable("hangup_cause")
+				local hangup_cause = bridge_session:getVariable("hangup_cause") or session:get_Variable("hangup_cause")
 				hangup_cause = ("" == hangup_cause) and bridge_session:hangupCause() or hangup_cause
 				freeswitch.consoleLog("debug", "hangup_cause: "..(hangup_cause or "UNKNOWN"))
-				if hangup_cause == "NORMAL_CLEARING" or hangup_cause == "SUCCESS" then
+				if hangup_cause == "NORMAL_CLEARING" or hangup_cause == "SUCCESS"  or hangup_cause == "ORIGINATOR_CANCEL" then
 					last_hangup_flag = true
 				end
 			end
@@ -313,10 +320,6 @@ if session:ready() then
 				break
 			end
 		end
-	end
-	local last_bridge_hangup_cause = session:getVariable("last_bridge_hangup_cause")
-	if not last_bridge_hangup_cause then
-		session:setVariable("last_bridge_hangup_cause","NO_ROUTE_DESTINATION")
 	end
 	session:execute("lua","continue_by_hangup_cause.lua Extension")
 end

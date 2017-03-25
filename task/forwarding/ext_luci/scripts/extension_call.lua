@@ -5,7 +5,7 @@ require "luci.util"
 local fs = require "nixio.fs"
 local base64 = require "luci.base64"
 
-local cfgfilelist = {"system","profile_codec","profile_sip","endpoint_fxso","endpoint_siptrunk","endpoint_sipphone","endpoint_ringgroup","endpoint_mobile","callcontrol","profile_time"}
+local cfgfilelist = {"system","profile_codec","profile_sip","profile_number","endpoint_fxso","endpoint_siptrunk","endpoint_sipphone","endpoint_ringgroup","endpoint_mobile","callcontrol","feature_code","profile_time","endpoint_forwardgroup"}
 for k,v in ipairs(cfgfilelist) do
 	os.execute("cp /etc/config/"..v.." /tmp/config")
 end
@@ -23,6 +23,7 @@ local sip_profile_cfg = uci:get_all("profile_sip") or {}
 local callcontrol_cfg = uci:get_all("callcontrol","route")
 local number_profile_cfg = uci:get_all("profile_number") or {}
 local time_cfg = uci:get_all("profile_time") or {}
+local forward_grp_cfg = uci:get_all("endpoint_forwardgroup") or {}
 
 --[[
 local did_call_00 = "/tmp/etc/freeswitch/conf/dialplan/public/00_did_call.xml"
@@ -62,6 +63,8 @@ local local_port_reg_dest_to_extension_tbl = {}
 
 local ext_callout_chk_table = {}
 
+local bind_transfer_dtmf=""
+local attended_transfer_dtmf=""
 --@ delete old xml file
 os.execute("rm "..did_call_00.." "..extension_call_00.." "..extension_call_z99.." "..extension_callout_check_00)
 
@@ -82,15 +85,17 @@ local users_root = mxml:newxml()
 local users_include = mxml.newnode(users_root,"include")
 
 local codec = {}
+local codec_str = ""
 local sip_ex_tb = ""
 local fxs_ex_tb = ""
 
-local fm_ex_tb = {forward_uncondition="",forward_unregister="",forward_busy="",forward_noreply="",forward_noreply_timeout=""}
-local fm_sipuser_reg_query = ""
 local fm_profile_time_tb = ""
+local fm_forward_group_tb = ""
 
 local profile_interface = {}
 local endpoint_interface = ""
+local sip_trunk_name = ""
+local number_filter = {}
 
 for k,v in pairs(sip_profile_cfg) do
 	for i,j in pairs(codec_cfg) do
@@ -103,57 +108,64 @@ for k,v in pairs(sip_profile_cfg) do
 	end
 end
 
-for k,v in pairs(sipphone_cfg) do
-	if v.user then
-		sip_ex_tb = sip_ex_tb .. "[\""..v.user.."\"]={[\"reg_query\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
-		fm_sipuser_reg_query = fm_sipuser_reg_query .. "[\""..v.user.."\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
-		if v.waiting then
-			sip_ex_tb = sip_ex_tb .. "[\"waiting\"]=\""..v.waiting.."\","
+for k,v in pairs(number_profile_cfg) do
+	if v.index then
+		number_filter[v.index]={}
+		if v.callerlength and "" ~= v.callerlength then
+			number_filter[v.index]["callerlength"] = v.callerlength
 		end
-		if v.notdisturb then
-			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..v.notdisturb.."\","
-		end
-
-		local forward_option_tb = {"forward_uncondition","forward_unregister","forward_busy","forward_noreply"}
-		for _,forward_option in ipairs(forward_option_tb) do
-			if v[forward_option] then
-				if type(v[forward_option]) == "string" then
-					local tmp_tb = {}
-					table.insert(tmp_tb, v[forward_option])
-					v[forward_option] = tmp_tb
-				end
-				if type(v[forward_option]) == "table" and next(v[forward_option]) then
-					if v[forward_option][1] == "" or v[forward_option][1] == "Deactivate" then
-						sip_ex_tb = sip_ex_tb .. "[\""..forward_option.."\"]=\"Deactivate\","
-					else
-						local tmp_str = ""
-						sip_ex_tb = sip_ex_tb .. "[\""..forward_option.."\"]=\"Activate\","
-						for _,val in ipairs(v[forward_option]) do
-							local dest,time,number = val:match("([^:]+)::([^:]*)::([^:]+)")
-							if not dest or not time or not number then
-								dest,time = val:match("([^:]+)::([^:]+)")
-								if not dest then
-									dest = val
-								end
-							end
-							if dest and time and number then
-								tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\",\""..number.."\"},"
-							elseif dest and time then
-								tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\"},"
-							elseif dest then
-								tmp_str = tmp_str .. "{\""..dest.."\"},"
-							end
-						end
-						if tmp_str ~= "" then
-							fm_ex_tb[forward_option] = fm_ex_tb[forward_option] .."[\""..v.user.."\"]={"..tmp_str.."},"
-						end
-						tmp_str = nil
-					end
-				end
+		if v.caller then
+			if ("table" == type(v.caller) and v["caller"][1] and (not v["caller"][1]:match("^%s*$"))) or ("string" == type(v.caller) and (not v.caller:match("^%s*$"))) then
+				number_filter[v.index]["caller"]=v.caller
 			end
 		end
-		if v["forward_noreply"] and v["forward_noreply_timeout"] then
-			fm_ex_tb["forward_noreply_timeout"] = fm_ex_tb["forward_noreply_timeout"] .. "[\""..v.user.."\"]=\""..v["forward_noreply_timeout"].."\","
+		if v.calledlength and "" ~= v.calledlength then
+			number_filter[v.index]["calledlength"] = v.calledlength
+		end
+		if v.called then
+			if ("table" == type(v.called) and v["called"][1] and (not v["called"][1]:match("^%s*$"))) or ("string" == type(v.called) and (not v.called:match("^%s*$"))) then
+				number_filter[v.index]["called"]=v.called
+			end
+		end
+	end
+end
+
+for k,v in pairs(sipphone_cfg) do
+	if v.user then
+		sip_ex_tb = sip_ex_tb .. "[\""..v.user.."\"]={"
+		sip_ex_tb = sip_ex_tb .. "[\"reg_query\"]=\"sofia status profile "..v.profile.." reg "..v.user.."\","
+		if v.waiting then
+			sip_ex_tb = sip_ex_tb .. "[\"waiting\"]=\""..(v.waiting or "").."\","
+		end
+		if v.notdisturb then
+			sip_ex_tb = sip_ex_tb .. "[\"notdisturb\"]=\""..(v.notdisturb or "").."\","
+		end
+		if v.forward_unregister_dst then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister_dst\"]=\""..(v.forward_unregister_dst or "").."\","
+		end
+		if v.forward_unregister then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_unregister\"]=\""..(v.forward_unregister or "").."\","
+		end
+		if v.forward_uncondition_dst then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition_dst\"]=\""..(v.forward_uncondition_dst or "").."\","
+		end
+		if v.forward_uncondition then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_uncondition\"]=\""..(v.forward_uncondition or "").."\","
+		end
+		if v.forward_busy_dst then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_busy_dst\"]=\""..(v.forward_busy_dst or "").."\","
+		end
+		if v.forward_busy then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_busy\"]=\""..(v.forward_busy or "").."\","
+		end
+		if v.forward_noreply_dst then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_dst\"]=\""..(v.forward_noreply_dst or "").."\","
+		end
+		if v.forward_noreply then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply\"]=\""..(v.forward_noreply or "").."\","
+		end
+		if v.forward_noreply_timeout then
+			sip_ex_tb = sip_ex_tb .. "[\"forward_noreply_timeout\"]=\""..(v.forward_noreply_timeout or "").."\","
 		end
 		sip_ex_tb = sip_ex_tb .. "},"
 	end
@@ -166,70 +178,75 @@ for k,v in pairs(fxso_cfg) do
 	if v['.type'] == 'fxs' and v.index then
 		fxs_ex_tb = fxs_ex_tb .. "[\""..v.index.."\"]={"
 		if v.waiting_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_1\"]=\""..v.waiting_1.."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_1\"]=\""..(v.waiting_1 or "").."\","
 		end
 		if v.notdisturb_1 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_1\"]=\""..v.notdisturb_1.."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_1\"]=\""..(v.notdisturb_1 or "").."\","
+		end
+		if v.forward_uncondition_dst_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_1\"]=\""..(v.forward_uncondition_dst_1 or "").."\","
+		end
+		if v.forward_uncondition_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_1\"]=\""..(v.forward_uncondition_1 or "").."\","
+		end
+		if v.forward_busy_dst_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_1\"]=\""..(v.forward_busy_dst_1 or "").."\","
+		end
+		if v.forward_busy_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_1\"]=\""..(v.forward_busy_1 or "").."\","
+		end
+		if v.forward_noreply_dst_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_1\"]=\""..(v.forward_noreply_dst_1 or "").."\","
+		end
+		if v.forward_noreply_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_1\"]=\""..(v.forward_noreply_1 or "").."\","
+		end
+		if v.forward_noreply_timeout_1 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_timeout_1\"]=\""..(v.forward_noreply_timeout_1 or "").."\","
 		end
 		if v.waiting_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_2\"]=\""..v.waiting_2.."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"waiting_2\"]=\""..(v.waiting_2 or "").."\","
 		end
 		if v.notdisturb_2 then
-			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_2\"]=\""..v.notdisturb_2.."\","
+			fxs_ex_tb = fxs_ex_tb .. "[\"notdisturb_2\"]=\""..(v.notdisturb_2 or "").."\","
 		end
-
-		local forward_option_tb = {"forward_uncondition","forward_busy","forward_noreply"}
-		local port_tb = {"1","2"}
-		for _,port_index in ipairs(port_tb) do
-			for _,forward_option in ipairs(forward_option_tb) do
-				local port_forward_option = forward_option.."_"..port_index
-				if v[port_forward_option] then
-					if type(v[port_forward_option]) == "string" then
-						local tmp_tb = {}
-						table.insert(tmp_tb, v[port_forward_option])
-						v[port_forward_option] = tmp_tb
-					end
-					if type(v[port_forward_option]) == "table" and next(v[port_forward_option]) then
-						if v[port_forward_option][1] == "" or v[port_forward_option][1] == "Deactivate" then
-							fxs_ex_tb = fxs_ex_tb .. "[\""..port_forward_option.."\"]=\"Deactivate\","
-						else
-							local tmp_str = ""
-							fxs_ex_tb = fxs_ex_tb .. "[\""..port_forward_option.."\"]=\"Activate\","
-							for _,val in ipairs(v[port_forward_option]) do
-								local dest,time,number = val:match("([^:]*)::([^:]*)::([^:]*)")
-								if not dest or not time or not number then
-									dest,time = val:match("([^:]*)::([^:]*)")
-									if not dest then
-										dest = val
-									end
-								end
-								if dest and time and number then
-									tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\",\""..number.."\"},"
-								elseif dest and time then
-									tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\"},"
-								elseif dest then
-									tmp_str = tmp_str .. "{\""..dest.."\"},"
-								end
-							end
-							if tmp_str ~= "" then
-								fm_ex_tb[forward_option] = fm_ex_tb[forward_option] .."[\""..v.index.."/"..port_index.."\"]={"..tmp_str.."},"
-							end
-							tmp_str = nil
-						end
-					end
-				end
-			end
-			if v["forward_noreply_"..port_index] and v["forward_noreply_timeout_"..port_index] then
-				fm_ex_tb["forward_noreply_timeout"] = fm_ex_tb["forward_noreply_timeout"] .. "[\""..v.index.."/"..port_index.."\"]=\""..v["forward_noreply_timeout_"..port_index].."\","
-			end
+		if v.forward_uncondition_dst_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_dst_2\"]=\""..(v.forward_uncondition_dst_2 or "").."\","
+		end
+		if v.forward_uncondition_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_uncondition_2\"]=\""..(v.forward_uncondition_2 or "").."\","
+		end
+		if v.forward_busy_dst_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_dst_2\"]=\""..(v.forward_busy_dst_2 or "").."\","
+		end
+		if v.forward_busy_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_busy_2\"]=\""..(v.forward_busy_2 or "").."\","
+		end
+		if v.forward_noreply_dst_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_dst_2\"]=\""..(v.forward_noreply_dst_2forward_noreply_dst_2 or "").."\","
+		end
+		if v.forward_noreply_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_2\"]=\""..(v.forward_noreply_2 or "").."\","
+		end
+		if v.forward_noreply_timeout_2 then
+			fxs_ex_tb = fxs_ex_tb .. "[\"forward_noreply_timeout_2\"]=\""..(v.forward_noreply_timeout_2 or "").."\","
 		end
 		fxs_ex_tb = fxs_ex_tb .. "},"
 	end
 end
 
 for k,v in pairs(siptrunk_cfg) do
-	if v.index and v.profile then
+	if v.index and v.name and v.profile then
 		endpoint_interface = endpoint_interface .. "[\""..v.profile.."_"..v.index.."\"]=\""..(profile_interface[v.profile] or "").."\","
+		sip_trunk_name = sip_trunk_name .. "[\""..v.profile.."_"..v.index.."\"]=\""..(v.name or "").."\","
+	end
+end
+
+for k,v in pairs(uci:get_all("feature_code") or {}) do
+	if v.index == "12" and v.status == "Enabled" and v.code then
+		bind_transfer_dtmf = string.sub(v.code,2,string.len(v.code))
+	elseif v.index == "13" and v.status == "Enabled" and v.code then
+		attended_transfer_dtmf = string.sub(v.code,2,string.len(v.code))
 	end
 end
 
@@ -283,34 +300,60 @@ for k,v in pairs(time_cfg) do
 	end
 end
 
+for k,v in pairs(forward_grp_cfg) do
+	if v.index and v.destination and type(v.destination) == "table" then
+		local tmp_str = ""
+		for _,val in pairs(v.destination) do
+			local dest,time,number = val:match("([^:]+)::([^:]*)::([^:]+)")
+			if not dest or not time or not number then
+				dest,time = val:match("([^:]+)::([^:]+)")
+				if not dest then
+					dest = val
+				end
+			end
+			if dest and time and number then
+				tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\",\""..number.."\"},"
+			elseif dest and time then
+				tmp_str = tmp_str .. "{\""..dest.."\""..",\""..time.."\"},"
+			elseif dest then
+				tmp_str = tmp_str .. "{\""..dest.."\"},"
+			end
+		end
+		if tmp_str ~= "" then
+			fm_forward_group_tb = fm_forward_group_tb .. "[\"FORWARD-"..v.index.."\"]={"..tmp_str.."},"
+		end
+	end
+end
+
 local cmd_str = ""
 sip_ex_tb=string.gsub(sip_ex_tb,"/","\\/")
 fxs_ex_tb=string.gsub(fxs_ex_tb,"/","\\/")
 endpoint_interface=string.gsub(endpoint_interface,"/","\\/")
-fm_ex_tb.forward_uncondition=string.gsub(fm_ex_tb.forward_uncondition,"/","\\/")
-fm_ex_tb.forward_unregister=string.gsub(fm_ex_tb.forward_unregister,"/","\\/")
-fm_ex_tb.forward_busy=string.gsub(fm_ex_tb.forward_busy,"/","\\/")
-fm_ex_tb.forward_noreply=string.gsub(fm_ex_tb.forward_noreply,"/","\\/")
-fm_ex_tb.forward_noreply_timeout=string.gsub(fm_ex_tb.forward_noreply_timeout,"/","\\/")
-fm_sipuser_reg_query=string.gsub(fm_sipuser_reg_query,"/","\\/")
+sip_trunk_name=string.gsub(sip_trunk_name,"/","\\/")
+fm_forward_group_tb=string.gsub(fm_forward_group_tb,"/","\\/")
 fm_profile_time_tb=string.gsub(fm_profile_time_tb,"/","\\/")
+
+cmd_str = cmd_str.."sed -i 's/^local interface = .*/local interface = \""..interface.."\"/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local voice_lang = .*/local voice_lang = \""..(uci:get("callcontrol","voice","lang") or "en").."\"/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local bind_transfer_dtmf = .*/local bind_transfer_dtmf = \""..bind_transfer_dtmf.."\"/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local attended_transfer_dtmf = .*/local attended_transfer_dtmf = \""..attended_transfer_dtmf.."\"/g' "..extension_service_script..";"
 cmd_str = cmd_str.."sed -i 's/^local sip_ex_tb = {.*}/local sip_ex_tb = {"..sip_ex_tb.."}/g' "..extension_service_script..";"
 cmd_str = cmd_str.."sed -i 's/^local fxs_ex_tb = {.*}/local fxs_ex_tb = {"..fxs_ex_tb.."}/g' "..extension_service_script..";"
 cmd_str = cmd_str.."sed -i 's/^local endpoint_interface = {.*}/local endpoint_interface = {"..endpoint_interface.."}/g' "..extension_service_script..";"
+cmd_str = cmd_str.."sed -i 's/^local sip_trunk_name = {.*}/local sip_trunk_name = {"..sip_trunk_name.."}/g' "..extension_service_script..";"
 cmd_str = cmd_str.."cp "..extension_service_script.." "..fs_scripts_dir..";"
-cmd_str = cmd_str.."sed -i 's/^local forward_uncondition_tb = {.*}/local forward_uncondition_tb = {"..fm_ex_tb.forward_uncondition.."}/g' "..extension_followme_script..";"
-cmd_str = cmd_str.."sed -i 's/^local forward_unregister_tb = {.*}/local forward_unregister_tb = {"..fm_ex_tb.forward_unregister.."}/g' "..extension_followme_script..";"
-cmd_str = cmd_str.."sed -i 's/^local forward_busy_tb = {.*}/local forward_busy_tb = {"..fm_ex_tb.forward_busy.."}/g' "..extension_followme_script..";"
-cmd_str = cmd_str.."sed -i 's/^local forward_noreply_tb = {.*}/local forward_noreply_tb = {"..fm_ex_tb.forward_noreply.."}/g' "..extension_followme_script..";"
-cmd_str = cmd_str.."sed -i 's/^local forward_noreply_timeout_tb = {.*}/local forward_noreply_timeout_tb = {"..fm_ex_tb.forward_noreply_timeout.."}/g' "..extension_followme_script..";"
-cmd_str = cmd_str.."sed -i 's/^local sipuser_reg_query = {.*}/local sipuser_reg_query = {"..fm_sipuser_reg_query.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local interface = .*/local interface = \""..interface.."\"/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local voice_lang = .*/local voice_lang = \""..(uci:get("callcontrol","voice","lang") or "en").."\"/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local bind_transfer_dtmf = .*/local bind_transfer_dtmf = \""..bind_transfer_dtmf.."\"/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local attended_transfer_dtmf = .*/local attended_transfer_dtmf = \""..attended_transfer_dtmf.."\"/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local sip_ex_tb = {.*}/local sip_ex_tb = {"..sip_ex_tb.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local fxs_ex_tb = {.*}/local fxs_ex_tb = {"..fxs_ex_tb.."}/g' "..extension_followme_script..";"
 cmd_str = cmd_str.."sed -i 's/^local endpoint_interface = {.*}/local endpoint_interface = {"..endpoint_interface.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local sip_trunk_name = {.*}/local sip_trunk_name = {"..sip_trunk_name.."}/g' "..extension_followme_script..";"
+cmd_str = cmd_str.."sed -i 's/^local forward_group_tb = {.*}/local forward_group_tb = {"..fm_forward_group_tb.."}/g' "..extension_followme_script..";"
 cmd_str = cmd_str.."sed -i 's/^local profile_time_tb = {.*}/local profile_time_tb = {"..fm_profile_time_tb.."}/g' "..extension_followme_script..";"
 cmd_str = cmd_str.."cp "..extension_followme_script.." "..fs_scripts_dir..";"
 os.execute(cmd_str)
-
-local fm_ex_tb = {forward_uncondition="",forward_unregister="",forward_busy="",forward_noreply="",forward_noreply_timeout=""}
-local fm_sipuser_reg_query = ""
 
 function add_action(parent_node,app,data)
 	if parent_node and app then
@@ -346,13 +389,34 @@ function add_to_destnum_list(src,dst)
 end
 function add_condition(parent_node,field,expression)
 	local condition = mxml.newnode(parent_node,"condition")
-	if field == "wday" or field == "time-of-day" or field == "date-time" then
+	if field == "regex" or field == "wday" or field == "time-of-day" or field == "date-time" then
 		mxml.setattr(condition,field,expression)
 	elseif field and expression then
 		mxml.setattr(condition,"field",field)
 		mxml.setattr(condition,"expression",expression)
 	end
 	return condition
+end
+function add_regex(parent_node,field,expression)
+	local condition = mxml.newnode(parent_node,"regex")
+	if field and expression then
+		mxml.setattr(condition,"field",field)
+		mxml.setattr(condition,"expression",expression)
+	end
+	return condition
+end
+function add_child_node(parent_node,child_node_name,param)
+	if parent_node and child_node_name and param then
+		local child_node = mxml.newnode(parent_node,child_node_name)
+		if "table" == type(param) then
+			for k,v in ipairs(param) do
+				mxml.setattr(child_node,v.param,v.value)
+			end
+		end
+		return child_node
+	else
+		return parent_node
+	end
 end
 function number_regular_parse(parent_node,field,value)
 	function string_val_parse(value)
@@ -365,7 +429,7 @@ function number_regular_parse(parent_node,field,value)
 		end
 	end
 	if value and "string" == type(value) then
-		return add_condition(parent_node,field,string_val_parse(value))
+		return add_regex(parent_node,field,string_val_parse(value))
 	elseif value and "table" == type(value) then
 		local result_str
 		for k,v in ipairs(value) do
@@ -373,7 +437,7 @@ function number_regular_parse(parent_node,field,value)
 				result_str=(result_str and (result_str.."|") or "")..string_val_parse(v)
 			end
 		end
-		return add_condition(parent_node,field,result_str)
+		return add_regex(parent_node,field,result_str)
 	end
 end
 function number_length_parse(value)
@@ -391,54 +455,41 @@ function number_length_parse(value)
 	return exp
 end
 function callin_number_condition(parent_node,value)
-	local condition
-	for k,v in pairs(number_profile_cfg) do
-		if v.index == value then
-			if v.callerlength then
-				condition = add_condition(parent_node,"caller_id_number",number_length_parse(v.callerlength))
-			end
-			if v.caller then
-				condition = number_regular_parse(parent_node,"caller_id_number",v.caller)
-			end
-			break
-		end
+	local regex
+	if number_filter[value] and number_filter[value]["callerlength"] then
+		regex = add_regex(parent_node,"caller_id_number",number_length_parse(number_filter[value]["callerlength"]))
 	end
-	return condition
+	if number_filter[value] and number_filter[value]["caller"] then
+		regex = number_regular_parse(parent_node,"caller_id_number",number_filter[value]["caller"])
+	end
+	return regex
 end
 function callout_number_condition(parent_node,value)
-	local condition
-	for k,v in pairs(number_profile_cfg) do
-		if v.index == value then
-			if v.calledlength then
-				condition = add_condition(parent_node,"destination_number",number_length_parse(v.calledlength))
-			end
-			if v.called then
-				condition = number_regular_parse(parent_node,"destination_number",v.called)
-			end
-			break
-		end
+	local regex
+	if number_filter[value] and number_filter[value]["calledlength"] then
+		regex = add_regex(parent_node,"destination_number",number_length_parse(number_filter[value]["calledlength"]))
 	end
-	return condition
+	if number_filter[value] and number_filter[value]["called"] then
+		regex = number_regular_parse(parent_node,"destination_number",number_filter[value]["called"])
+	end
+	return regex
 end
 function generate_extension_xml(param)
 	local xml = mxml:newxml()
 	local include = mxml.newnode(xml,"include")
 
 	if param.callin_blacklist then
-		local extension = mxml.newnode(include,"extension")
-		mxml.setattr(extension,"name",param.number.."_call_in_blacklist_check")
-		mxml.setattr(extension,"continue","true")
-		add_condition(extension,"destination_number","^"..param.number.."[*#]{0,1}$")
-		local condition = callin_number_condition(extension,param.callin_blacklist)
+		local extension = add_child_node(include,"extension",{{param="name",value=param.number.."_call_in_blacklist_check"},{param="continue",value="true"}})
+		local condition = add_child_node(extension,"condition",{{param="regex",value="all"},{param="require-nested",value="true"}})
+		callin_number_condition(condition,param.callin_blacklist)
+		add_condition(condition,"destination_number","^"..param.number.."[*#]{0,1}$")
 		add_action(condition,"set","my_bridge_channel="..param.bridge_channel)
 		add_action(condition,"log","ERR Extension "..param.number.." can not call in ! (Blacklist Matched)")
 		add_action(condition,"hangup","INVALID_NUMBER_FORMAT")
 	elseif param.callin_whitelist then
-		local extension = mxml.newnode(include,"extension")
-		mxml.setattr(extension,"name",param.number.."_call_in_whitelist_check")
-		mxml.setattr(extension,"continue","true")
-		local condition = callin_number_condition(extension,param.callin_whitelist)
-		mxml.setattr(condition,"require-nested","true")
+		local extension = add_child_node(include,"extension",{{param="name",value=param.number.."_call_in_whitelist_check"},{param="continue",value="true"}})
+		local condition = add_child_node(extension,"condition",{{param="regex",value="all"},{param="require-nested",value="true"}})
+		callin_number_condition(condition,param.callin_whitelist)
 		add_condition(condition,"destination_number","^"..param.number.."[*#]{0,1}$")
 		add_anti_action(condition,"set","my_bridge_channel="..param.bridge_channel)
 		add_anti_action(condition,"log","ERR Extension "..param.number.." can not call in ! (Whitelist Not Matched)")
@@ -478,7 +529,7 @@ end
 function get_sip_trunk_name_list()
 	local list = {}
 	local name = {}
-	local trunk = uci:get_all("endpoint_siptrunk")
+	local trunk = uci:get_all("endpoint_siptrunk") or {}
 
 	for k,v in pairs(trunk) do
 		if v.index and v.profile and "Enabled" == v.status and v.name then
@@ -538,16 +589,16 @@ function generate_pstn_extension_data()
 				end
 			end
 
-			if "blacklist" == v.callin_filter_1 then
+			if "blacklist" == v.callin_filter_1 and v.callin_filter_blacklist_1 and number_filter[v.callin_filter_blacklist_1] and (number_filter[v.callin_filter_blacklist_1]["callerlength"] or number_filter[v.callin_filter_blacklist_1]["caller"]) then
 				param.callin_blacklist = v.callin_filter_blacklist_1
-			elseif "whitelist" == v.callin_filter_1 then
+			elseif "whitelist" == v.callin_filter_1 and v.callin_filter_whitelist_1 and number_filter[v.callin_filter_whitelist_1] and (number_filter[v.callin_filter_whitelist_1]["callerlength"] or number_filter[v.callin_filter_whitelist_1]["caller"]) then
 				param.callin_whitelist = v.callin_filter_whitelist_1
 			end
 
-			if "blacklist" == v.callout_filter_1 then
+			if "blacklist" == v.callout_filter_1 and v.callout_filter_blacklist_1 and number_filter[v.callout_filter_blacklist_1] and (number_filter[v.callout_filter_blacklist_1]["calledlength"] or number_filter[v.callout_filter_blacklist_1]["called"]) then
 				local tmp = {chan_name="^FreeTDM/"..v.index.."/1|^FreeTDM/"..v.index..":1",number=v.number_1,filter="blacklist",blacklist=v.callout_filter_blacklist_1}
 				table.insert(ext_callout_chk_table,tmp)
-			elseif "whitelist" == v.callout_filter_1 then
+			elseif "whitelist" == v.callout_filter_1 and v.callout_filter_whitelist_1 and number_filter[v.callout_filter_whitelist_1] and (number_filter[v.callout_filter_whitelist_1]["calledlength"] or number_filter[v.callout_filter_whitelist_1]["called"]) then
 				local tmp = {chan_name="^FreeTDM/"..v.index.."/1|^FreeTDM/"..v.index..":1",number=v.number_1,filter="whitelist",whitelist=v.callout_filter_whitelist_1}
 				table.insert(ext_callout_chk_table,tmp)
 			end
@@ -593,16 +644,16 @@ function generate_pstn_extension_data()
 				end
 			end
 
-			if "blacklist" == v.callin_filter_2 then
+			if "blacklist" == v.callin_filter_2 and v.callin_filter_blacklist_2 and number_filter[v.callin_filter_blacklist_2] and (number_filter[v.callin_filter_blacklist_2]["callerlength"] or number_filter[v.callin_filter_blacklist_2]["caller"]) then
 				param.callin_blacklist = v.callin_filter_blacklist_2
-			elseif "whitelist" == v.callin_filter_2 then
+			elseif "whitelist" == v.callin_filter_2 and v.callin_filter_whitelist_2 and number_filter[v.callin_filter_whitelist_2] and (number_filter[v.callin_filter_whitelist_2]["callerlength"] or number_filter[v.callin_filter_whitelist_2]["caller"]) then
 				param.callin_whitelist = v.callin_filter_whitelist_2
 			end
 
-			if "blacklist" == v.callout_filter_2 then
+			if "blacklist" == v.callout_filter_2 and v.callout_filter_blacklist_2 and number_filter[v.callout_filter_blacklist_2] and (number_filter[v.callout_filter_blacklist_2]["calledlength"] or number_filter[v.callout_filter_blacklist_2]["called"]) then
 				local tmp = {chan_name="^FreeTDM/"..v.index.."/2|^FreeTDM/"..v.index..":2",number=v.number_2,filter="blacklist",blacklist=v.callout_filter_blacklist_2}
 				table.insert(ext_callout_chk_table,tmp)
-			elseif "whitelist" == v.callout_filter_2 then
+			elseif "whitelist" == v.callout_filter_2 and v.callout_filter_whitelist_2 and number_filter[v.callout_filter_whitelist_2] and (number_filter[v.callout_filter_whitelist_2]["calledlength"] or number_filter[v.callout_filter_whitelist_2]["called"]) then
 				local tmp = {chan_name="^FreeTDM/"..v.index.."/2|^FreeTDM/"..v.index..":2",number=v.number_2,filter="whitelist",whitelist=v.callout_filter_whitelist_2}
 				table.insert(ext_callout_chk_table,tmp)
 			end
@@ -725,24 +776,23 @@ function generate_sip_extension_data()
 				param = mxml.newnode(params,"param")
 				mxml.setattr(param,"name","sip-forbid-register")
 				mxml.setattr(param,"value","on")
-			else		
-				--@ for feature_code service	
+			else
 				local param = {}
 				param.slot_type = "SIPP"
 				param.number = v.user
 				param.bridge_data = "{sip_contact_user=${ani}}user/"..v.user.."@${domain_name}"
 				param.bridge_channel = "SIP Extension/"..(v.name or "unknown")
 
-				if "blacklist" == v.callin_filter then
+				if "blacklist" == v.callin_filter and v.callin_filter_blacklist and number_filter[v.callin_filter_blacklist] and (number_filter[v.callin_filter_blacklist]["callerlength"] or number_filter[v.callin_filter_blacklist]["caller"]) then
 					param.callin_blacklist = v.callin_filter_blacklist
-				elseif "whitelist" == v.callin_filter then
+				elseif "whitelist" == v.callin_filter and v.callin_filter_whitelist and number_filter[v.callin_filter_whitelist] and (number_filter[v.callin_filter_whitelist]["callerlength"] or number_filter[v.callin_filter_whitelist]["caller"]) then
 					param.callin_whitelist = v.callin_filter_whitelist
 				end
 
-			if "blacklist" == v.callout_filter then
+			if "blacklist" == v.callout_filter and v.callout_filter_blacklist and number_filter[v.callout_filter_blacklist] and (number_filter[v.callout_filter_blacklist]["calledlength"] or number_filter[v.callout_filter_blacklist]["called"]) then
 				local tmp = {chan_name="sofia/user/"..v.user.."/",number=v.user,filter="blacklist",blacklist=v.callout_filter_blacklist}
 				table.insert(ext_callout_chk_table,tmp)
-			elseif "whitelist" == v.callout_filter then
+			elseif "whitelist" == v.callout_filter and v.callout_filter_whitelist and number_filter[v.callout_filter_whitelist] and (number_filter[v.callout_filter_whitelist]["calledlength"] or number_filter[v.callout_filter_whitelist]["called"]) then
 				local tmp = {chan_name="sofia/user/"..v.user.."/",number=v.user,filter="whitelist",whitelist=v.callout_filter_whitelist}
 				table.insert(ext_callout_chk_table,tmp)
 			end
@@ -783,18 +833,21 @@ function generate_00_extension_callout_blacklist_check_xml()
 		local include = mxml.newnode(xml,"include")
 
 		for k,v in ipairs(ext_callout_chk_table) do
-			local extension = mxml.newnode(include,"extension")
 			if "blacklist" == v.filter then
+				local extension = add_child_node(include,"extension",{{param="name",value=v.number.."_call_out_blacklist_check"},{param="continue",value="true"}})
 				mxml.setattr(extension,"name",v.number.."_call_out_blacklist_check")
-				add_condition(extension,"chan_name",v.chan_name)
-				local condition = callout_number_condition(extension,v.blacklist)
+				local condition = add_child_node(extension,"condition",{{param="regex",value="all"},{param="require-nested",value="true"}})
+				callout_number_condition(condition,v.blacklist)
+				add_condition(condition,"chan_name",v.chan_name)
 				add_action(condition,"log","ERR Extension "..v.number.." can not call out ! (Blacklist Matched)")
 				add_action(condition,"hangup","INVALID_NUMBER_FORMAT")
 			else
+				local extension = add_child_node(include,"extension",{{param="name",value=v.number.."_call_out_whitelist_check"},{param="continue",value="true"}})
 				mxml.setattr(extension,"name",v.number.."_call_out_whitelist_check")
 				mxml.setattr(extension,"continue","true")
-				add_condition(extension,"chan_name",v.chan_name)
-				local condition = callout_number_condition(extension,v.whitelist)
+				local condition = add_child_node(extension,"condition",{{param="regex",value="all"},{param="require-nested",value="true"}})
+				callout_number_condition(condition,v.whitelist)
+				add_condition(condition,"chan_name",v.chan_name)
 				add_anti_action(condition,"log","ERR Extension "..v.number.." can not call out ! (Whitelist Not Matched)")
 				add_anti_action(condition,"hangup","INVALID_NUMBER_FORMAT")
 			end

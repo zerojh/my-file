@@ -1509,7 +1509,7 @@ function get_endpoint_name(value,dest_type)
 
 	if value:match("^ROUTE%-%d+$") then
 		local idx = value:match("^ROUTE%-(%d+)$")
-		for k, v in pairs(uci:get_all("endpoint_routegroup") or {}) do 
+		for k, v in pairs(uci:get_all("endpoint_routegroup") or {}) do
 			if v.index and v.name and idx == v.index then
 				return translate("Route Group").." / "..v.name
 			end
@@ -1518,9 +1518,18 @@ function get_endpoint_name(value,dest_type)
 
 	if value:match("^RING%-%d+$") then
 		local idx = value:match("^RING%-(%d+)$")
-		for k, v in pairs(uci:get_all("endpoint_ringgroup") or {}) do 
+		for k, v in pairs(uci:get_all("endpoint_ringgroup") or {}) do
 			if v.index and v.name and idx == v.index then
 				return translate("Ring Group").." / "..v.name
+			end
+		end
+	end
+
+	if value:match("^FORWARD%-%d+$") then
+		local idx = value:match("^FORWARD%-(%d+)$")
+		for k,v in pairs(uci:get_all("endpoint_forwardgroup") or {}) do
+			if v.index and v.name and idx == v.index then
+				return translate("Call Forward Group").." / "..v.name
 			end
 		end
 	end
