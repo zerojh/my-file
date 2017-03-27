@@ -478,8 +478,12 @@ function user_add_edit(...)
 
 		uci:save("user")
 
+		luci.http.redirect(ds.build_url("admin","system","security"))
+		return
 	elseif luci.http.formvalue("cancel") then
 		--do nothing
+		luci.http.redirect(ds.build_url("admin","system","security"))
+		return
 	else
 		if arg[1] == "add" then
 			luci.template.render("admin_system/user_edit",{

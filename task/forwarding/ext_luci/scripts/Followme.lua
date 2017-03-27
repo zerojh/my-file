@@ -193,6 +193,7 @@ end
 
 if session:ready() then
 	local last_hangup_flag = false
+	local have_idle_dst = false
 
 	session:setVariable("my_fail_fw_uncondition_flag","false")
 	session:setVariable("my_fail_fw_unregister_flag","false")
@@ -299,6 +300,7 @@ if session:ready() then
 			end
 
 			if call_forward_str then
+				have_idle_dest = true
 				session:execute("unset","last_bridge_hangup_cause")
 				session:execute("unset","hangup_cause")
 				session:execute("lua","set_sip_param.lua "..call_forward_str)
@@ -321,5 +323,13 @@ if session:ready() then
 			end
 		end
 	end
-	session:execute("lua","continue_by_hangup_cause.lua Extension")
+	-- callee hangup
+	if session:ready() then
+		local fail_route_str = session:getVariable("my_fail_transfer_str_failroute")
+		if not have_idle_dst and (not fail_route_str or fail_route_str == "false") then
+			session:hangup("USER_BUSY")
+		else
+			session:execute("lua","continue_by_hangup_cause.lua Extension")
+		end
+	end
 end

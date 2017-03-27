@@ -51,7 +51,7 @@
 			</condition>
 			<!--transfer userbusy-->
 			<condition field="${my_fail_fw_userbusy_flag}" expression="^T-(.*)" break="on-true">
-				<action application="lua" data="Followme.lua ${my_exten_bridge_param} userbusy"/>
+				<action application="lua" data="Followme.lua ${my_exten_bridge_param} busy"/>
 			</condition>
 			<!--transfer failroute-->
 			<condition field="${my_fail_transfer_str_failroute}" expression="^T-(.*)" break="on-true">
@@ -79,7 +79,7 @@
 			</condition>
 			<!--transfer userbusy-->
 			<condition field="${originate_disposition}${my_fail_fw_userbusy_flag}" expression="^USER_BUSYtrue" break="on-true">
-				<action application="lua" data="Followme.lua ${my_exten_bridge_param} userbusy"/>
+				<action application="lua" data="Followme.lua ${my_exten_bridge_param} busy"/>
 			</condition>
 			<!--transfer failroute-->
 			<condition field="${my_fail_transfer_str_failroute}" expression="^T-(.*)" break="on-true">
