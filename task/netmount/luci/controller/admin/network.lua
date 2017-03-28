@@ -49,9 +49,9 @@ function index()
 	entry({"admin","network","vpn","l2tp"},cbi("admin_network/l2tp_client_edit"),_("L2TP"),141).leaf = true
 	entry({"admin","network","vpn","openvpn"},call("action_openvpn"),_("OpenVPN"),142)
 	entry({"admin","network","hosts"},call("action_hosts"),_("Hosts"),150).leaf = true
-	entry({"admin","network","mount"},alias("admin","network","mount","mount"),160,_("Mount"))
-	entry({"admin","network","mount","mount"},call("action_mount"),_("Mount"),160).leaf = true
-	entry({"admin","network","mount","mount_edit"},template("action_network/mount_edit"),_("Config"),160).leaf = true
+	entry({"admin","network","mount"},alias("admin","network","mount","mount"),_("Mount"),160)
+	entry({"admin","network","mount","mount"},call("action_mount"),_("Browse"),160)
+	entry({"admin","network","mount","mount_edit"},template("admin_network/mount_edit"),_("Edit"),160)
 end
 
 function firewall()
@@ -761,7 +761,7 @@ function parse_dir(param)
 			if v then
 				local temp = {}
 				
-				local mode,size,mtime,name = v:match("^([a-zA-Z%-]+)%s*[0-9]+%s*[a-zA-Z]+%s*[a-zA-Z]+%s*([0-9a-zA-Z%.]+)%s*([a-zA-Z]+%s*[0-9]+%s*[0-9:]+)%s*(.+)")
+				local mode,size,mtime,name = v:match("^([a-zA-Z%-]+)%s+[0-9]+%s+[0-9a-zA-Z]+%s+[0-9a-zA-Z]+%s+([0-9a-zA-Z%.]+)%s+([a-zA-Z]+%s+[0-9]+%s+[0-9:]+)%s+(.+)")
 				if mode and size and mtime and name and name ~= ".." and name ~= "." then
 					temp.file_name = name
 					temp.mtime = mtime
