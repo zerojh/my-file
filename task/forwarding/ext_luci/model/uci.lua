@@ -348,137 +348,176 @@ end
 function Cursor.check_cfg_deps(self,config,section,param)
 	if "" ~= param then
 		local i18n = require "luci.i18n"
-		if "route.endpoint" == param then
-			local compare_param = "unknown"
-			local cur_index = self:get(config,section,"index") or ""
+		local cur_index = self:get(config,section,"index") or ""
+		local tmp_tb = util.split(param," ")
 
-			if "endpoint_siptrunk" == config then
-				compare_param = "SIPT-"..cur_index
-			elseif "endpoint_sipphone" == config then
-				compare_param = "SIPP-"..cur_index
-			elseif "endpoint_ringgroup" == config then
-				compare_param = "RING-"..cur_index
-			elseif "endpoint_routegroup" == config then
-				compare_param = "ROUTE-"..cur_index
-			elseif "ivr" == config then
-				compare_param = "IVR-"..cur_index
-			elseif "endpoint_fxso" == config or "endpoint_mobile" == config then
-				local tmp = self:get(config,section,"slot_type") or ""
-				local idx = self:get(config,section,"index") or ""
-				local slot_type = tmp:match("-(%u+)$") or ""
-				compare_param = slot_type.."-"..idx
-			end
-			local cfg_tb
+		for _,node in pairs(tmp_tb) do
+			if "route.endpoint" == node then
+				local compare_param = "unknown"
 
-			if "endpoint_siptrunk" == config then
-				cfg_tb = self:get_all("endpoint_fxso") or {}
-				if cfg_tb and "table" == type(cfg_tb) then
-					for k,v in pairs(cfg_tb) do
-						if cur_index == v.port_1_server_1 or cur_index == v.port_1_server_2 or cur_index == v.port_2_server_1 or cur_index == v.port_2_server_2 then
-							if v.slot_type and v.slot_type:match("FXS") then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
-							else
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Trunk"))).."');return false",false
+				if "endpoint_siptrunk" == config then
+					compare_param = "SIPT-"..cur_index
+				elseif "endpoint_sipphone" == config then
+					compare_param = "SIPP-"..cur_index
+				elseif "endpoint_ringgroup" == config then
+					compare_param = "RING-"..cur_index
+				elseif "endpoint_routegroup" == config then
+					compare_param = "ROUTE-"..cur_index
+				elseif "ivr" == config then
+					compare_param = "IVR-"..cur_index
+				elseif "endpoint_fxso" == config or "endpoint_mobile" == config then
+					local tmp = self:get(config,section,"slot_type") or ""
+					local idx = self:get(config,section,"index") or ""
+					local slot_type = tmp:match("-(%u+)$") or ""
+					compare_param = slot_type.."-"..idx
+				end
+				local cfg_tb
+
+				if "endpoint_siptrunk" == config then
+					cfg_tb = self:get_all("endpoint_fxso") or {}
+					if cfg_tb and "table" == type(cfg_tb) then
+						for k,v in pairs(cfg_tb) do
+							if cur_index == v.port_1_server_1 or cur_index == v.port_1_server_2 or cur_index == v.port_2_server_1 or cur_index == v.port_2_server_2 then
+								if v.slot_type and v.slot_type:match("FXS") then
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
+								else
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Trunk"))).."');return false",false
+								end
 							end
 						end
 					end
-				end
-				cfg_tb = self:get_all("endpoint_mobile") or {}
-				if cfg_tb and "table" == type(cfg_tb) then
-					for k,v in pairs(cfg_tb) do
-						if cur_index == v.port_server_1 or cur_index == v.port_server_2 then
-							if v.slot_type and v.slot_type:match("GSM") then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("GSM Trunk"))).."');return false",false
-							else
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("CDMA Trunk"))).."');return false",false
-							end
-						end
-					end
-				end
-			end
-			
-			if ("endpoint_fxso" == config and "FXS" == slot_type) or "endpoint_sipphone" == config then
-				cfg_tb = self:get_all("endpoint_ringgroup") or {}
-				if cfg_tb and "table" == type(cfg_tb) then
-					for k,v in pairs(cfg_tb) do
-						if v.members_select and type(v.members_select) == "table" then
-							for _,v2 in pairs(v.members_select) do
-								if v2 and "FXS" == slot_type and (v2 == compare_param.."/0" or v2 == compare_param.."/1") then
-									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Ring Group"))).."');return false",false
-								elseif v2 and v2 == compare_param then
-									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Ring Group"))).."');return false",false
+					cfg_tb = self:get_all("endpoint_mobile") or {}
+					if cfg_tb and "table" == type(cfg_tb) then
+						for k,v in pairs(cfg_tb) do
+							if cur_index == v.port_server_1 or cur_index == v.port_server_2 then
+								if v.slot_type and v.slot_type:match("GSM") then
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("GSM Trunk"))).."');return false",false
+								else
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("CDMA Trunk"))).."');return false",false
 								end
 							end
 						end
 					end
 				end
-			end
-			
-			cfg_tb = self:get_all("endpoint_routegroup") or {}
-			for k,v in pairs(cfg_tb) do
-				if v.members_select and type(v.members_select) == "table" then
-					for _,v2 in pairs(v.members_select) do
-						if "endpoint_fxso" == config and v2 and (v2 == compare_param.."/0" or v2 == compare_param.."/1") then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
-						elseif "endpoint_mobile" == config and v2 and v2 == compare_param then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
-						elseif ("endpoint_siptrunk" == config or "endpoint_sipphone" == config) and v2 and v2 == compare_param then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
+				
+				if ("endpoint_fxso" == config and "FXS" == slot_type) or "endpoint_sipphone" == config then
+					cfg_tb = self:get_all("endpoint_ringgroup") or {}
+					if cfg_tb and "table" == type(cfg_tb) then
+						for k,v in pairs(cfg_tb) do
+							if v.members_select and type(v.members_select) == "table" then
+								for _,v2 in pairs(v.members_select) do
+									if v2 and "FXS" == slot_type and (v2 == compare_param.."/0" or v2 == compare_param.."/1") then
+										return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Ring Group"))).."');return false",false
+									elseif v2 and v2 == compare_param then
+										return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Ring Group"))).."');return false",false
+									end
+								end
+							end
 						end
 					end
-				end 
-			end
-
-			cfg_tb = self:get_all("route") or {}
-			if cfg_tb and "table" == type(cfg_tb) then
+				end
+				
+				cfg_tb = self:get_all("endpoint_routegroup") or {}
 				for k,v in pairs(cfg_tb) do
-					if "-1" == v.from and v.custom_from and "table" == type(v.custom_from) then
-						for i,j in pairs(v.custom_from) do
-							if "endpoint_fxso" == config and (j == compare_param.."-1" or j == compare_param.."-2") then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
-							elseif j == compare_param then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
+					if v.members_select and type(v.members_select) == "table" then
+						for _,v2 in pairs(v.members_select) do
+							if "endpoint_fxso" == config and v2 and (v2 == compare_param.."/0" or v2 == compare_param.."/1") then
+								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
+							elseif "endpoint_mobile" == config and v2 and v2 == compare_param then
+								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
+							elseif ("endpoint_siptrunk" == config or "endpoint_sipphone" == config) and v2 and v2 == compare_param then
+								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route Group"))).."');return false",false
 							end
 						end
-					elseif v.from == compare_param or v.successDestination == compare_param or v.failDestination == compare_param then
-						return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
 					end
 				end
-			end
-		else
-			local cur_index = self:get(config,section,"index")
-			local cur_type 
-			
-			for k,v in pairs(self:get_all(config,section) or {}) do
-				if k == ".type" then
-					cur_type = v
-				end
-			end
 
-			local tmp_tb = util.split(param," ")
-			for _,node in pairs(tmp_tb) do
-				local cfg_param = util.split(node,".")
-				local config = cfg_param[1]
-				local option = cfg_param[2]
-				local cfg_tb = self:get_all(config)
-
-				if cfg_tb and type(cfg_tb) == "table" then
+				cfg_tb = self:get_all("route") or {}
+				if cfg_tb and "table" == type(cfg_tb) then
 					for k,v in pairs(cfg_tb) do
-						if v[option] == cur_index and v['.type'] == cur_type then
-							if "endpoint_fxso" == config and "fxs" == v['.type'] then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
-							elseif "endpoint_fxso" == config and "fxo" == v['.type'] then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Trunk"))).."');return false",false
-							elseif "profile_fxso" == config and "fxs" == v['.type'] then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Profile"))).."');return false",false
-							elseif "profile_fxso" == config and "fxo" == v['.type'] then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Profile"))).."');return false",false
-							else
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate(config))).."');return false",false
+						if "-1" == v.from and v.custom_from and "table" == type(v.custom_from) then
+							for i,j in pairs(v.custom_from) do
+								if "endpoint_fxso" == config and (j == compare_param.."-1" or j == compare_param.."-2") then
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
+								elseif j == compare_param then
+									return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
+								end
 							end
-						elseif v[option] == cur_index and "fxs" ~= cur_type and "fxo" ~= cur_type then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate(config))).."');return false",false
+						elseif v.from == compare_param or v.successDestination == compare_param or v.failDestination == compare_param then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Route"))).."');return false",false
 						end
+					end
+				end
+			elseif "endpoint_forwardgroup.timeProfile" == node then
+				for k,v in pairs(self:get_all("endpoint_forwardgroup") or {}) do
+					if v.destination and type(v.destination) == "table" then
+						for _,val in pairs(v.destination) do
+							local time_index = val:match("[^:]+::([^:]*)::[^:]+")
+							if not time_index then
+								time_index = val:match("[^:]+::([^:]+)")
+							end
+
+							if time_index and time_index == cur_index then
+								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Call Forward Group"))).."');return false",false
+							end
+						end
+					end
+				end
+			elseif "endpoint_forwardgroup.extension" == node and config == "endpoint_sipphone" then
+				local cur_number = self:get(config,section,"user") or ""
+
+				for k,v in pairs(self:get_all("endpoint_forwardgroup") or {}) do
+					if v.destination and type(v.destination) == "table" then
+						for _,val in pairs(v.destination) do
+							local extension_number = val:match("^([^:]+)::")
+							if not extension_number then
+								extension_number = val
+							end
+
+							if extension_number and extension_number == cur_number then
+								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Call Forward Group"))).."');return false",false
+							end
+						end
+					end
+				end
+			elseif "endpoint_extension.forwardgrp" == node then
+				local forward_name = "FORWARD-"..cur_index
+				for k,v in pairs(self:get_all("endpoint_sipphone") or {}) do
+					if (v.forward_uncondition and v.forward_uncondition == forward_name) or (v.forward_unregister and v.forward_unregister == forward_name) or (v.forward_busy and v.forward_busy == forward_name) or (v.forward_noreply and v.forward_noreply == forward_name) then
+						return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("SIP Extension"))).."');return false",false
+					end
+				end
+				for k,v in pairs(self:get_all("endpoint_fxso") or {}) do
+					if v[".type"] == "fxs" then
+						if (v.forward_uncondition_1 and v.forward_uncondition_1 == forward_name) or (v.forward_unregister_1 and v.forward_unregister_1 == forward_name) or (v.forward_busy_1 and v.forward_busy_1 == forward_name) or (v.forward_noreply_1 and v.forward_noreply_1 == forward_name) then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
+						elseif (v.forward_uncondition_2 and v.forward_uncondition_2 == forward_name) or (v.forward_unregister_2 and v.forward_unregister_2 == forward_name) or (v.forward_busy_2 and v.forward_busy_2 == forward_name) or (v.forward_noreply_2 and v.forward_noreply_2 == forward_name) then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
+						end
+					end
+				end
+			else
+				local cur_type = self:get(config,section) or ""
+				local cfg_param = util.split(node,".")
+				local dep_config = cfg_param[1] or ""
+				local dep_option = cfg_param[2] or ""
+				local dep_cfg_tb = self:get_all(dep_config) or {}
+
+				for k,v in pairs(dep_cfg_tb) do
+					if v[dep_option] == cur_index and v['.type'] == cur_type then
+						if "endpoint_fxso" == dep_config and "fxs" == v['.type'] then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
+						elseif "endpoint_fxso" == dep_config and "fxo" == v['.type'] then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Trunk"))).."');return false",false
+						elseif "profile_fxso" == dep_config and "fxs" == v['.type'] then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Profile"))).."');return false",false
+						elseif "profile_fxso" == dep_config and "fxo" == v['.type'] then
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXO Profile"))).."');return false",false
+						else
+							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate(dep_config))).."');return false",false
+						end
+					elseif v[dep_option] == cur_index and "fxs" ~= cur_type and "fxo" ~= cur_type then
+						return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate(dep_config))).."');return false",false
 					end
 				end
 			end

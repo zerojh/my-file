@@ -1,7 +1,7 @@
 <%-
 	local uci = require "luci.model.uci".cursor()
 	local ds = require "luci.dispatcher"
-	local server, folder, username, password
+	local server, folder, username, password, disabled
 	local section = "netmount"
 
 	uci:check_cfg("cron")
@@ -11,10 +11,12 @@
 		folder = luci.http.formvalue("folder")
 		username = luci.http.formvalue("username")
 		password = luci.http.formvalue("password")
+		disabled = luci.http.formvalue("disabled") or "1"
 		if server and folder then
 			if not uci:get("cron", section) then
 				section = uci:section("cron", "cron", section)
 			end
+			uci:set("cron", section, "disabled", disabled)
 			uci:set("cron", section, "server", server)
 			uci:set("cron", section, "folder", folder)
 			if username and password then
@@ -24,7 +26,6 @@
 				uci:delete("cron", section, "username")
 				uci:delete("cron", section, "password")
 			end
-
 			uci:save("cron")
 		end
 
@@ -36,13 +37,18 @@
 		folder = uci:get("cron", section, "folder")
 		username = uci:get("cron", section, "username")
 		password = uci:get("cron", section, "password")
+		disabled = uci:get("cron", section, "disabled")
 	end
 -%>
 
 <%+header%>
 <style type="text/css">
 label{margin-left:5px;}
-table{table-layout:fixed;}
+table{
+table-layout:fixed;
+border-collapse:separate;
+border-spacing:0px 8px;
+}
 table td{text-align:left;}
 .sub_menu{padding-left:60px;}
 .error-tip {color:#b94a48;}
@@ -139,9 +145,18 @@ function form_check(form)
 				<td></td>
 			</tr>
 			<tr>
+				<td><%:Status%></td>
+				<td><select class="cbi-input-select"<%=ifattr(disabled,"value",disabled)%> name="disabled" id="disabled"/>
+					<option value="1"><%:Disable%></option>
+					<option value="0"><%:Enable%></option>
+					</select>
+				</td>
+				<td></td>
+			</tr>
+			<tr>
 				<td></td>
 				<td style="text-align:center;">
-					<div class="cbi-page-actions" style="width:200px;">
+					<div class="cbi-page-actions" style="width:200px;padding-top:10px;">
 					<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" onclick="this.form.state='cancel';return true;"/>
 					<input class="cbi-button cbi-button-save" type="submit" name="save" id="save" value="<%:Save%>" />
 					<input class="cbi-button" type="reset" value="<%:Reset%>" />

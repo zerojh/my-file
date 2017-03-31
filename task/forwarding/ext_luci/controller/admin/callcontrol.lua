@@ -1232,7 +1232,7 @@ function forwardgroup()
 				end
 
 				edit[cnt] = ds.build_url("admin","callcontrol","forwardgroup","forwardgroup",k,"edit")
-				delchk[cnt] = uci:check_cfg_deps("endpoint_forwardgroup",k,"forward.endpoint")
+				delchk[cnt] = uci:check_cfg_deps("endpoint_forwardgroup",k,"endpoint_extension.forwardgrp")
 				uci_cfg[cnt] = "endpoint_forwardgroup." .. k
 				table.insert(content,td)
 				break

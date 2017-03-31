@@ -1409,6 +1409,11 @@ local config = {
 		["folder"]="Folder Name",
 		["username"]="Username",
 		["password"]="Password",
+		["disabled"]="Status",
+		["__disabled_value"]={
+			["0"]="Enabled",
+			["1"]="Disabled",
+		},
 	},
 }
 

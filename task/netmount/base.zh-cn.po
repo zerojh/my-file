@@ -13,3 +13,6 @@ msgstr "文件夹名称"
 
 msgid "Folder name can not be empty and can not contain characters(/<>*|?)"
 msgstr "文件夹名称不能为空, 且不能包含字符(/<>*|?)"
+
+msgid "Cron Task"
+msgstr "Cron 任务"

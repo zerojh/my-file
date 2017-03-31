@@ -184,7 +184,7 @@ function sip()
 				tmp[8] = i18n.translate(v.status or "")
 				status[cnt] = v.status or "Disabled"
 				edit[cnt] = ds.build_url("admin","extension","sip","sip",k,"edit")
-				delchk[cnt] = uci:check_cfg_deps("endpoint_sipphone",k,"route.endpoint")
+				delchk[cnt] = uci:check_cfg_deps("endpoint_sipphone",k,"route.endpoint endpoint_forwardgroup.extension")
 				uci_cfg[cnt] = "endpoint_sipphone." .. k
 				table.insert(content,tmp)
 				break
