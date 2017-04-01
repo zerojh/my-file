@@ -11,6 +11,7 @@ function index()
 end
 
 function action_changes()
+	local fs = require "nixio.fs"
 	local uci = luci.model.uci.cursor()
 	local changes = uci:changes()
 	local network
@@ -24,7 +25,8 @@ function action_changes()
 	end
 	luci.template.render("admin_uci/changes", {
 		changes = next(changes) and changes,
-		network = network
+		network = network,
+		upgrading = fs.access("/tmp/upgrading_flag"),
 	})
 end
 
@@ -42,7 +44,7 @@ end
 
 function get_profile_by_gw(gw_index)
 	local uci = require "luci.model.uci".cursor()
-	local trunk = uci:get_all("endpoint_siptrunk")
+	local trunk = uci:get_all("endpoint_siptrunk") or {}
 
 	for k,v in pairs(trunk) do
 		if v.index and v.index == gw_index then
@@ -79,9 +81,8 @@ function action_apply()
 					uci:save(r)
 				end
 			end
-		end	
+		end
 	end
-	
 	-- Collect files to be applied and commit changes
 	for r, tbl in pairs(changes) do
 		table.insert(reload, r)
@@ -90,13 +91,12 @@ function action_apply()
 	local apply_param = {}
 	--@ call lua scripts
 	for r,tbl in pairs(changes) do
-
 		if "profile_codec" == r then
 			apply_param.sipprofile = "on"
 			apply_param.extension = "on"
 			apply_param.route = "on"
-			local codec = uci:get_all("profile_codec")
-			local sip_profile = uci:get_all("profile_sip")
+			local codec = uci:get_all("profile_codec") or {}
+			local sip_profile = uci:get_all("profile_sip") or {}
 			for s,o in pairs(tbl) do
 				for k,v in pairs(codec) do
 					if s == k then
@@ -108,18 +108,20 @@ function action_apply()
 					end
 				end
 			end
-		--elseif "profile_fax" == r then
-			--apply_param.sipprofile = "on"
-			--apply_param.route = "on"
+		elseif "profile_fax" == r then
+			apply_param.sipprofile = "on"
+			apply_param.route = "on"
 		elseif "profile_dialplan" == r then
 			apply_param.fxso = "on"
 		elseif "profile_sip" == r then
 			apply_param.sipprofile = "on"
 			apply_param.extension = "on"
 			apply_param.route = "on"
-			apply_param.firewall = "on"
-			local sip_profile = uci:get_all("profile_sip")
+			local sip_profile = uci:get_all("profile_sip") or {}
 			for s,o in pairs(tbl) do
+				if o.localport then
+					apply_param.firewall = "on"
+				end
 				for k,v in pairs(sip_profile) do
 					if s == k then
 						apply_param.profile_changes = add_to_dst(apply_param.profile_changes,v.index)
@@ -132,8 +134,9 @@ function action_apply()
 			apply_param.route = "on"
 			apply_param.routegrp = "on"
 			apply_param.extension = "on"
-			local sip_profile = uci:get_all("profile_sip")
-			local sip_trunk = uci:get_all("endpoint_siptrunk")
+			apply_param.smsroute = "on"
+			local sip_profile = uci:get_all("profile_sip") or {}
+			local sip_trunk = uci:get_all("endpoint_siptrunk") or {}
 			for s,o in pairs(tbl) do
 				for k,v in pairs(sip_trunk) do
 					if s == k then
@@ -152,8 +155,7 @@ function action_apply()
 			apply_param.ringgrp = "on"
 			apply_param.routegrp = "on"
 			apply_param.route = "on"
-		elseif "endpoint_mobile" == r then
-			apply_param.mobile = "on"
+			apply_param.smsroute = "on"
 		elseif "endpoint_fxso" == r or "profile_fxso" == r then
 			apply_param.fxso = "on"
 			apply_param.extension = "on"
@@ -162,14 +164,14 @@ function action_apply()
 			apply_param.route = "on"
 			if "endpoint_fxso" == r then
 				for k,v in pairs(tbl) do
-					if v.number_1 or v.number_2 then
+					if v.number_1 or v.number_2 or v.username_1 or v.username_2 or v.authuser_1 or v.authuser_2 then
 						apply_param.sipendpoint = "on"
 						apply_param.sipprofile = "on"
 					end
 					if v.port_1_reg or v.port_2_reg or v.port_1_server_1 or v.port_1_server_2 or v.port_2_server_1 or v.port_2_server_2 then
 						apply_param.sipendpoint = "on"
 						if v.port_1_server_1 or v.port_1_server_2 or v.port_2_server_1 or v.port_2_server_2 then
-							local sip_trunk = uci:get_all("endpoint_siptrunk")
+							local sip_trunk = uci:get_all("endpoint_siptrunk") or {}
 							for i,j in pairs(sip_trunk) do
 								if j.index and j.index == v.port_1_server_1 or j.index == v.port_1_server_2 or j.index == v.port_2_server_1 or j.index == v.port_2_server_2 then
 									apply_param.profile_changes = add_to_dst(apply_param.profile_changes,get_profile_by_gw(j.index))
@@ -193,7 +195,36 @@ function action_apply()
 						apply_param.sipendpoint = "on"
 					end
 				end
-		    end
+			end
+		elseif "endpoint_mobile" == r or "profile_mobile" == r then
+			apply_param.mobile = "on"
+			apply_param.route = "on"
+			apply_param.extension = "on"
+			apply_param.routegrp = "on"
+			apply_param.smsroute = "on"
+			if "endpoint_mobile" == r then
+				for k,v in pairs(tbl) do
+					if v.port_reg or v.port_server_1 or v.port_server_2 or v.authuser or v.username or v.number then
+						apply_param.sipendpoint = "on"
+						if v.port_server_1 or v.port_server_2 then
+							local sip_trunk = uci:get_all("endpoint_siptrunk") or {}
+							for i,j in pairs(sip_trunk) do
+								if j.index == v.port_server_1 or j.index == v.port_server_2 then
+									apply_param.profile_changes = add_to_dst(apply_param.profile_changes,get_profile_by_gw(j.index))
+									apply_param.endpoint_changes = add_to_dst(apply_param.endpoint_changes,j.index)
+								end
+							end
+						end
+					end
+					if v.port_password and v.username or v.authuser or v.from_username or v.reg_url_with_transport or v.expire_seconds or v.retry_seconds then
+						apply_param.profile_changes = add_to_dst(apply_param.profile_changes,get_profile_by_gw(v.port_server_1))
+						apply_param.profile_changes = add_to_dst(apply_param.profile_changes,get_profile_by_gw(v.port_server_2))
+					end
+					if v['.type'] and v['.type'] ~= "" then
+						apply_param.sipprofile = "on"
+					end
+				end
+			end
 		elseif "feature_code" == r then
 			apply_param.featurecode = "on"
 			apply_param.extension = "on"
@@ -211,12 +242,18 @@ function action_apply()
 		elseif "profile_time" == r or "profile_number" == r or "profile_manipl" == r or "route" == r then
 			apply_param.extension = "on"
 			apply_param.route = "on"
+		elseif "profile_numberlearning" == r then
+			apply_param.mobile = "on"
+			apply_param.smsroute = "on"
 		elseif "provision" == r then
 			apply_param.provision = "on"
 		elseif "callcontrol" == r then
 			apply_param.extension = "on"
 			if tbl.voice and tbl.voice.nortp then
 				apply_param.fxso = "on"
+			end
+			if tbl.voice and (tbl.voice.plc or tbl.voice.dtmf_detect_interval) then
+				apply_param.dsp = "on"
 			end
 			if tbl.voice and (tbl.voice.rtp_start_port or tbl.voice.rtp_end_port) then
 				apply_param.rtp = "on"
@@ -235,6 +272,15 @@ function action_apply()
 			if tbl.main and tbl.main.mod_cdr then
 				apply_param.cdr = tbl.main.mod_cdr
 			end
+
+			if tbl.main and tbl.main.hostname then
+				os.execute("echo hostname >>/tmp/require_reboot")
+			end
+
+			if tbl.main and tbl.main.timezone then
+				fs.writefile("/etc/TZ", tbl.main.timezone .. "\n")
+			end
+
 			if tbl.main and tbl.main.lang then
 				apply_param.featurecode = "on"
 				apply_param.ivr = "on"
@@ -248,70 +294,59 @@ function action_apply()
 			if tbl.telnet and tbl.telnet.port then
 				apply_param.telnet_port = "on"
 				apply_param.firewall = "on"
+				apply_param.upnpc = "on"
 			end
 			if tbl.main and tbl.main.localcall then
 				apply_param.extension = "on"
 			end
-		elseif "network" == r then
+		elseif "network_tmp" == r then
 			apply_param.network = "on"
 			apply_param.sipprofile = "on"
 			apply_param.sipendpoint = "on"
 			apply_param.firewall = "on"
-			apply_param.dns = "on"
-			--apply_param.wireless = "on"
-			for k,v in pairs(tbl) do
-				--@ wan subinterface
-				if k:match("^vwan") then
-					apply_param.wansub = "on"
-					apply_param.vlan = "on"
-				elseif v.vid or k:match("^vlan") then
-					apply_param.vlan = "on"
-				elseif "wan" == k then
-					for kk,vv in pairs(v) do
-						if "mtu"==kk then
-							apply_param.mtu="on"
-							uci:set("network","eth1","mtu",vv)
-							uci:save("network")
-							uci:commit("network")
-						elseif "wan_switch" == kk then
-							os.execute("echo wan_switch >>/tmp/require_reboot")
-						end
-					end
-				elseif "route" == v["name"] then
-					apply_param.mwan3 = "on"
-				end
+
+			if tbl.network.wan_dns or tbl.network.lan_dns or tbl.network.wan_peerdns or tbl.network.lan_peerdns then
+				apply_param.dns = "on"
 			end
-			--@ static route
+			
+			if tbl.network.network_mode or tbl.network.wan_proto or tbl.network.wan_ipaddr or tbl.network.wan_netmask or tbl.network.lan_proto or tbl.network.lan_ipaddr or tbl.network.lan_netmask then
+				os.execute("echo network >>/tmp/require_reboot")
+			end
+			
+		elseif "network" == r then
+			apply_param.network = "on"
+		elseif "wireless" == r then
+			apply_param.network = "on"
+            apply_param.wireless = "on"
+		elseif "static_route" == r then
 			apply_param.static_route = "on"
+			apply_param.network = "on"
+			apply_param.mwan3 = "on"
 		elseif "dhcp" == r then
 			apply_param.dhcp = "on"
-			apply_param.arp = "on"
-		elseif "attack" == r then
-			apply_param.attack = "on"
 		elseif "dropbear" == r then
 			apply_param.ssh = "on"
 			apply_param.firewall = "on"
+			apply_param.upnpc = "on"
 		elseif "lucid" == r then
 			apply_param.webserver = "on"
 			apply_param.firewall = "on"
+			apply_param.upnpc = "on"
 		elseif "firewall" == r then
-			apply_param.firewall = "on" 
-			apply_param.nat = "on"
-			for k,v in pairs(tbl) do
-				if v.tmp_mac then
-					apply_param.mac_filter = "on"
-					break
-				end
-			end
-			apply_param.mwan3 = "on"
+			apply_param.firewall = "on"
+			apply_param.mwan3 = "on" 
 		elseif "ddns" == r then
 			apply_param.ddns = "on"
 		elseif "mwan3" == r then
 			apply_param.mwan3 = "on"
-		elseif "qos" == r then
-			apply_param.qos = "on"
-		elseif "gre" == r then
-			apply_param.gre = "on"
+		elseif "profile_smsroute" == r then
+			apply_param.smsroute = "on"
+		elseif "upnpc" == r then
+			apply_param.upnpc = "on"
+		elseif "cloud" == r then
+			apply_param.cloud = "on"
+		elseif "hosts" == r then
+			apply_param.hosts = "on"
 		elseif "openvpn" == r then
 			apply_param.openvpn = "on"
 			apply_param.firewall = "on"
@@ -321,37 +356,15 @@ function action_apply()
 				apply_param.xl2tpd = "restart"
 				apply_param.firewall = "on"
 			end
-		elseif "pptpd" == r then
-			apply_param.pptpd = "reload"
-			if tbl.pptpd then
-				apply_param.pptpd = "restart"
-				apply_param.firewall = "on"
-			end
 		elseif "pptpc" == r then
 			apply_param.pptpc = "on"
-		elseif "ipsec" == r then
-			apply_param.ipsec = "on"
-		elseif "profile_portal" == r then
-			--@ modify user
-			apply_param.portal_update = "on"
-		elseif "portal" == r then
-			apply_param.portal_update = "on"
-			for k,v in pairs(tbl) do
-				if v.enabled then
-					apply_param.portal_restart = "on"
-					break
-				end
-			end
-		elseif "wireless" == r then
-			apply_param.wireless = "on"
-		elseif "cloud" == r then
-			apply_param.cloud = "on"
-		elseif "autovpn" == r then
-			apply_param.autovpn ="on"
-		elseif "domainlist_tmp" == r then
-			apply_param.domainlist="on"
-		elseif "alg" == r then
-			apply_param.alg="on"
+			apply_param.firewall = "on"
+		elseif "easycwmp" == r then
+			apply_param.tr069 = "on"
+		elseif "user" == r then
+			apply_param.user = "on"
+		elseif "cron" == r then
+			apply_param.cron = "on"
 		end
 	end
 
@@ -362,23 +375,24 @@ function action_apply()
 		action = "apply",
 	})
 	luascripts.load_scripts(apply_param)
-	if fs.access("/ramlog/uci_changes_log") then
-		local size=fs.stat("/ramlog/uci_changes_log","size")
+	if fs.access("/etc/log/uci_changes_log") then
+		local size=fs.stat("/etc/log/uci_changes_log","size")
 		if size > 100000 then
-			os.execute("mv /ramlog/uci_changes_log /ramlog/uci_changes_log.0")
-			os.execute("cat /tmp/uci_changes_log_temp > /ramlog/uci_changes_log")
+			os.execute("mv /ramlog/uci_changes_log /etc/log/uci_changes_log.0")
+			os.execute("cat /tmp/uci_changes_log_temp > /etc/log/uci_changes_log")
 		else
-			local old = fs.readfile("/ramlog/uci_changes_log")
+			local old = fs.readfile("/etc/log/uci_changes_log")
 			local new = fs.readfile("/tmp/uci_changes_log_temp")
-			fs.writefile("/ramlog/uci_changes_log",new.."\n\n"..old)
+			fs.writefile("/etc/log/uci_changes_log",new.."\n\n"..old)
 		end
 	else
-		os.execute("cat /tmp/uci_changes_log_temp >> /ramlog/uci_changes_log")
+		os.execute("cat /tmp/uci_changes_log_temp >> /etc/log/uci_changes_log")
 	end
 end
 
 
 function action_revert()
+	local fs = require "nixio.fs"
 	local uci = luci.model.uci.cursor()
 	local changes = uci:changes()
 
@@ -387,6 +401,10 @@ function action_revert()
 		uci:load(r)
 		uci:revert(r)
 		uci:unload(r)
+	end
+
+	if fs.access("/tmp/restore_uci_changes") then
+		os.execute("rm /tmp/restore_uci_changes")
 	end
 
 	luci.template.render("admin_uci/revert", {

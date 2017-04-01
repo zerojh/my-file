@@ -146,9 +146,9 @@ function form_check(form)
 			</tr>
 			<tr>
 				<td><%:Status%></td>
-				<td><select class="cbi-input-select"<%=ifattr(disabled,"value",disabled)%> name="disabled" id="disabled"/>
-					<option value="1"><%:Disable%></option>
-					<option value="0"><%:Enable%></option>
+				<td><select class="cbi-input-select" value="" name="disabled" id="disabled"/>
+					<option value="1" <%=(disabled and disabled == "1") and "selected" or ""%>><%:Disable%></option>
+					<option value="0" <%=(disabled and disabled == "0") and "selected" or ""%>><%:Enable%></option>
 					</select>
 				</td>
 				<td></td>

@@ -195,7 +195,7 @@
 
 <fieldset>
 	<div>
-<%- if util.exec("mount"):match("on /mnt/tmp") then %>
+<%- if util.exec("mount"):match("on "..root_path) then %>
 	<%- if error_info then %>
 		<div class="alert-message error">
 			<p><%=error_info%></p>
@@ -246,7 +246,7 @@
 <%- end %>
 	</div>
 </fieldset>
-<%- if util.exec("mount"):match("on /mnt/tmp") then %>
+<%- if util.exec("mount"):match("on "..root_path) then %>
 <fieldset id="tf_content" class="cbi-section">
 	<table id="show-table" >
 		<tbody>

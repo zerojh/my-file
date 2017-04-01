@@ -463,54 +463,6 @@ function Cursor.check_cfg_deps(self,config,section,param)
 						end
 					end
 				end
-			elseif "endpoint_forwardgroup.timeProfile" == node then
-				for k,v in pairs(self:get_all("endpoint_forwardgroup") or {}) do
-					if v.destination and type(v.destination) == "table" then
-						for _,val in pairs(v.destination) do
-							local time_index = val:match("[^:]+::([^:]*)::[^:]+")
-							if not time_index then
-								time_index = val:match("[^:]+::([^:]+)")
-							end
-
-							if time_index and time_index == cur_index then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Call Forward Group"))).."');return false",false
-							end
-						end
-					end
-				end
-			elseif "endpoint_forwardgroup.extension" == node and config == "endpoint_sipphone" then
-				local cur_number = self:get(config,section,"user") or ""
-
-				for k,v in pairs(self:get_all("endpoint_forwardgroup") or {}) do
-					if v.destination and type(v.destination) == "table" then
-						for _,val in pairs(v.destination) do
-							local extension_number = val:match("^([^:]+)::")
-							if not extension_number then
-								extension_number = val
-							end
-
-							if extension_number and extension_number == cur_number then
-								return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("Call Forward Group"))).."');return false",false
-							end
-						end
-					end
-				end
-			elseif "endpoint_extension.forwardgrp" == node then
-				local forward_name = "FORWARD-"..cur_index
-				for k,v in pairs(self:get_all("endpoint_sipphone") or {}) do
-					if (v.forward_uncondition and v.forward_uncondition == forward_name) or (v.forward_unregister and v.forward_unregister == forward_name) or (v.forward_busy and v.forward_busy == forward_name) or (v.forward_noreply and v.forward_noreply == forward_name) then
-						return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("SIP Extension"))).."');return false",false
-					end
-				end
-				for k,v in pairs(self:get_all("endpoint_fxso") or {}) do
-					if v[".type"] == "fxs" then
-						if (v.forward_uncondition_1 and v.forward_uncondition_1 == forward_name) or (v.forward_unregister_1 and v.forward_unregister_1 == forward_name) or (v.forward_busy_1 and v.forward_busy_1 == forward_name) or (v.forward_noreply_1 and v.forward_noreply_1 == forward_name) then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
-						elseif (v.forward_uncondition_2 and v.forward_uncondition_2 == forward_name) or (v.forward_unregister_2 and v.forward_unregister_2 == forward_name) or (v.forward_busy_2 and v.forward_busy_2 == forward_name) or (v.forward_noreply_2 and v.forward_noreply_2 == forward_name) then
-							return "alert('"..i18n.translatef("Can not delete, it is being used in <%s> !",tostring(i18n.translate("FXS Extension"))).."');return false",false
-						end
-					end
-				end
 			else
 				local cur_type = self:get(config,section) or ""
 				local cfg_param = util.split(node,".") or {}
@@ -577,13 +529,6 @@ function Cursor.get_destination_detail(dest,num)
 			end
 		end
 		return i18n.translate("Error")..":"..i18n.translate("SIP Trunk").." ("..i18n.translate("Index")..":"..(idx or "unknown").." "..i18n.translate("Profile")..":"..(profile or "unknown")..") "..i18n.translate("is not exist!")
-	elseif dest:match("^FORWARD%-%d+$") then
-		local idx = dest:match("^FORWARD%-(%d+)$")
-		for k,v in pairs(uci:get_all("endpoint_forwardgroup") or {}) do
-			if v.index and v.index == idx and v.name then
-				return i18n.translate("Call Forward Group").." "..v.name
-			end
-		end
 	elseif dest:match("^%d+$") then
 		for k,v in pairs(uci:get_all("endpoint_fxso") or {}) do
 			if "fxs" == v['.type'] and v.number_1 and v.number_1 == dest then

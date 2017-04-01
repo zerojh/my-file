@@ -666,7 +666,7 @@ function time()
 				td[5] = v.time_options or ""
 
 				edit[cnt] = ds.build_url("admin","profile","time","time",k,"edit")
-				delchk[cnt] = uci:check_cfg_deps("profile_time",k,"route.timeProfile endpoint_forwardgroup.timeProfile")
+				delchk[cnt] = uci:check_cfg_deps("profile_time",k,"route.timeProfile")
 				uci_cfg[cnt] = "profile_time." .. k
 				table.insert(content,td)
 				break

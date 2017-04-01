@@ -801,8 +801,8 @@ function action_mount()
 	local util = require "luci.util"
 	local translate = require "luci.i18n"
 	local file_content = {}
-	local dev_file = "/mnt/tmp"
-	local root_path = "/mnt/tmp"
+	local dev_file = "/mnt/netmount"
+	local root_path = "/mnt/netmount"
 	local rel_path = ""
 	local abs_path = ""
 	local tmp_file = ""
@@ -1012,7 +1012,7 @@ function action_mount()
 		end
 	--@ change directory
 	elseif luci.http.formvalue("change_dir") or luci.http.formvalue("goto_dir") then
-		--@ can not move out "/mnt/tmp"
+		--@ can not move out "/mnt/netmount"
 		if luci.http.formvalue("change_dir") then
 			rel_path = rel_path.."/"..luci.http.formvalue("change_dir")
 		else
@@ -1048,6 +1048,7 @@ function action_mount()
 		max_size = (max_size or 0) * 1024
 		
 		luci.template.render("admin_network/mount",{
+			root_path = root_path,
 			cur_dir = rel_path,
 			file_content = file_content,
 			total_size = total_size,

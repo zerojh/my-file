@@ -1,10 +1,16 @@
 #!/bin/sh
 
-global_action=""
-global_server=""
-global_folder=""
-global_username=""
-global_password=""
+sed_global_action=""
+sed_global_server=""
+sed_global_folder=""
+sed_global_username=""
+sed_global_password=""
+
+global_action=$sed_global_action
+global_server=$sed_global_server
+global_folder=$sed_global_folder
+global_username=$sed_global_username
+global_password=$sed_global_password
 #global_action="on"
 #global_server="172.16.100.18"
 #global_folder="tmp"
@@ -36,6 +42,8 @@ if [ -z "$cifs_exist" ] && [ "$global_action" = "on" ]; then
 	} || {
 		echo "server error" > $log_file
 	}
+elif [ -z "$cifs_exist" ] && [ "$global_action" = "off" ]; then
+	echo "normal umount" > $log_file
 elif [ ! -z "$cifs_exist" ] && [ "$ping_server_ret" -le 4 ]; then
 	#force umount
 	rm -rf $log_file
