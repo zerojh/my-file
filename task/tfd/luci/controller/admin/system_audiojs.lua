@@ -1846,6 +1846,24 @@ function action_tfcard()
 			luci.ltn12.pump.all(reader, luci.http.write)
 			fs.unlink(download_filename)
 		end
+	elseif luci.http.formvalue("sound_name") then
+		local sound_name = luci.http.formvalue("sound_name") -- http formvalue
+
+		local content_type_list = {
+			mp3="audio/mp3"
+		}
+		refresh_flag = false
+		if sound_name and fs.access(abs_path.."/"..sound_name) then
+			local reader = luci.ltn12.source.file(io.open(abs_path.."/"..sound_name,"r"))
+			luci.http.header('Content-Disposition', 'inline; filename="'..sound_name..'"')
+			local content_type = sound_name:match("%.([a-zA-Z0-9]+)$") or ""
+			content_type = string.lower(content_type)
+			content_type = content_type_list[content_type] or "audio/mpeg"
+
+			luci.http.prepare_content(content_type)
+			luci.ltn12.pump.all(reader, luci.http.write)
+			fs.unlink(sound_name)
+		end
 	--@ new folder
 	elseif luci.http.formvalue("folder_name") then
 		local folder_name = luci.http.formvalue("folder_name") -- http formvalue

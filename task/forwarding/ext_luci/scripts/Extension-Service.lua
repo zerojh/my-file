@@ -190,7 +190,7 @@ if session:ready() then
 		--@ HERE IS ROUTING END
 	else
 		--@ take the first service,call_forward_uncondition
-		if "Deactivate" ~= call_forward_uncondition_status then
+		if call_forward_uncondition_status ~= "Deactivate" then
 			session:consoleLog("info","ROUTING:service of call_forward_uncondition")
 			session:setVariable("my_fail_fw_uncondition_flag","true")
 		else
@@ -236,7 +236,7 @@ if session:ready() then
 			--@ END
 
 			--@ USER_BUSY
-			if "Deactivate" ~= call_forward_busy_status then
+			if call_forward_busy_status ~= "Deactivate" then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "USER_BUSY"
 				end
@@ -246,7 +246,7 @@ if session:ready() then
 			--@ END
 
 			--@ NO_ANSWER or NO_USER_RESPONSE
-			if call_forward_noreply_status == "Deactivate" then
+			if call_forward_noreply_status ~= "Deactivate" then
 				if continue_on_fail_str == "" then
 					continue_on_fail_str = "NO_ANSWER,NO_USER_RESPONSE"
 				else

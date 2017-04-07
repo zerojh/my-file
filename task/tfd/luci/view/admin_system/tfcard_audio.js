@@ -1,4 +1,3 @@
-
 <%+header%>
 
 <%
@@ -47,6 +46,7 @@
 
 <script type="text/javascript" src="<%=resource_cbi_js%>"></script>
 <script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/luci-static/resources/audio.min.js"></script>
 <script type="text/javascript">
 
 	$("document").ready(function(){
@@ -98,6 +98,11 @@
 			form1.removeChild(form1.file_delete);
 			form1.removeChild(form1.cur_dir);
 		}
+	}
+	function action_sound(obj)
+	{
+		a1[0].load("<%=REQUEST_URI%>?cur_dir=<%=cur_dir%>&&sound_name=test1.mp3");
+		a1[0].play();
 	}
 	function action_download(obj)
 	{
@@ -187,6 +192,11 @@
 	{
 		$("#tupload").text("<%:Uploading...%>");
 	}
+	var a = audiojs;
+	var a1;
+	a.events.ready(function() {
+		a1 = a.createAll();
+	});
 </script>
 
 <form name="form1" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" style="margin-bottom: 0px;" onsubmit="return true">
@@ -278,6 +288,8 @@
 	</table>
 </fieldset>
 <% end %>
+<audio src="<%=REQUEST_URI%>?cur_dir=<%=cur_dir%>&&sound_name=test1.mp3" preload="auto"></audio>
+<input type="image" onclick="action_sound(this)" title="Download" src="/luci-static/resources/cbi/download.gif"></input>
 
 <%+footer%>
 

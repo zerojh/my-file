@@ -215,8 +215,8 @@
 			<input style="float:right;margin-right:10px;" onkeyup="refresh_filenew(this.id)" class="cbi-input-text" type="text" name="folder_name" id="folder_name" />
 		</form>
 		<form name="form4" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" style="margin-bottom: 0px;" onsubmit="return true">
-			<input class="cbi-button" type="submit" id="safe_popup" name="safe_popup" value="<%:Safe Popup%>" />
-			<a style="margin-left:10%;"><%:Total Size:%><%= total_size or " " %>&nbsp;&nbsp;&nbsp;&nbsp;<%:Available Size:%><%= available_size or " "%></a>
+			<input class="cbi-button" type="submit" style="display:none;" id="safe_popup" name="safe_popup" value="<%:Safe Popup%>"/>
+			<a style="margin-left:3%;"><%:Total Size:%><%= total_size or " " %>&nbsp;&nbsp;&nbsp;&nbsp;<%:Available Size:%><%= available_size or " "%></a>
 		</form>
 		<br />
 		<span>
@@ -234,7 +234,7 @@
 					if k == #tmp_tb then %>
 			&nbsp;>&nbsp;<%=v%>
 					<%- else %>
-			&nbsp;>&nbsp;<a onclick='action_goto("<%=dir_str%>");return false;' href='javascript:void(0);'><%=v%></a>
+			&nbsp;>&nbsp;<a style="line-height:20px;" onclick='action_goto("<%=dir_str%>");return false;' href='javascript:void(0);'><%=v%></a>
 					<%- end
 				end
 			end %>

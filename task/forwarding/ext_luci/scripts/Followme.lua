@@ -28,6 +28,9 @@ if not bridge_str or not forward_type then
 	return
 end
 
+local chan_name = session:getVariable("chan_name") or ""
+chan_extension_number = chan_name:match("user/(%d+)") or ""
+
 local current_forward_tb = {}
 local bridge_type = bridge_str:match("([a-z]+)/.*")
 local destidx
@@ -278,24 +281,44 @@ if session:ready() then
 					freeswitch.consoleLog("debug","GSM dial_string error: gsmopen/"..(gsm_name or "unknown").."/"..(number or "unknown"))
 				end
 			else
-				local tmp_string = api:executeString("eval ${user_data("..destination.."@${domain} param dial_string)}") or ""
-				local domain = api:executeString("eval ${domain}") or ""
-				if tmp_string:match("user/") then
-					call_forward_str = tmp_string:match("(user/%d+)").."@"..domain
-				elseif tmp_string:match("freetdm") then
-					local callee_number = session:getVariable("my_dst_number") or ""
-					call_forward_str = tmp_string:match("(freetdm/%d+/%d+/)")..callee_number
-				end
-
-				if call_forward_str and check_channel_idle_state(call_forward_str) then
+				-- extension
+				if destination == chan_extension_number then
+					freeswitch.consoleLog("debug","source extension == destination extension")
+				elseif tostring(bridge_str:match("user/(%d+)")) == destination or tostring(bridge_str:match("freetdm/[0-9]+/[0-9]+/(%d+)")) == destination then
+					freeswitch.consoleLog("debug","destination can not be initial bridge_str")
+				else
+					local tmp_string = api:executeString("eval ${user_data("..destination.."@${domain} param dial_string)}") or ""
+					local domain = api:executeString("eval ${domain}") or ""
 					if tmp_string:match("user/") then
-						session:setVariable("dest_chan_name","SIP Extension/"..destination)
-					else
-						session:setVariable("dest_chan_name","FXS")
+						if sip_ex_tb[destination] and sip_ex_tb[destination]["notdisturb"] and sip_ex_tb[destination]["notdisturb"] == "Activate" then
+							freeswitch.consoleLog("debug","SIP Extension "..destination.." enable notdisturb")
+							call_forward_str = nil
+						else
+							call_forward_str = tmp_string:match("(user/%d+)").."@"..domain
+						end
+					elseif tmp_string:match("freetdm") then
+						local callee_number = session:getVariable("my_dst_number") or ""
+						local slot,port = tmp_string:match("freetdm/(%d+)/(%d+)/")
+						slot = slot or "unknown"
+						port = port or "unknown"
+						if fxs_ex_tb[slot] and fxs_ex_tb[slot]["notdisturb_"..port] and fxs_ex_tb[slot]["notdisturb_"..port] == "Activate" then
+							freeswitch.consoleLog("debug","FXS Extension "..slot.."/"..port.." enable notdisturb")
+							call_forward_str = nil
+						else
+							call_forward_str = tmp_string:match("(freetdm/%d+/%d+/)")..callee_number
+						end
 					end
-				elseif call_forward_str then
-					freeswitch.consoleLog("info","channel "..call_forward_str.." is not idle")
-					call_forward_str = nil
+
+					if call_forward_str and check_channel_idle_state(call_forward_str) then
+						if tmp_string:match("user/") then
+							session:setVariable("dest_chan_name","SIP Extension/"..destination)
+						else
+							session:setVariable("dest_chan_name","FXS")
+						end
+					elseif call_forward_str then
+						freeswitch.consoleLog("info","channel "..call_forward_str.." is not idle")
+						call_forward_str = nil
+					end
 				end
 			end
 

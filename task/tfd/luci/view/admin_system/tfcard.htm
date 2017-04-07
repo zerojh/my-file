@@ -45,7 +45,6 @@
 
 </style>
 
-<script src="/luci-static/resources/audio.min.js"></script>
 <script type="text/javascript" src="<%=resource_cbi_js%>"></script>
 <script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
 <script type="text/javascript">
@@ -79,9 +78,6 @@
 				form2.removeChild(form2.file_upload);
 			}
 		})
-		audiojs.events.ready(function() {
-			var as = audiojs.createAll();
-		});
 	})
 
 	function action_delete(obj)
@@ -282,7 +278,6 @@
 	</table>
 </fieldset>
 <% end %>
-<audio src="/" preload="none"></audio>
 
 <%+footer%>
 

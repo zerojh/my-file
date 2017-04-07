@@ -820,6 +820,7 @@ function action_mount()
 					if meta and meta.name then
 						tmp_file = os.tmpname()
 						file_name = meta.file or "newfile"
+						file_name = string.gsub(file_name, "[%s%(%)%.%%%+%-%*%?%[%^%$]", "\\%0")
 						fp = io.open(tmp_file,"w")
 					end
 				end
