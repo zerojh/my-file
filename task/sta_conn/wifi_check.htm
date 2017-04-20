@@ -1,0 +1,97 @@
+<script type="text/javascript">
+function action_sta_check()
+{
+	var ssid_id = document.getElementById("cbid.network_tmp.network.wifi_ssid");
+	var ssid_val = ssid_id && ssid_id.value || "";
+	var enc_id = document.getElementById("cbid.network_tmp.network.wifi_encryption");
+	var enc_val = enc_id && enc_id.value || "none";
+	var key_id = document.getElementById("cbid.network_tmp.network.wifi_key");
+	var key_val = key_id && key_id.value || "";
+	var key_wep_id = document.getElementById("cbid.network_tmp.network.wifi_wep_key");
+	var key_wep_val = key_wep_id && key_wep_id.value || "";
+	var wep_id = document.getElementById("cbid.network_tmp.network.wifi_wep");
+	var wep_val = wep_id && wep_id.value || "0";
+	
+	var refresh_wifi_id = document.getElementById("btn-ssid");
+	var sta_check_id = document.getElementById("sta_check");
+
+	if (ssid_val != "" && cbi_validators["uni_ssid"](ssid_val) == true && (enc_val == "none" || (enc_val != "none" && ((enc_val == "wep" && key_wep_val != "" && cbi_validators["wep_password"](key_wep_val) == true) || (key_val != "" && cbi_validators["wifi_password"](key_val) == true))))) {
+		var timeuse = 0;
+		var break_flag = false;
+		var ret = "";
+		var show_str = "";
+
+		if (ssid_id) ssid_id.disabled = true;
+		if (enc_id) enc_id.disabled = true;
+		if (key_id) key_id.disabled = true;
+		if (refresh_wifi_id) refresh_wifi_id.disabled = true;
+		if (sta_check_id) sta_check_id.disabled = true;
+		$("#sta_status").show();
+		$("#con_status").css("color","black");
+		$("#con_status").text("Connect Testing ......");
+		
+		XHR.get('<%=luci.dispatcher.build_url("admin", "network", "wifi_check")%>',{action_type:"test_ready"},
+		function(x,info)
+		{
+			if (info && info.status && (info.status == "0" || info.status == "1")) {
+				if (info.status == "0")
+					show_str = "Connect Testing ...... ";
+				else
+					show_str = "Last test was not completed ...... "
+
+				XHR.get('<%=luci.dispatcher.build_url("admin", "network", "wifi_check")%>',{action_type:"test_start", ssid:ssid_val, encryption:enc_val, key:(key_val||key_wep_val),wep:wep_val},function() {});
+
+				var this_id = window.setInterval(function() {
+					timeuse = timeuse + 1;
+
+					if (break_flag == true || timeuse > 15 ) {
+						if (ssid_id) ssid_id.disabled = false;
+						if (enc_id) enc_id.disabled = false;
+						if (key_id) key_id.disabled = false;
+						if (refresh_wifi_id) refresh_wifi_id.disabled = false;
+						if (sta_check_id) sta_check_id.disabled = false;
+
+						if(break_flag == true && ret == "0") {
+							$("#con_status").text("Connect Test Success");
+							$("#con_status").css("color","blue");
+						} else {
+							$("#con_status").text("Connect Test Fail");
+							$("#con_status").css("color","red");
+						}
+						window.clearInterval(this_id);
+						return;
+					}
+
+					$("#con_status").text(""+show_str+timeuse);
+					XHR.get('<%=luci.dispatcher.build_url("admin", "network", "wifi_check")%>',{action_type:"status"},
+					function(x,info){
+						if (info && info.status && (info.status == "0" || info.status == "1")) {
+							ret = info.status;
+							break_flag = true;
+						}
+					});
+				},1000);
+			} else {
+				if (ssid_id) ssid_id.disabled = false;
+				if (enc_id) enc_id.disabled = false;
+				if (key_id) key_id.disabled = false;
+				if (refresh_wifi_id) refresh_wifi_id.disabled = false;
+				if (sta_check_id) sta_check_id.disabled = false;
+				$("#con_status").css("color","red");
+				$("#con_status").text("Request Fail !");
+			}
+		});
+	} else {
+		$("#con_status").css("color","red");
+		$("#con_status").text("The SSID or password is illegal !");
+	}
+}
+</script>
+
+<div class="cbi-value" id="cbi-network_tmp-network-_sta_test" style="padding-top:0;">
+	<div class="cbi-value-title"><label style="margin-left:;"></label>　</div>
+	<div class="cbi-value-field" style="padding-top:10px;margin-bottom:-7px;width:45%;">
+		<input type="button" class="cbi-button" id="sta_check" name="sta_check" style="font-size:14px;padding:5px 10px;" value="<%:Connect Test%>" onclick="return action_sta_check()"/>
+		<div id="sta_status" style="line-height:10px;margin-top:10px;"><label id='con_status' style="color:red;">Connect Test will disconnect current WiFi temporarily !</label></div>
+	</div>
+</div>
