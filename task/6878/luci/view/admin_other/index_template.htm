@@ -1,0 +1,125 @@
+<%+header%>
+
+<div style="position:relative;top:10px;height:160px;">
+<fieldset class="cbi-section">
+	<legend>System</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">Device Model</td><td>S5V</td></tr>
+		<tr><td>uptime</td><td id="uptime">10 m 31 s</td></tr>
+		<tr><td>Firmware Version</td><td>2.53.3.19 2017-02-28 16:37:08 CST +0800</td></tr>
+		<tr><td>I+IMEI</td><td>i123456789012345</td></tr>
+	</table>
+</fieldset>
+</div>
+
+<div style="position:relative;top:10px;height:180px;">
+<fieldset class="cbi-section">
+	<legend>WAN</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">MAC Address</td><td>AC-64-DD-AF-FF-26</td></tr>
+		<tr><td>ODU Status</td><td>Connected</td></tr>
+		<tr><td>RX / TX<br/>(Per Second)</td><td>3Mbps / 1Mbps</td></tr>
+		<tr><td>RX / TX</td><td>10MBytes / 5MBytes</td></tr>
+	</table>
+</fieldset>
+</div>
+
+<div style="position:relative;top:10px;height:170px;">
+<fieldset class="cbi-section">
+	<legend>WIFI Network</legend>
+	<table width="100%" cellspacing="10" class="info">
+		<tr><td width="30%">MAC Address</td><td>AC-64-DD-AF-FF-24</td></tr>
+		<tr><td>SSID</td><td>HomeULTERA_FFFFFF</td></tr>
+		<tr><td>Channel</td><td>11</td></tr>
+		<tr><td>Encryption</td><td>WPA2PSK</td></tr>
+	</table>
+</fieldset>
+</div>
+
+<div style="position:relative;top:10px;min-height:130px;">
+<fieldset>
+	<legend>DHCP Network Status</legend>
+	<p style="margin-left:5px;">Number of used IP: <span id="dhcp_num">4</span></p>
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:10%;">
+			<col style="width:25%;">
+			<col style="width:25%;">
+			<col style="width:25%;">
+			<col style="width:15%;">
+		</colgroup>
+		<tr>
+			<th>Index</th>
+			<th>Hostname</th>
+			<th>MAC Address</th>
+			<th>IP Address</th>
+			<th>Connected</th>
+		</tr>
+	</table>
+
+	<div style="max-height:275px;overflow:auto;">
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:10%;">
+			<col style="width:25%;">
+			<col style="width:25%;">
+			<col style="width:25%;">
+			<col style="width:15%;">
+		</colgroup>
+		<tbody id="dhcp_info">
+			<tr><td>1</td><td>Joseph-Bacuen</td><td>40:8D:5C:3A:A4:BB</td><td>192.168.11.104</td><td>LAN</td></tr>
+			<tr><td>2</td><td>android-c1d89859ac886649</td><td>D0:13:FD:40:F7:25</td><td>192.168.11.103</td><td>WiFi</td></tr>
+			<tr><td>3</td><td>BLUEWAVE-JCL</td><td>30:3A:64:BE:B4:F5</td><td>192.168.11.102</td><td>WiFi</td></tr>
+			<tr><td>4</td><td>josephBuensiPad</td><td>2C:1F:23:68:E7:2D</td><td>192.168.11.100</td><td>WiFi</td></tr>
+			<tr><td>5</td><td>android-c1d89859ac886649</td><td>D0:13:FD:40:F7:25</td><td>192.168.11.103</td><td>WiFi</td></tr>
+			<tr><td>6</td><td>BLUEWAVE-JCL</td><td>30:3A:64:BE:B4:F5</td><td>192.168.11.102</td><td>WiFi</td></tr>
+			<tr><td>7</td><td>josephBuensiPad</td><td>2C:1F:23:68:E7:2D</td><td>192.168.11.100</td><td>WiFi</td></tr>
+			<tr><td>8</td><td>android-c1d89859ac886649</td><td>D0:13:FD:40:F7:25</td><td>192.168.11.103</td><td>WiFi</td></tr>
+			<tr><td>9</td><td>BLUEWAVE-JCL</td><td>30:3A:64:BE:B4:F5</td><td>192.168.11.102</td><td>WiFi</td></tr>
+			<tr><td>10</td><td>josephBuensiPad</td><td>2C:1F:23:68:E7:2D</td><td>192.168.11.100</td><td>WiFi</td></tr>
+			<tr><td>11</td><td>android-c1d89859ac886649</td><td>D0:13:FD:40:F7:25</td><td>192.168.11.103</td><td>WiFi</td></tr>
+			<tr><td>12</td><td>BLUEWAVE-JCL</td><td>30:3A:64:BE:B4:F5</td><td>192.168.11.102</td><td>WiFi</td></tr>
+			<tr><td>13</td><td>josephBuensiPad</td><td>2C:1F:23:68:E7:2D</td><td>192.168.11.100</td><td>WiFi</td></tr>
+		</tbody>
+	</table>
+	</div>
+</fieldset>
+</div>
+
+<div style="position:relative;top:10px;min-height:130px;">
+<fieldset>
+	<legend>VOIP Status</legend>
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+		</colgroup>
+		<tr>
+			<th>Telephone Number</th>
+			<th>Module State</th>
+			<th>Parameter Status</th>
+			<th>SIP Register Status</th>
+			<th>Hook State</th>
+		</tr>
+	</table>
+
+	<table class="cbi-section-table">
+		<colgroup>
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+			<col style="width:20%;">
+		</colgroup>
+		<tbody>
+			<tr>
+				<td></td><td>READY</td><td>OK</td><td>Not Config</td><td>ONHOOK</td>
+			</tr>
+		</tbody>
+	</table>
+</fieldset>
+</div>
+<%+footer%>
