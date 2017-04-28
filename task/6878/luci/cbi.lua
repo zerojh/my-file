@@ -355,7 +355,7 @@ function Map.parse(self, readinput, ...)
 				self.uci:save(config)
 			end
 		end
-		if self:formvalue("cbi.save_apply") then
+		if not self:formvalue("cbi.cancel") and self:formvalue("cbi.save_apply") then
 			luci.http.redirect(luci.dispatcher.build_url("admin","uci","saveapply"))
 		elseif self.redirect and (self:formvalue("cbi.cancel") or self:formvalue("cbi.save") or self:formvalue("cbi.insert.new")) then
 			local cbi_submit_redirect = self:formvalue("cbi.insert.new")

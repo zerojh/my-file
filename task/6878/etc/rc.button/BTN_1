@@ -1,0 +1,58 @@
+#!/bin/sh
+
+[ "${ACTION}" = "released" ] || {
+	button1_watch.sh &
+	exit 0
+}
+
+[ "${ACTION}" = "released" ] && {
+	killall button1_watch.sh
+}
+
+. /lib/functions.sh
+
+logger "$BUTTON pressed for $SEEN seconds"
+
+local in_factory="`uci -q -c /tmp get factory_test.@device[0].test_status`"
+local wps_counts
+if [ "$in_factory" = "testing" -o "$in_factory" = "start" ]; then
+	if [ -z `uci -q -c /tmp get factory_test.@button[0]` ]; then
+		uci -c /tmp/ add factory_test button
+		uci -c /tmp/ rename factory_test.@button[0]=button
+	fi
+	wps_counts="`uci -c /tmp get factory_test.@button[0].wps_counts`"
+	if [ -z "$wps_counts" ]; then
+		$wps_counts=0
+	fi
+
+	wps_counts=$(($wps_counts + 1))
+	logger "$BUTTON pressed for $SEEN seconds wps_counts $wps_counts"
+
+	echo "wps button seen $SEEN wps_counts $wps_counts" > /dev/console
+	uci -c /tmp set factory_test.@button[0].wps_counts="$wps_counts"
+	uci -c /tmp commit factory_test
+else
+	echo "`date '+%Y-%m-%d %a %H:%M:%S'` WiFi Button pressed for $SEEN seconds" >>/etc/log/button_log
+
+	[ "$SEEN" -ge 0 ] && [ -f "/etc/config/wireless" ] && {
+		echo "timer" > /sys/class/leds/uc100-run/trigger
+		echo "50" > /sys/class/leds/uc100-run/delay_on
+		echo "50" > /sys/class/leds/uc100-run/delay_off
+
+		cp /etc/config/wireless /etc/config/wireless_tmp
+		wifi_up=`ifconfig | grep "ra0"`
+		[ ! -z "$wifi_up" ] && {
+			ifconfig ra0 down
+			uci set wireless_tmp.wifi0.disabled=1 && uci commit wireless_tmp
+		} || {
+			ifconfig ra0 up
+			uci set wireless_tmp.wifi0.disabled=0 && uci commit wireless_tmp
+		}
+		mv /etc/config/wireless_tmp /etc/config/wireless
+		sleep 2
+
+		echo "timer" > /sys/class/leds/uc100-run/trigger
+		echo "1000" > /sys/class/leds/uc100-run/delay_on
+		echo "1000" > /sys/class/leds/uc100-run/delay_off
+	}
+fi

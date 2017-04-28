@@ -1,0 +1,51 @@
+#!/bin/sh
+if [ -f "/usr/lib/lua/luci/controller/mini/index.lua" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/etc/config/* /etc/config/
+	uci set wireless.wifi0.ssid="HomeULTERA_"`readwifimac | awk -F ':' '{print $4$5$6}' | tr '[a-f] [A-F]'`
+	uci commit wireless
+fi
+
+cp /tmp/firmware_upgrading_temp/oem/bin/button0_watch.sh /bin/button0_watch.sh
+cp /tmp/firmware_upgrading_temp/oem/bin/button1_watch.sh /bin/button1_watch.sh
+cp /tmp/firmware_upgrading_temp/oem/bin/network_watch /bin/network_watch
+cp /tmp/firmware_upgrading_temp/oem/etc/config/* /usr/lib/lua/luci/scripts/default_config/
+cp /tmp/firmware_upgrading_temp/oem/etc/rc.button/BTN_0 /etc/rc.button/BTN_0
+cp /tmp/firmware_upgrading_temp/oem/etc/rc.button/BTN_1 /etc/rc.button/BTN_1
+cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -r
+cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
+cp /tmp/firmware_upgrading_temp/oem/pldt_logo.png /www/luci-static/resources/
+
+homeultera_exist=`cat /etc/passwd | grep '^homeultera:'`
+[ ! -z "$homeultera_exist" ] && deluser "homeultera"
+(echo "homeultera"; sleep 1; echo "homeultera") | adduser "homeultera" -G "admin" >/dev/null 2>&1
+[ -f "/etc/config/user" ] && {
+	cp /etc/config/user /etc/config/user_tmp
+	uci delete user_tmp.homeultera -q
+	uci delete user_tmp.homeultera_web -q
+	uci commit user_tmp
+	mv /etc/config/user_tmp /etc/config/user
+}
+
+sed -i "s/option sessiontime .*/option sessiontime '300'/g" /etc/config/luci
+
+#/usr/lib/lua/luci/view/admin_other/index_template.htm
+echo > /usr/lib/opkg/info/oem.list
+cat > /usr/lib/opkg/info/oem.list << EOF
+/www/luci-static/resources/pldt_logo.png
+/usr/lib/lua/luci/controller/admin/other.lua
+/usr/lib/lua/luci/model/cbi/admin_other/wireless.lua
+/usr/lib/lua/luci/model/cbi/admin_other
+/usr/lib/lua/luci/view/admin_other/applyreboot.htm
+/usr/lib/lua/luci/view/admin_other/index.htm
+/usr/lib/lua/luci/view/admin_other/troubleshooting.htm
+/usr/lib/lua/luci/view/admin_other
+/usr/lib/lua/luci/view/admin_status/index_origin.htm
+/usr/lib/lua/luci/scripts/default_config/custom_reset.sh
+/usr/lib/lua/luci/scripts/default_config/dhcp
+/usr/lib/lua/luci/scripts/default_config/feature_code
+/usr/lib/lua/luci/scripts/default_config/network
+/usr/lib/lua/luci/scripts/default_config/wireless
+/usr/lib/lua/luci/model/cbi/admin_system/led.lua
+EOF
+#reinit something by license via lucid
+/etc/init.d/lucid restart&

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+cp /rom/bin/button0_watch.sh /bin/button0_watch.sh
+cp /rom/bin/button1_watch.sh /bin/button1_watch.sh
+cp /rom/bin/network_watch /bin/network_watch
+
+[ -f "/usr/lib/lua/luci/scripts/default_config/BTN_0" ] && {
+	cp /usr/lib/lua/luci/scripts/default_config/BTN_0 /etc/rc.button/BTN_0
+	rm /usr/lib/lua/luci/scripts/default_config/BTN_0
+} || {
+	cp /rom/etc/rc.button/BTN_0 /etc/rc.button/BTN_0
+}
+
+[ -f "/usr/lib/lua/luci/scripts/default_config/BTN_1" ] && {
+	cp /usr/lib/lua/luci/scripts/default_config/BTN_1 /etc/rc.button/BTN_1
+	rm /usr/lib/lua/luci/scripts/default_config/BTN_1
+} || {
+	cp /rom/etc/rc.button/BTN_1 /etc/rc.button/BTN_1
+}
+
+homeultera_exist=`cat /etc/passwd | grep '^homeultera:'`
+[ ! -z "$homeultera_exist" ] && deluser "homeultera"
+
+sed -i "s/option sessiontime .*/option sessiontime '3600'/g" /etc/config/luci

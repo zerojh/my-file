@@ -6,7 +6,10 @@
 	local menu = request[2]
 	local sub_menu = request[3]
 
-	local edit_permission = uci:get("user",current_user.."_web",menu.."_"..sub_menu)
+	local edit_permission 
+	if menu and sub_menu then
+		edit_permission = uci:get("user",current_user.."_web",menu.."_"..sub_menu)
+	end
 %>
 <script language=javascript type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
 <script language="javascript" type="text/javascript">
@@ -81,7 +84,7 @@ function select_click(id)
 <div class="cbi-page-actions">
 <% if saveaction then %>
 <input class="cbi-button" type="submit" name="cbi.cancel" value="<%:Cancel%>" onclick="cancel_action();this.form.cbi_state='del-section';return true;"/>
-<input class="cbi-button cbi-button-save" type="submit" name="cbi.save" value="<%= "homeultera" == current_user and "Save & Apply" or "Save"%>" onclick="return save_action();"/>
+<input class="cbi-button cbi-button-save" type="submit" name="cbi.save" value="<%= "homeultera" == current_user and translate("Save & Apply") or translate("Save")%>" onclick="return save_action();"/>
 <input class="cbi-button" type="reset" value="<%:Reset%>" />
 <% else %>
 <input class="cbi-button" type="submit" name="cbi.cancel" value="<%:Cancel & Back%>" onclick="cancel_action();this.form.cbi_state='del-section';return true;"/>

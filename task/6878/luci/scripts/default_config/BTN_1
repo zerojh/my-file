@@ -1,0 +1,55 @@
+#!/bin/sh
+
+[ "${ACTION}" = "released" ] || {
+	button1_watch.sh &
+	exit 0
+}
+
+[ "${ACTION}" = "released" ] && {
+	killall button1_watch.sh
+}
+
+. /lib/functions.sh
+
+logger "$BUTTON pressed for $SEEN seconds"
+
+local in_factory="`uci -q -c /tmp get factory_test.@device[0].test_status`"
+local wps_counts
+if [ "$in_factory" = "testing" -o "$in_factory" = "start" ]; then
+	if [ -z `uci -q -c /tmp get factory_test.@button[0]` ]; then
+		uci -c /tmp/ add factory_test button
+		uci -c /tmp/ rename factory_test.@button[0]=button
+	fi
+	wps_counts="`uci -c /tmp get factory_test.@button[0].wps_counts`"
+	if [ -z "$wps_counts" ]; then
+		$wps_counts=0
+	fi
+
+	wps_counts=$(($wps_counts + 1))
+	logger "$BUTTON pressed for $SEEN seconds wps_counts $wps_counts"
+
+	echo "wps button seen $SEEN wps_counts $wps_counts" > /dev/console
+	uci -c /tmp set factory_test.@button[0].wps_counts="$wps_counts"
+	uci -c /tmp commit factory_test
+else
+	echo "`date '+%Y-%m-%d %a %H:%M:%S'` WPS Button pressed for $SEEN seconds" >>/etc/log/button_log
+
+	if [ "$SEEN" -lt 3 ]
+	then
+		echo "timer" > /sys/class/leds/uc100-run/trigger
+		echo "1000" > /sys/class/leds/uc100-run/delay_on
+		echo "1000" > /sys/class/leds/uc100-run/delay_off
+	elif [ "$SEEN" -ge 3 ] && [ "$SEEN" -le 30 ]
+	then
+		iwpriv ra0 set WscMode=2
+		iwpriv ra0 set WscGetConf=1
+		echo "timer" > /sys/class/leds/uc100-run/trigger
+		echo "1000" > /sys/class/leds/uc100-run/delay_on
+		echo "1000" > /sys/class/leds/uc100-run/delay_off
+	elif [ "$SEEN" -gt 30 ]
+	then
+		echo "timer" > /sys/class/leds/uc100-run/trigger
+		echo "1000" > /sys/class/leds/uc100-run/delay_on
+		echo "1000" > /sys/class/leds/uc100-run/delay_off
+	fi
+fi

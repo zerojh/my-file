@@ -5,6 +5,14 @@
 	local fs = require "luci.fs"
 	local freeswitch = require "luci.scripts.fs_server"
 
+	function get_imei_info()
+		local imei = "-"
+		if fs.access("/tmp/lte_result.xml") then
+			imei = util.exec("grep 'imei' /tmp/lte_result.xml | cut -d '<' -f2 | cut -d '>' -f2"):match("(.+)\n") or "-"
+		end
+		return imei
+	end
+
 	function get_wan_info()
 		local info = {}
 		local wan_ifname = uci:get("network","wan","ifname")
@@ -101,16 +109,27 @@
 		return info
 	end
 
+	function get_odu_info()
+		local info = {}
+		info.inet = util.exec("cat /tmp/ping_inet_result"):match("0") and "0" or "1"
+		info.odu = util.exec("cat /tmp/ping_odu_result"):match("0") and "0" or "1"
+		return info
+	end
+
+	local imei_info = get_imei_info()
 	local wan_info = get_wan_info()
 	local wlan_info = get_wlan_info()
 	local dhcp_info = get_dhcp_info()
 	local fxs_info = get_fxs_info()
+	local odu_info = get_odu_info()
 
 	if luci.http.formvalue("status") == "1" then
 		local rv = {
+			imei = imei_info,
 			wan = wan_info,
 			dhcp = dhcp_info,
 			fxs = fxs_info,
+			odu = odu_info,
 		}
 		luci.http.prepare_content("application/json")
 		luci.http.write_json(rv)
@@ -216,6 +235,24 @@ function refresh_fxs(info)
 	});
 }
 
+function refresh_odu(info)
+{
+	var odu_ret = info.odu || "1";
+	var inet_ret = info.inet || "1";
+
+	$("#odu_status").empty();
+	$("#odu_tip").empty();
+	if (odu_ret == "0" && inet_ret == "0") {
+		$("#odu_status").text("Connected");
+	} else if (odu_ret == "0" && inet_ret != "0") {
+		$("#odu_status").text("Disconnected");
+		$("#odu_tip").append($("<a href='http://192.168.15.1'>Click here to redirect Login Page</a>"));
+	} else {
+		$("#odu_status").text("ODU Not Found");
+		$("#odu_tip").append($("<label style='color:red;'>Check LAN cable</label>"));
+	}
+}
+
 function refresh_netstat(info)
 {
 	var i = new Array("wan");
@@ -228,8 +265,8 @@ function refresh_netstat(info)
 		netstat[i[j]]["rx_bytes"] = info[i[j]]["rx_bytes"];
 		netstat[i[j]]["tx_bytes"] = info[i[j]]["tx_bytes"];
 
-		var rx_bps_str = String.format("%.2f Mbps ",rx_bytes_persec/(1024*1024));
-		var tx_bps_str = String.format("%.2f Mbps ",tx_bytes_persec/(1024*1024));
+		var rx_bps_str = String.format("%.2f Mbps ",rx_bytes_persec*8/(1024*1024));
+		var tx_bps_str = String.format("%.2f Mbps ",tx_bytes_persec*8/(1024*1024));
 		var rx_str = String.format("%.2f MBytes ",info[i[j]]["rx_bytes"]/(1024*1024));
 		var tx_str = String.format("%.2f MBytes ",info[i[j]]["tx_bytes"]/(1024*1024));
 
@@ -254,8 +291,10 @@ window.onload = function(){
 		} else {
 			timeout=0;
 		}
+		$("#imei").text(info.imei || "-");
 		refresh_dhcp(info.dhcp);
 		refresh_fxs(info.fxs);
+		refresh_odu(info.odu);
 		refresh_netstat(info);
 	});
 }
@@ -266,9 +305,9 @@ window.onload = function(){
 	<legend>System</legend>
 	<table width="100%" cellspacing="10" class="info">
 		<tr><td width="30%">Device Model</td><td>S5V</td></tr>
-		<tr><td>uptime</td><td id="uptime">-</td></tr>
+		<tr><td>uptime</td><td id="uptime"></td></tr>
 		<tr><td>Firmware Version</td><td><%=pcdata(luci.version.firmware_ver)%></td></tr>
-		<tr><td>I+IMEI</td><td>-</td></tr>
+		<tr><td>I+IMEI</td><td id="imei"><%=imei_info%></td></tr>
 	</table>
 </fieldset>
 </div>
@@ -278,7 +317,7 @@ window.onload = function(){
 	<legend>WAN</legend>
 	<table width="100%" cellspacing="10" class="info">
 		<tr><td width="30%">MAC Address</td><td><%=wan_info.macaddr%></td></tr>
-		<tr><td>ODU Status</td><td></td></tr>
+		<tr><td>ODU Status</td><td><span id="odu_status"></span><span id="odu_tip" style="padding-left:20px;"></span></td></tr>
 		<tr><td>RX / TX<br/>(Per Second)</td><td id="wan_network_traffic"></td></tr>
 		<tr><td>RX / TX</td><td id="wan_network_static"></td></tr>
 	</table>

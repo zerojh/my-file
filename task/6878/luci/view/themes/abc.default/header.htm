@@ -131,7 +131,7 @@ end
 childs = disp.node_childs(cattree)
 local user_str=""
 local disable_menu_homeultera = {["status"]="",["system"]="",["network"]="",["profile"]="",["extension"]="",["trunk"]="",["callcontrol"]=""}
-local disable_menu_other = {["ov"]="",["wl"]="",["ts"]="",["nw"]=""}
+local disable_menu_other = {["ov"]="",["wl"]="",["ts"]=""}
 if #childs > 0 then
 	for i, r in ipairs(childs) do
 		local nnode = cattree.nodes[r]
@@ -157,6 +157,9 @@ if #childs > 0 then
 			end
 		end
 	end
+end
+if "homeultera" == current_user then
+	write("<li><a href='"..(uci:get("oem",(uci:get("oem","general","brand") or ""),"outdoor_url") or "/").."' target='_blank'>Network</a></li>")
 end
 %>
 </ul>
@@ -270,7 +273,11 @@ if reboot_info then
 	if reboot_info:match("restore") then
 		str=str..translate("Restore config data succ !").." "..translate("Please reboot to take effect !").."<br>"
 	end
-	str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/reboot')).."'>>>"..translate("Go to reboot...").."</a></div></div>"
+	if current_user == "homeultera" then
+		str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/ts')).."'>>>"..translate("Go to reboot...").."</a></div></div>"
+	else
+		str=str.."<a href='"..pcdata(luci.dispatcher.build_url('admin/system/reboot')).."'>>>"..translate("Go to reboot...").."</a></div></div>"
+	end
 	write(str)
 end
 if "admin" == current_user and luci.sys.user.checkpasswd("admin",(luci.version.default_password or "admin")) then
