@@ -40,15 +40,5 @@ else
 		echo "timer" > /sys/class/leds/uc100-run/trigger
 		echo "1000" > /sys/class/leds/uc100-run/delay_on
 		echo "1000" > /sys/class/leds/uc100-run/delay_off
-	elif [ "$SEEN" -ge 6 ] && [ "$SEEN" -le 11 ]
-	then
-		sleep 1
-		sync
-		reboot -f
-	elif [ "$SEEN" -ge 12 ]
-	then
-		echo "timer" > /sys/class/leds/uc100-run/trigger
-		echo "1000" > /sys/class/leds/uc100-run/delay_on
-		echo "1000" > /sys/class/leds/uc100-run/delay_off
 	fi
 fi

@@ -1,12 +1,14 @@
 #!/bin/sh
 
 [ "${ACTION}" = "released" ] || {
+	touch /tmp/wifi_btn_flag
 	button1_watch.sh &
 	exit 0
 }
 
 [ "${ACTION}" = "released" ] && {
 	killall button1_watch.sh
+	rm /tmp/wifi_btn_flag
 }
 
 . /lib/functions.sh
@@ -35,10 +37,6 @@ else
 	echo "`date '+%Y-%m-%d %a %H:%M:%S'` WiFi Button pressed for $SEEN seconds" >>/etc/log/button_log
 
 	[ "$SEEN" -ge 0 ] && [ -f "/etc/config/wireless" ] && {
-		echo "timer" > /sys/class/leds/uc100-run/trigger
-		echo "50" > /sys/class/leds/uc100-run/delay_on
-		echo "50" > /sys/class/leds/uc100-run/delay_off
-
 		cp /etc/config/wireless /etc/config/wireless_tmp
 		wifi_up=`ifconfig | grep "ra0"`
 		[ ! -z "$wifi_up" ] && {
@@ -50,9 +48,5 @@ else
 		}
 		mv /etc/config/wireless_tmp /etc/config/wireless
 		sleep 2
-
-		echo "timer" > /sys/class/leds/uc100-run/trigger
-		echo "1000" > /sys/class/leds/uc100-run/delay_on
-		echo "1000" > /sys/class/leds/uc100-run/delay_off
 	}
 fi

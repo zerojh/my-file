@@ -109,7 +109,7 @@
 </head>
 <body><header><div class="fill"><div class="container">
 <!--<a class="brand" href="#"><%=hostname%></a>-->
-<a class="brand" href='<%=pcdata(luci.dispatcher.build_url('admin/status/overview'))%>'><%=hostname%></a><ul class='nav'>
+<a class="brand" style="padding:0;" href='<%=pcdata(luci.dispatcher.build_url('admin/status/overview'))%>'><img style="width:80px;" src='/luci-static/resources/<%=luci.version.oem.logo%>'></a><ul class='nav'>
 <%
 local function submenu(category,menu,node)
 	local s=""
@@ -131,7 +131,7 @@ end
 childs = disp.node_childs(cattree)
 local user_str=""
 local disable_menu_homeultera = {["status"]="",["system"]="",["network"]="",["profile"]="",["extension"]="",["trunk"]="",["callcontrol"]=""}
-local disable_menu_other = {["ov"]="",["wl"]="",["ts"]=""}
+local disable_menu_other = {["ov"]="",["wl"]="",["ts"]="",["nw"]=""}
 if #childs > 0 then
 	for i, r in ipairs(childs) do
 		local nnode = cattree.nodes[r]
@@ -158,9 +158,9 @@ if #childs > 0 then
 		end
 	end
 end
-if "homeultera" == current_user then
-	write("<li><a href='"..(uci:get("oem",(uci:get("oem","general","brand") or ""),"outdoor_url") or "/").."' target='_blank'>Network</a></li>")
-end
+--if "homeultera" == current_user then
+--	write("<li><a href='"..(uci:get("oem",(uci:get("oem","general","brand") or ""),"outdoor_url") or "/").."' target='_blank'>Network</a></li>")
+--end
 %>
 </ul>
 <ul class="nav" style="float:right"><%=user_str%></ul>

@@ -205,13 +205,13 @@ get_lte_signal() {
 			wlan_up="no"
 		fi
 		if [ -n "$wlan_mode" ] && [ "$wlan_mode" = "ap" ] && [ "$wlan_up" = "yes" ]; then
-			if [ "$wlan_led_state" = "off" ]; then
+			if [ "$wlan_led_state" = "off" ] && [ ! -e "/tmp/wifi_btn_flag" ]; then
 				echo "timer" > /sys/class/leds/wlan-run/trigger
 				echo "500" > /sys/class/leds/wlan-run/delay_on
 				echo "500" > /sys/class/leds/wlan-run/delay_off
 				wlan_led_state="on"
 			fi
-		elif [ "$wlan_led_state" != "off" ]; then
+		elif [ "$wlan_led_state" != "off" ] && [ ! -e "/tmp/wifi_btn_flag" ]; then
 			echo "none" > /sys/class/leds/wlan-run/trigger
 			echo "255" > /sys/class/leds/wlan-run/brightness
 			wlan_led_state="off"

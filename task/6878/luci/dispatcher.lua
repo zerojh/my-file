@@ -597,7 +597,7 @@ function dispatch(request,passport)
 		end
 	elseif "homeultera" == ctx.authuser and "admin" == request[1] and request[2] and "logout" ~= request[2] and "uci" ~= request[2] then
 		-- homeultera only view oem page
-		local menu_list = {["ov"]="",["wl"]="",["ts"]=""}
+		local menu_list = {["ov"]="",["wl"]="",["ts"]="",["nw"]=""}
 		local menu = request[2]
 		local sub_menu = request[3]
 		if not menu_list[menu] then

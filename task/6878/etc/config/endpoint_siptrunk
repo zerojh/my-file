@@ -1,0 +1,21 @@
+
+config sip
+	option auth_username '1000'
+	option expire_seconds '300'
+	option from_username 'username'
+	option heartbeat 'off'
+	option index '1'
+	option ipv4 'lte.smart.net'
+	option name '1'
+	option outboundproxy '10.154.65.68'
+	option outboundproxy_port '5060'
+	option password '123456'
+	option port '5060'
+	option reg_url_with_transport 'off'
+	option register 'on'
+	option retry_seconds '60'
+	option status 'Enabled'
+	option transport 'udp'
+	option username '1000'
+	option profile '2'
+
