@@ -1,0 +1,12 @@
+<%
+	local current_user = luci.dispatcher.context.authuser
+-%>
+<% if current_user and current_user == "homeultera" then -%>
+<script>
+window.setTimeout(function () {
+	document.location="<%=luci.dispatcher.get_srv_addr("current")%>";
+	return;
+},300000);
+</script>
+<% end -%>
+<footer></footer></div></div></body></html>

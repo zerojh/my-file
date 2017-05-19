@@ -1,0 +1,66 @@
+#!/bin/sh
+if [ -f "/usr/lib/lua/luci/controller/mini/index.lua" ]; then
+	cp /tmp/firmware_upgrading_temp/oem/etc/config/* /etc/config/
+	ssid="HomeULTERA_`readwifimac | awk -F ':' '{print $4$5$6}' | tr '[a-f]' '[A-F]'`"
+	sn="`lua /usr/bin/factory_test_get_license.lua | grep "sn=" | awk -F '=' '{print $2}' | tr '[a-f]' '[A-F]'`"
+	passwd="`echo -n $sn | md5sum | awk -F '' '{print$1$3$5$7$9$11$13$15}' | tr '[a-f]' '[A-F]'`"
+	uci set wireless.wifi0.ssid=$ssid
+	uci set wireless.wifi0.key=$passwd
+	uci commit wireless
+fi
+
+if [ -f "/etc/crontabs/root" ]; then
+	sed -i '/update_passwd/d' /etc/crontabs/root
+	echo '0 0 * * * /usr/bin/update_passwd.sh &' >> /etc/crontabs/root
+else
+	echo '0 0 * * * /usr/bin/update_passwd.sh &' > /etc/crontabs/root
+fi
+
+cp /tmp/firmware_upgrading_temp/oem/bin/button0_watch.sh /bin/button0_watch.sh
+cp /tmp/firmware_upgrading_temp/oem/bin/button1_watch.sh /bin/button1_watch.sh
+cp /tmp/firmware_upgrading_temp/oem/bin/network_watch /bin/network_watch
+cp /tmp/firmware_upgrading_temp/oem/etc/config/* /usr/lib/lua/luci/scripts/default_config/
+cp /tmp/firmware_upgrading_temp/oem/etc/rc.button/BTN_0 /etc/rc.button/BTN_0
+cp /tmp/firmware_upgrading_temp/oem/etc/rc.button/BTN_1 /etc/rc.button/BTN_1
+cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -r
+cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
+cp /tmp/firmware_upgrading_temp/oem/pldt_logo.png /www/luci-static/resources/
+cp /tmp/firmware_upgrading_temp/oem/usr/bin/dhcp_hook.sh /usr/bin/dhcp_hook.sh
+cp /tmp/firmware_upgrading_temp/oem/usr/bin/update_passwd.sh /usr/bin/update_passwd.sh
+chmod +x /usr/bin/update_passwd.sh
+
+[ -f "/etc/config/dhcp" ] && {
+	cp /etc/config/dhcp /etc/config/dhcp_tmp
+	uci set dhcp_tmp.dnsmasq.dhcpscript="/usr/bin/dhcp_hook.sh"
+	uci commit dhcp_tmp
+	mv /etc/config/dhcp_tmp /etc/config/dhcp
+}
+
+sed -i "s/option sessiontime .*/option sessiontime '300'/g" /etc/config/luci
+
+echo > /usr/lib/opkg/info/oem.list
+cat > /usr/lib/opkg/info/oem.list << EOF
+/www/luci-static/resources/pldt_logo.png
+/usr/lib/lua/luci/controller/admin/other.lua
+/usr/lib/lua/luci/model/cbi/admin_other/wireless.lua
+/usr/lib/lua/luci/model/cbi/admin_other
+/usr/lib/lua/luci/view/admin_network/leasetime.htm
+/usr/lib/lua/luci/view/admin_other/applyreboot.htm
+/usr/lib/lua/luci/view/admin_other/index.htm
+/usr/lib/lua/luci/view/admin_other/troubleshooting.htm
+/usr/lib/lua/luci/view/admin_other
+/usr/lib/lua/luci/view/admin_status/index_origin.htm
+/usr/lib/lua/luci/scripts/default_config/custom_reset.sh
+/usr/lib/lua/luci/scripts/default_config/dhcp
+/usr/lib/lua/luci/scripts/default_config/feature_code
+/usr/lib/lua/luci/scripts/default_config/firewall
+/usr/lib/lua/luci/scripts/default_config/network
+/usr/lib/lua/luci/scripts/default_config/wireless
+/usr/lib/lua/luci/scripts/default_config/endpoint_siptrunk
+/usr/lib/lua/luci/scripts/default_config/profile_codec
+/usr/lib/lua/luci/scripts/default_config/system
+/usr/lib/lua/luci/scripts/default_config/telnet
+/usr/lib/lua/luci/model/cbi/admin_system/led.lua
+EOF
+#reinit something by license via lucid
+/etc/init.d/lucid restart&

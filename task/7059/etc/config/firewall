@@ -1,0 +1,181 @@
+config defaults 'defaults'
+	option syn_flood	1
+	option input	ACCEPT
+	option output	ACCEPT
+	option forward	REJECT
+	option enabled	0
+	option default_ip_rule	ACCEPT
+	option default_mac_rule   ACCEPT
+	option enabled_http '1'
+	option enabled_https '0'
+	option enabled_ssh '0'
+	option enabled_telnet '0'
+	option disable_ipv6 '1'
+	
+# Uncomment this line to disable ipv6 rules
+#	option disable_ipv6	1
+
+config zone
+	option name	lan
+	list   network	'lan'
+	option input	ACCEPT
+	option output	ACCEPT
+	option forward	ACCEPT
+
+config zone
+	option name		wan
+	list   network		'wan'
+	list   network		'wan2'
+	list   network		'wan6'
+	option input		ACCEPT
+	option output		ACCEPT
+	option forward		REJECT
+	option masq		1
+	option mtu_fix		1
+
+config forwarding
+	option src		lan
+	option dest		wan
+
+# We need to accept udp packets on port 68,
+# see https://dev.openwrt.org/ticket/4108
+
+# WAN http 
+config redirect
+	option name		'Allow-http' 
+	option src		'wan'
+	option src_dport '80'
+	option dest_port '80'
+	option enabled	'1'
+# WAN https
+config redirect
+	option name		'Allow-https' 
+	option src		'wan'
+	option src_dport '443'
+	option dest_port '443'
+	option enabled	'1'
+# WAN ssh
+config redirect
+	option name		'Allow-ssh' 
+	option src		'wan'
+	option src_dport '2'
+	option dest_port '22'
+	option enabled	'1'
+# WAN telnet
+config redirect
+	option name		'Allow-telnet' 
+	option src		'wan'
+	option src_dport '23'
+	option dest_port '23'
+	option enabled	'1'
+# WAN dhcp renew
+config redirect
+	option name 	'Allow-dhcp-renew'
+	option src		'wan'
+	option proto	'udp'
+	option src_dport '68'
+	option dest_port	'68'
+	option enabled	'1'
+# WAN SIP	
+config redirect
+	option name		'Allow-SIP'
+	option src		'wan'
+	option src_dport '5060'
+	option dest_port	'5060'
+	option enabled		'1'
+# WAN RTP
+config redirect
+	option name		'Allow-RTP'
+	option src		'wan'
+	option src_dport '16000-16200'
+	option dest_port	'16000-16200'
+	option enabled		'1'
+# DMZ
+config redirect 'dmz'
+	option name 	'DMZ'
+	option src 		'wan'
+	option proto	'all'
+	option enabled	'0'
+	
+config rule
+	option name		Allow-DHCP-Renew
+	option src		wan
+	option proto		udp
+	option dest_port	68
+	option target		ACCEPT
+	option family		ipv4
+
+# Allow IPv4 ping
+config rule
+	option name		Allow-Ping
+	option src		wan
+	option proto		icmp
+	option icmp_type	echo-request
+	option family		ipv4
+	option target		ACCEPT
+
+# include a file with users custom iptables rules
+config include
+	option path /etc/firewall.user
+
+config include
+	option path /etc/firewall.vpn
+	#option reload 1
+
+config include
+	option path /etc/firewall.vpn.reload
+	option reload 1
+
+config include
+	option path /var/run/firewall.vpn.l2tp
+	#option reload 1
+
+### EXAMPLE CONFIG SECTIONS
+
+# Allow http
+config rule
+	option name	Allow-http
+	option src	wan
+	option dest_port	80
+	option enabled	1
+	option target	ACCEPT
+	
+# Allow https
+config rule
+	option name	Allow-https
+	option src	wan
+	option dest_port	443
+	option target	REJECT
+	option enabled	1
+	
+# Allow ssh
+config rule
+	option name		Allow-ssh
+	option src		wan
+	option dest_port	22
+	option target		REJECT
+	option enabled		1
+
+# Allow telnet
+config rule
+	option name	Allow-telnet
+	option src	wan
+	option dest_port	23
+	option target	REJECT
+	option enabled	1
+
+# Default SIP port
+config rule
+	option name		Allow-SIP
+	option src		wan
+	option dest_port	5060
+	option target		ACCEPT
+	option enabled		1
+
+# Default RTP port
+config rule
+	option name		Allow-RTP
+	option src		wan
+	option dest_port	16000-16200
+	option target		ACCEPT
+	option enabled		1

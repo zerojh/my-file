@@ -1,0 +1,337 @@
+#!/bin/sh /etc/rc.common
+local lte_led_state
+local get_lte_url
+local get_lte_signal_timeout
+
+lte_led_state=""
+
+lte_led_ctl() {
+	local marginal_blink_state
+	local timeout_blink_state
+	local prev_led_state
+
+	marginal_blink_state="off"
+	timeout_blink_state="off"
+	prev_led_state=""
+	while true
+	do
+		local led_state=`cat /tmp/lte_led_state`
+		local eq_count=0
+		[ "$prev_led_state" != "$led_state" ] && eq_count=0 || eq_count=$((eq_count+1))
+		[ $eq_count = 60 ] && eq_count=0
+
+#		[ $eq_count = 0 ] && {
+#			# All led off
+#			echo "none" > /sys/class/gpio/gpio66/trigger
+#			echo "none" > /sys/class/gpio/lte-run/trigger
+#			echo "none" > /sys/class/gpio/gpio26/trigger
+#			echo "255" > /sys/class/gpio/gpio66/brightness
+#			echo "255" > /sys/class/gpio/lte-run/brightness
+#			echo "255" > /sys/class/gpio/gpio26/brightness
+#		}
+#
+#		if [ "$led_state" = "0" -a $eq_count = 0 ]; then
+#			# Bootup
+#			echo "500" > /sys/class/gpio/gpio66/delay_on
+#			echo "500" > /sys/class/gpio/gpio66/delay_off
+#			echo "500" > /sys/class/gpio/lte-run/delay_on
+#			echo "500" > /sys/class/gpio/lte-run/delay_off
+#			echo "500" > /sys/class/gpio/gpio26/delay_on
+#			echo "500" > /sys/class/gpio/gpio26/delay_off
+#
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#			echo "timer" > /sys/class/leds/lte-run/trigger
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#		elif [ "$led_state" = "1" -a $eq_count = 0 ]; then
+#			# No simcard
+#			echo "1000" > /sys/class/gpio/gpio66/delay_on
+#			echo "1000" > /sys/class/gpio/gpio66/delay_off
+#			echo "1000" > /sys/class/gpio/lte-run/delay_on
+#			echo "1000" > /sys/class/gpio/lte-run/delay_off
+#			echo "1000" > /sys/class/gpio/gpio26/delay_on
+#			echo "1000" > /sys/class/gpio/gpio26/delay_off
+#
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#			echo "timer" > /sys/class/leds/lte-run/trigger
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#		elif [ "$led_state" = "2" -a $seq_count = 0 ]; then
+#			# Scanning LTE
+#			echo "1000" > /sys/class/gpio/gpio66/delay_on
+#			echo "1000" > /sys/class/gpio/gpio66/delay_off
+#			echo "1000" > /sys/class/gpio/lte-run/delay_on
+#			echo "1000" > /sys/class/gpio/lte-run/delay_off
+#
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#			echo "timer" > /sys/class/leds/lte-run/trigger
+#		elif [ "$led_state" = "3" -a $seq_count = 0 ]; then
+#			# Network Authentication
+#			echo "1000" > /sys/class/gpio/lte-run/delay_on
+#			echo "1000" > /sys/class/gpio/lte-run/delay_off
+#			echo "timer" > /sys/class/leds/lte-run/trigger
+#		elif [ "$led_state" = "4" -a $seq_count = 0 ]; then
+#			# Getting IP
+#			echo 4 > /dev/null
+#			echo "1000" > /sys/class/gpio/gpio26/delay_on
+#			echo "1000" > /sys/class/gpio/gpio26/delay_off
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#		elif [ "$led_state" = "5" ]; then
+#			# Firmware Update
+#			local seq=$(($eq_count % 3))
+#			if [ $seq = 0 ]; then
+#				echo "255" > /sys/class/gpio/gpio66/brightness
+#				echo "255" > /sys/class/gpio/lte-run/brightness
+#				echo "255" > /sys/class/gpio/gpio26/brightness
+#			if [ $seq = 1 ]; then
+#				echo "0" > /sys/class/gpio/gpio66/brightness
+#			elif [ $seq = 2 ]; then
+#				echo "0" > /sys/class/gpio/lte-run/brightness
+#			else
+#				echo "0" > /sys/class/gpio/gpio26/brightness
+#			fi
+#		elif [ "$led_state" = "10" -a $seq_count = 0 ]; then
+#			# Reset
+#			echo "1000" > /sys/class/gpio/gpio66/delay_on
+#			echo "1000" > /sys/class/gpio/gpio66/delay_off
+#			echo "1000" > /sys/class/gpio/gpio26/delay_on
+#			echo "1000" > /sys/class/gpio/gpio26/delay_off
+#
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#		elif [ "$led_state" = "11" -a $seq_count = 0 ]; then
+#			# Strong
+#			echo "0" > /sys/class/gpio/gpio66/brightness
+#			echo "0" > /sys/class/gpio/lte-run/brightness
+#			echo "0" > /sys/class/gpio/gpio26/brightness
+#		elif [ "$led_state" = "12" ]; then
+#			# Good
+#			echo "0" > /sys/class/gpio/gpio66/brightness
+#			echo "0" > /sys/class/gpio/lte-run/brightness
+#		elif [ "$led_state" = "13" ]; then
+#			# Weak
+#			echo "0" > /sys/class/gpio/gpio66/brightness
+#		elif [ "$led_state" = "14" ]; then
+#			# Marginal
+#			echo "500" > /sys/class/gpio/gpio66/delay_on
+#			echo "500" > /sys/class/gpio/gpio66/delay_off
+#			echo "timer" > /sys/class/gpio/gpio66/trigger
+#		else
+#			# Nothing , no led light
+#			echo "255" > /sys/class/gpio/gpio66/brightness
+#			echo "255" > /sys/class/gpio/lte-run/brightness
+#			echo "255" > /sys/class/gpio/gpio26/brightness
+#		fi
+
+		prev_led_state="$led_state"
+		sleep 1
+	done
+}
+
+init_lte_led() {
+	if [ ! -d /sys/class/gpio/gpio66 ]; then
+		echo 66 > /sys/class/gpio/export
+	fi
+	echo out > /sys/class/gpio/gpio66/direction
+	echo 1 > /sys/class/gpio/gpio66/value
+
+	echo 255 > /sys/class/leds/lte-run/brightness
+
+	if [ ! -d /sys/class/gpio/gpio26 ]; then
+		echo 26 > /sys/class/gpio/export
+	fi
+	echo out > /sys/class/gpio/gpio26/direction
+	echo 1 > /sys/class/gpio/gpio26/value
+}
+
+set_lte_led() {
+	if [ "$lte_led_state" = "$1" ]; then
+		return 0
+	fi
+
+	echo "$1" > /tmp/lte_led_state
+	lte_led_state="$1"
+}
+
+get_lte_signal() {
+	local lte_url
+	local lte_url_timeout
+	echo > /tmp/lte_result.xml
+	lte_url=`uci -q get oem.bluewave.lte_url`
+	if [ -z $lte_url ]; then
+		echo "get lte url errror"
+		set_lte_led "none"
+		return 1
+	fi
+	lte_url_timeout=`uci -q get oem.bluewave.lte_url_timeout`
+	if [ -z $lte_url_timeout ]; then
+		lte_url_timeout=3
+	fi
+	curl --connect-timeout "$lte_url_timeout" "$lte_url" -o /tmp/lte_result.xml
+	if [ ! $? -eq 0 ]; then
+		if [ $get_lte_signal_timeout -ge 3 ]; then
+			echo "curl error"
+			set_lte_led "timeout"
+		fi
+		get_lte_signal_timeout=$(($get_lte_signal_timeout + 1))
+		return 1
+	fi
+	get_lte_signal_timeout=0
+	local ledstat=`grep 'ledstat' /tmp/lte_result.xml | cut -d '<' -f2 | cut -d '>' -f2`
+	set_lte_led $ledstat
+	return 0
+}
+
+{
+	local lanif
+	local linkmode
+	local prev_linkmode
+	local wlan_mode
+	local wlan_up
+	local wlan_led_state
+	local lte_led_state
+	local lte_link
+	local lte_count
+	local network_mode
+	local dns_addr
+	local dns_link_state
+	local internet_link_state
+	local str
+	config_load network
+	config_get lanif lan ifname
+
+	network_mode="route"
+	wlan_mode=""
+	wlan_up="no"
+	wlan_led_state="off"
+	lte_check_count=0
+	config_load wireless
+	config_get wlan_mode wifi0 mode
+
+	lanif=eth0.1
+	#echo $lanif > /dev/console
+	[ -z "$lanif" ] && exit 0
+
+	prev_linkmode=yes 
+	get_lte_signal_timeout=0
+	init_lte_led
+	touch /tmp/lte_led_state
+	#lte_led_ctl &
+
+	while true
+	do
+		linkmode=$(ethtool $lanif)
+		linkmode=${linkmode#*Link detected: }
+		linkmode=${linkmode%%\n}
+		while [ "$linkmode" != "yes" -a "$linkmode" != "no" ]
+		do
+			sleep 1
+			linkmode=$(ethtool $lanif)
+			linkmode=${linkmode#*Link detected: }
+			linkmode=${linkmode%%\n}
+		done
+		#echo $linkmode > /dev/console
+
+		[ -n "$linkmode" ] && [ "$linkmode" != "$prev_linkmode" ] && {
+		prev_linkmode=$linkmode
+
+		[ "$linkmode" = "no" ] && {
+		echo link down
+	}
+	[ "$linkmode" = "yes" ] && {
+	echo link up
+}
+#/etc/init.d/network reload 
+		}
+
+		ra0_str=`ifconfig | grep "ra0"`
+		ra1_str=`ifconfig | grep "ra1"`
+		ra2_str=`ifconfig | grep "ra2"`
+		ra3_str=`ifconfig | grep "ra3"`
+		if [ -n "$ra0_str" -o -n "$ra1_str" -o -n "$ra2_str" -o -n "$ra3_str" ]; then
+			wlan_up="yes"
+		else
+			wlan_up="no"
+		fi
+		if [ -n "$wlan_mode" ] && [ "$wlan_mode" = "ap" ] && [ "$wlan_up" = "yes" ]; then
+			if [ "$wlan_led_state" = "off" ] && [ ! -e "/tmp/wifi_btn_flag" ]; then
+				echo "timer" > /sys/class/leds/wlan-run/trigger
+				echo "500" > /sys/class/leds/wlan-run/delay_on
+				echo "500" > /sys/class/leds/wlan-run/delay_off
+				wlan_led_state="on"
+			fi
+		elif [ "$wlan_led_state" != "off" ] && [ ! -e "/tmp/wifi_btn_flag" ]; then
+			echo "none" > /sys/class/leds/wlan-run/trigger
+			echo "255" > /sys/class/leds/wlan-run/brightness
+			wlan_led_state="off"
+		fi
+
+		#lte_link=$(ifconfig 3g-wan2 2> /dev/null)
+		#if [ -n "$lte_link" -a "$lte_led_state" != "on" ]; then
+		#	echo "0" > /sys/class/leds/lte-run/brightness
+		#	lte_led_state="on"
+		#elif [ -z "$lte_link" -a "$lte_led_state" != "off" ]; then
+		#	echo "255" > /sys/class/leds/lte-run/brightness
+		#	lte_led_state="off"
+		#fi
+
+		if [ -z `uci get network.wan.proto -c /tmp/config/` ]; then
+			network_mode="bridge"
+		fi
+
+		# if [ "route" == "$network_mode" ]; then
+		# 	dns_addr=`lua /etc/ubus_get_dns.lua wan`
+		# else
+		# 	dns_addr=`lua /etc/ubus_get_dns.lua lan`
+		# fi
+
+		if [ ! -f /tmp/config/easycwmp ]; then
+			cp /etc/config/easycwmp /tmp/config/easycwmp
+		fi
+
+		# dns_ping_state="off"
+		# for i in $dns_addr
+		# do
+		# 	ping_ret=`ping -w 2 $i 2>/dev/null | wc -l`
+		# 	if [ $ping_ret -gt 4 ]; then
+		# 		dns_ping_state="on"
+		# 	fi
+		# done
+
+		# if [ "off" == "$dns_ping_state" ]; then
+		# 	dns_link_state="off"
+		# else
+		# 	dns_link_state="on"
+		# fi
+
+		ping_google_ret=`ping -w 2 www.google.com 2>/dev/null | wc -l`
+		if [ $ping_google_ret -gt 4 ]; then
+			internet_link_state="on"
+			echo "0" > /tmp/ping_inet_result
+		else
+			internet_link_state="off"
+			echo "1" > /tmp/ping_inet_result
+		fi
+
+		ping_odu_ret=`ping -w 2 192.168.15.1 2>/dev/null | wc -l`
+		if [ $ping_odu_ret -gt 4 ]; then
+			echo "0" > /tmp/ping_odu_result
+		else
+			echo "1" > /tmp/ping_odu_result
+		fi
+
+		if [ "on" == "$internet_link_state" ]; then
+			echo "timer" > /sys/class/leds/uc100-run/trigger
+			echo "1000" > /sys/class/leds/uc100-run/delay_on
+			echo "1000" > /sys/class/leds/uc100-run/delay_off
+		else
+			echo "none" > /sys/class/leds/uc100-run/trigger
+			echo "255" > /sys/class/leds/uc100-run/brightness
+		fi
+
+		if [ $(($lte_check_count % 2)) -eq 0 ]; then
+			get_lte_signal
+		fi
+
+		sleep 1
+		lte_check_count=$(($lte_check_count + 1))
+	done
+}
