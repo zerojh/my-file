@@ -1,0 +1,38 @@
+<html>
+<title>html</title>
+
+<body>
+<script src="vue.js"></script>
+
+<div id="app">
+    <ol>
+        <todo-item v-for="todo in todos" v-bind:todo="todo"></todo-item>
+    </ol>
+</div>
+
+<script>
+Vue.component('todo-item', {
+    props: ['todo'],
+    template: '<li>{{todo.text}}</li>',
+});
+var app = new Vue({
+    el: '#app',
+    data: {
+        message: 'Hello Vue',
+        seen: true,
+        todos: [
+            {text: "123",},
+            {text: "456",},
+            {text: "567",},
+        ],
+    },
+    methods: {
+        clickevent: function() {
+            this.message = this.message.split('').reverse().join('')
+        },
+    },
+});
+</script>
+
+</body>
+</html>
