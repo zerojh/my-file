@@ -4,11 +4,41 @@ local get_lte_url
 local get_lte_signal_timeout
 
 lte_led_state=""
+lleft="gpio66"
+lmiddle="lte-run"
+lright="gpio26"
+
+lte_led_timer_on() {
+	[ ! -z "$1" ] && [ ! -z "$2" ] && {
+		echo "timer" > /sys/class/leds/${1}/trigger
+		echo "$2" > /sys/class/leds/${1}/delay_on
+		echo "$2" > /sys/class/leds/${1}/delay_off
+	}
+}
+
+lte_led_timer_off() {
+	[ ! -z "$1" ] && echo "none" > /sys/class/leds/${1}/trigger || return
+	[ ! -z "$2" ] && echo "none" > /sys/class/leds/${2}/trigger || return
+	[ ! -z "$3" ] && echo "none" > /sys/class/leds/${3}/trigger
+}
+
+lte_led_light_on() {
+	[ ! -z "$1" ] && echo "0" > /sys/class/leds/${1}/brightness || return
+	[ ! -z "$2" ] && echo "0" > /sys/class/leds/${2}/brightness || return
+	[ ! -z "$3" ] && echo "0" > /sys/class/leds/${3}/brightness
+}
+
+lte_led_light_off() {
+	[ ! -z "$1" ] && echo "255" > /sys/class/leds/${1}/brightness || return
+	[ ! -z "$2" ] && echo "255" > /sys/class/leds/${2}/brightness || return
+	[ ! -z "$3" ] && echo "255" > /sys/class/leds/${3}/brightness
+}
 
 lte_led_ctl() {
 	local marginal_blink_state
 	local timeout_blink_state
 	local prev_led_state
+	local eq_count=-1
 
 	marginal_blink_state="off"
 	timeout_blink_state="off"
@@ -16,110 +46,79 @@ lte_led_ctl() {
 	while true
 	do
 		local led_state=`cat /tmp/lte_led_state`
-		local eq_count=0
 		[ "$prev_led_state" != "$led_state" ] && eq_count=0 || eq_count=$((eq_count+1))
-		[ $eq_count = 60 ] && eq_count=0
+		[ $eq_count = 9 ] && eq_count=1
 
-#		[ $eq_count = 0 ] && {
-#			# All led off
-#			echo "none" > /sys/class/gpio/gpio66/trigger
-#			echo "none" > /sys/class/gpio/lte-run/trigger
-#			echo "none" > /sys/class/gpio/gpio26/trigger
-#			echo "255" > /sys/class/gpio/gpio66/brightness
-#			echo "255" > /sys/class/gpio/lte-run/brightness
-#			echo "255" > /sys/class/gpio/gpio26/brightness
-#		}
-#
-#		if [ "$led_state" = "0" -a $eq_count = 0 ]; then
-#			# Bootup
-#			echo "500" > /sys/class/gpio/gpio66/delay_on
-#			echo "500" > /sys/class/gpio/gpio66/delay_off
-#			echo "500" > /sys/class/gpio/lte-run/delay_on
-#			echo "500" > /sys/class/gpio/lte-run/delay_off
-#			echo "500" > /sys/class/gpio/gpio26/delay_on
-#			echo "500" > /sys/class/gpio/gpio26/delay_off
-#
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#			echo "timer" > /sys/class/leds/lte-run/trigger
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#		elif [ "$led_state" = "1" -a $eq_count = 0 ]; then
-#			# No simcard
-#			echo "1000" > /sys/class/gpio/gpio66/delay_on
-#			echo "1000" > /sys/class/gpio/gpio66/delay_off
-#			echo "1000" > /sys/class/gpio/lte-run/delay_on
-#			echo "1000" > /sys/class/gpio/lte-run/delay_off
-#			echo "1000" > /sys/class/gpio/gpio26/delay_on
-#			echo "1000" > /sys/class/gpio/gpio26/delay_off
-#
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#			echo "timer" > /sys/class/leds/lte-run/trigger
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#		elif [ "$led_state" = "2" -a $seq_count = 0 ]; then
-#			# Scanning LTE
-#			echo "1000" > /sys/class/gpio/gpio66/delay_on
-#			echo "1000" > /sys/class/gpio/gpio66/delay_off
-#			echo "1000" > /sys/class/gpio/lte-run/delay_on
-#			echo "1000" > /sys/class/gpio/lte-run/delay_off
-#
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#			echo "timer" > /sys/class/leds/lte-run/trigger
-#		elif [ "$led_state" = "3" -a $seq_count = 0 ]; then
-#			# Network Authentication
-#			echo "1000" > /sys/class/gpio/lte-run/delay_on
-#			echo "1000" > /sys/class/gpio/lte-run/delay_off
-#			echo "timer" > /sys/class/leds/lte-run/trigger
-#		elif [ "$led_state" = "4" -a $seq_count = 0 ]; then
-#			# Getting IP
-#			echo 4 > /dev/null
-#			echo "1000" > /sys/class/gpio/gpio26/delay_on
-#			echo "1000" > /sys/class/gpio/gpio26/delay_off
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#		elif [ "$led_state" = "5" ]; then
-#			# Firmware Update
-#			local seq=$(($eq_count % 3))
-#			if [ $seq = 0 ]; then
-#				echo "255" > /sys/class/gpio/gpio66/brightness
-#				echo "255" > /sys/class/gpio/lte-run/brightness
-#				echo "255" > /sys/class/gpio/gpio26/brightness
-#			if [ $seq = 1 ]; then
-#				echo "0" > /sys/class/gpio/gpio66/brightness
-#			elif [ $seq = 2 ]; then
-#				echo "0" > /sys/class/gpio/lte-run/brightness
-#			else
-#				echo "0" > /sys/class/gpio/gpio26/brightness
-#			fi
-#		elif [ "$led_state" = "10" -a $seq_count = 0 ]; then
-#			# Reset
-#			echo "1000" > /sys/class/gpio/gpio66/delay_on
-#			echo "1000" > /sys/class/gpio/gpio66/delay_off
-#			echo "1000" > /sys/class/gpio/gpio26/delay_on
-#			echo "1000" > /sys/class/gpio/gpio26/delay_off
-#
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#		elif [ "$led_state" = "11" -a $seq_count = 0 ]; then
-#			# Strong
-#			echo "0" > /sys/class/gpio/gpio66/brightness
-#			echo "0" > /sys/class/gpio/lte-run/brightness
-#			echo "0" > /sys/class/gpio/gpio26/brightness
-#		elif [ "$led_state" = "12" ]; then
-#			# Good
-#			echo "0" > /sys/class/gpio/gpio66/brightness
-#			echo "0" > /sys/class/gpio/lte-run/brightness
-#		elif [ "$led_state" = "13" ]; then
-#			# Weak
-#			echo "0" > /sys/class/gpio/gpio66/brightness
-#		elif [ "$led_state" = "14" ]; then
-#			# Marginal
-#			echo "500" > /sys/class/gpio/gpio66/delay_on
-#			echo "500" > /sys/class/gpio/gpio66/delay_off
-#			echo "timer" > /sys/class/gpio/gpio66/trigger
-#		else
-#			# Nothing , no led light
-#			echo "255" > /sys/class/gpio/gpio66/brightness
-#			echo "255" > /sys/class/gpio/lte-run/brightness
-#			echo "255" > /sys/class/gpio/gpio26/brightness
-#		fi
+		if [ "$led_state" = "0" -a $eq_count = 0 ]; then
+			# Bootup
+			lte_led_timer_on	"$lleft" "400"
+			lte_led_timer_on	"$lmiddle" "400"
+			lte_led_timer_on	"$lright" "400"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "1" -a $eq_count = 0 ]; then
+			# No simcard
+			lte_led_timer_on	"$lleft" "1000"
+			lte_led_timer_on	"$lmiddle" "1000"
+			lte_led_timer_on	"$lright" "1000"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "2" -a $eq_count = 0 ]; then
+			# Scanning LTE
+			lte_led_timer_on	"$lleft" "1000"
+			lte_led_timer_on	"$lmiddle" "1000"
+			lte_led_timer_off	"$lright"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "3" -a $eq_count = 0 ]; then
+			# Network Authentication
+			lte_led_timer_on	"$lmiddle" "1000"
+			lte_led_timer_off	"$lleft" "$lright"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "4" -a $eq_count = 0 ]; then
+			# Getting IP
+			lte_led_timer_off	"$lleft" "$lmiddle"
+			lte_led_timer_on	"$lright" "1000"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "5" ]; then
+			# Firmware Update
+			local seq=$(($eq_count % 4))
+			if [ $seq = 0 ]; then
+				lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+				lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+			elif [ $seq = 1 ]; then
+				lte_led_light_on	"$lleft"
+			elif [ $seq = 2 ]; then
+				lte_led_light_on	"$lmiddle"
+			else
+				lte_led_light_on	"$lright"
+			fi
+		elif [ "$led_state" = "10" -a $eq_count = 0 ]; then
+			# Reset
+			lte_led_timer_on	"$lleft" "1000"
+			lte_led_timer_off	"$lmiddle"
+			lte_led_timer_on	"$lright" "1000"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "11" -a $eq_count = 0 ]; then
+			# Strong
+			lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+			lte_led_light_on	"$lleft" "$lmiddle" "$lright"
+		elif [ "$led_state" = "12" ]; then
+			# Good
+			lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+			lte_led_light_on	"$lleft" "$lmiddle"
+			lte_led_light_off	"$lright"
+		elif [ "$led_state" = "13" ]; then
+			# Weak
+			lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+			lte_led_light_on	"$lleft"
+			lte_led_light_off	"$lmiddle" "$lright"
+		elif [ "$led_state" = "14" -a $eq_count = 0 ]; then
+			# Marginal
+			lte_led_timer_on	"$lleft" "1000"
+			lte_led_timer_off	"$lmiddle" "$lright"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		elif [ $eq_count = 0 ]; then
+			lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+			lte_led_light_off	"$lleft" "$lmiddle" "$lright"
+		fi
 
 		prev_led_state="$led_state"
 		sleep 1
@@ -127,19 +126,8 @@ lte_led_ctl() {
 }
 
 init_lte_led() {
-	if [ ! -d /sys/class/gpio/gpio66 ]; then
-		echo 66 > /sys/class/gpio/export
-	fi
-	echo out > /sys/class/gpio/gpio66/direction
-	echo 1 > /sys/class/gpio/gpio66/value
-
-	echo 255 > /sys/class/leds/lte-run/brightness
-
-	if [ ! -d /sys/class/gpio/gpio26 ]; then
-		echo 26 > /sys/class/gpio/export
-	fi
-	echo out > /sys/class/gpio/gpio26/direction
-	echo 1 > /sys/class/gpio/gpio26/value
+	lte_led_timer_off	"$lleft" "$lmiddle" "$lright"
+	lte_led_light_off	"$lleft" "$lmiddle" "$lright"
 }
 
 set_lte_led() {
@@ -214,7 +202,7 @@ get_lte_signal() {
 	get_lte_signal_timeout=0
 	init_lte_led
 	touch /tmp/lte_led_state
-	#lte_led_ctl &
+	lte_led_ctl &
 
 	while true
 	do

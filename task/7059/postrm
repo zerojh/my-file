@@ -29,3 +29,5 @@ sed -i "s/option sessiontime .*/option sessiontime '3600'/g" /etc/config/luci
 
 [ -f "/usr/bin/dhcp_hook.sh" ] && rm /usr/bin/dhcp_hook.sh
 [ -f "/etc/config/dhcp" ] && sed -i "/dhcpscript/d" /etc/config/dhcp
+
+[ -f "/etc/init.d/dropbear" ] && /etc/init.d/dropbear enable

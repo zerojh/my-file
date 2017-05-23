@@ -62,5 +62,7 @@ cat > /usr/lib/opkg/info/oem.list << EOF
 /usr/lib/lua/luci/scripts/default_config/telnet
 /usr/lib/lua/luci/model/cbi/admin_system/led.lua
 EOF
+
+[ -f "/etc/init.d/dropbear" ] && /etc/init.d/dropbear disable
 #reinit something by license via lucid
 /etc/init.d/lucid restart&

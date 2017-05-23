@@ -1,0 +1,18 @@
+#!/bin/sh
+
+cp /tmp/firmware_upgrading_temp/oem/usr/bin/check_cdr.sh /usr/bin/check_cdr.sh
+cp /tmp/firmware_upgrading_temp/oem/usr/bin/backup_cdr.lua /usr/bin/backup_cdr.lua
+cp /tmp/firmware_upgrading_temp/oem/oem /etc/config/oem
+cp /tmp/firmware_upgrading_temp/oem/luci /usr/lib/lua/ -r
+
+#/etc/config/upload_cdr
+echo > /usr/lib/opkg/info/oem.list
+cat > /usr/lib/opkg/info/oem.list << EOF
+/usr/bin/backup_cdr.lua
+/usr/bin/check_cdr.sh
+/usr/lib/lua/luci/controller/admin/other.lua
+/usr/lib/lua/luci/model/cbi/admin_system/uploadcdr.lua
+EOF
+
+#reinit something by license via lucid
+/etc/init.d/lucid restart&

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-[ -f "/etc/crontabs/root" ] && sed -i '/check_cdr/d' /etc/crontabs/root
-/etc/init.d/cron restart
-[ -f "/usr/bin/check_cdr.sh" ] && rm /usr/bin/check_cdr.sh
-[ -f "/usr/bin/backup_cdr.sh" ] && rm /usr/bin/backup_cdr.sh

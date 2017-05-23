@@ -214,8 +214,8 @@ function authenticator.apiauth(validator, accs, default)
 	local pass = luci.http.formvalue("password")
     
 	if pass then
-		if validator("admin", pass) then
-			return "admin","api"
+		if validator("api", pass) then
+			return "api"
 		else
 			luci.http.prepare_content("text/plain")
 		 	luci.http.write("Invalid password !")
@@ -223,7 +223,7 @@ function authenticator.apiauth(validator, accs, default)
 		end
 	elseif "/api/login" == luci.http.getenv("PATH_INFO") then
 		luci.http.prepare_content("text/plain")
-	 	luci.http.write(luci.sys.user.getpasswd_salt("admin"))
+	 	luci.http.write(luci.sys.user.getpasswd_salt("api"))
 	 	return false
 	else
 		luci.http.status(403, "Forbidden")
@@ -515,8 +515,8 @@ function dispatch(request,passport)
 					if not user or not util.contains(accs, user) then
 						return
 					else
-						local sid = (sess and "api" ~= sess) and sess or luci.sys.uniqueid(16)
-						if not sess or "api" == sess then
+						local sid = sess or luci.sys.uniqueid(16)
+						if not sess then
 							local token = luci.sys.uniqueid(16)
 							sauth.write(sid, util.get_bytecode({
 								user=user,
@@ -530,7 +530,7 @@ function dispatch(request,passport)
 						ctx.authsession = sid
 						ctx.authuser = user
 
-						if "api" == sess then
+						if "api" == user then
 							luci.http.prepare_content("text/plain")
 						 	luci.http.write(sid)
 						 	return

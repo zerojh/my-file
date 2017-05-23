@@ -15,8 +15,9 @@
 # telnet
 [ -f "/etc/config/system" ] && {
 	uci -q delete system.main.pwd_date
-	uci -q set system.telnet.action='off'
+	uci set system.telnet.action='off'
 	uci commit system
 }
 [ -f "/usr/lib/lua/luci/scripts/default_config/telnet" ] && cp /usr/lib/lua/luci/scripts/default_config/telnet /etc/config/telnet
 
+[ -f "/etc/config/upload_cdr" ] && rm /etc/config/upload_cdr

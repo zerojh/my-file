@@ -49,6 +49,7 @@ local config_file = {
 	["profile_portal"] = "Local Authentication User",
 	["qos"] = "QoS",
 	["xl2tpd"] = "L2TP Server",
+	["upload_cdr"] = uci:get("luci","main","lang") == "zh_cn" and "上传话单" or "Upload CDR",
 }
 local config = {
 	["profile_sip"] = {
@@ -1301,6 +1302,14 @@ local config = {
 		["limit"]="Max Packages Per Second",
 		
 	},
+	["upload_cdr"] = {
+		["status"] = "Status",
+		["__status_value"] = {
+			["0"] = "Off",
+			["1"] = "On",
+		},
+		["url"] = uci:get("luci","main","lang") == "zh_cn" and "话单上传地址" or "CDR Upload URL",
+	},
 }
 
 function translate_multi_value(value)
@@ -1779,12 +1788,6 @@ function get_config_option_value(cfg_name,section,option,value)
 		return translate(config[cfg_name] and config[cfg_name]["__"..section.."_value"] and config[cfg_name]["__"..section.."_value"][value] or value)
 	elseif ("profile_time" == cfg_name and "weekday" == option) or "route" == cfg_name and "failCondition" == option then
 		return translate_multi_value(value)
-	elseif "cdr_url" == value then
-		if (uci:get("oem","general","lang") or "en") == "cn" then
-			return "话单上传地址"
-		else
-			return "CDR Upload URL"
-		end
 	else
 		return translate(config[cfg_name] and config[cfg_name]["__"..option.."_value"] and config[cfg_name]["__"..option.."_value"][value] or value)
 	end
