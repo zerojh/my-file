@@ -30,7 +30,7 @@ if [ -e ${upload_file_dir}${upload_file} ] && [ ! -z "$sn" ] && [ ! -z "$url" ];
 	while [ 0 = $truth ] && [ $count -lt 15 ]; do
 		ret=$(curl ${url} --form md5=$(md5sum ${upload_tar}) --form sn=${sn} --form compress=tar.gz --form file=@${upload_file_dir}${upload_tar})
 		str=`echo $ret | grep 'true'`
-		[ ! -z $str ] && truth=1
+		[ ! -z "$str" ] && truth=1
 		count=$(($count+1))
 		echo "`date ` upload" >> /tmp/cdr_upload_log
 	done

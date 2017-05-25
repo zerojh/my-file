@@ -7,7 +7,7 @@ config system 'main'
 	option log_size '2000'
 	option syslog_enable '0'
 	option log_level '6'
-	option hostname 'Wavephone'
+	option hostname 'S5V'
 	option timezone 'PHT-8'
 	option zonename 'Asia/Manila'
 

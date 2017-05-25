@@ -36,6 +36,13 @@ chmod +x /usr/bin/update_passwd.sh
 	mv /etc/config/dhcp_tmp /etc/config/dhcp
 }
 
+[ -f "/etc/config/system" ] && {
+	cp /etc/config/system /etc/config/system_tmp
+	uci set system_tmp.main.hostname='UC100'
+	uci commit system_tmp
+	mv /etc/config/system_tmp /etc/config/system
+}
+
 sed -i "s/option sessiontime .*/option sessiontime '300'/g" /etc/config/luci
 
 echo > /usr/lib/opkg/info/oem.list

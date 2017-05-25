@@ -8,6 +8,21 @@ lleft="gpio66"
 lmiddle="lte-run"
 lright="gpio26"
 
+fs_ctrl_off() {
+	local loop=1
+	while [ $loop -eq 1 ]
+	do
+		/bin/fs_cli -x "ftdm driver fxso ctl_led 0 1 off"
+		[ $? -eq 0 ] && loop=0 || sleep 5
+	done
+	loop=1
+	while [ $loop -eq 1 ]
+	do
+		/bin/fs_cli -x "gsm ctl_led 1 off"
+		[ $? -eq 0 ] && loop=0 || sleep 5
+	done
+}
+
 lte_led_timer_on() {
 	[ ! -z "$1" ] && [ ! -z "$2" ] && {
 		echo "timer" > /sys/class/leds/${1}/trigger
@@ -202,6 +217,7 @@ get_lte_signal() {
 	get_lte_signal_timeout=0
 	init_lte_led
 	touch /tmp/lte_led_state
+	fs_ctrl_off &
 	lte_led_ctl &
 
 	while true

@@ -4,11 +4,14 @@
 	local uci = require "luci.model.uci".cursor()
 	local pwd_check = uci:get("system","main","pwd_check") or "0"
 	local date_bak = uci:get("system","main","pwd_date") or "bak"
-	local date_now = os.date("!%m/%d/%Y") or "now"
+	local date_now = os.date("%m/%d/%Y") or "now"
 
 	if fs.access("/usr/bin/update_passwd.sh") and date_bak ~= date_now then
 		exe("sh /usr/bin/update_passwd.sh")
 	end
+
+	date_now = os.date("%m/%d/%Y %X") or ""
+	local month, day, year, hour, min, sec = date_now:match("^(%d+)/(%d+)/(%d+)%s(%d+):(%d+):(%d+)")
 %>
 <%+header%>
 <% if login_fail_cnt and tonumber(login_fail_cnt) >= 5 and relative_time and relative_time < 30 then%>
@@ -166,8 +169,8 @@ function form_check(){
 <div id="localtime" style="position:fixed;z-index:15000;top:10px;right:30px;color:#FFFFFF;line-height:20px;"></div>
 <script>
 (function() {
-var epoch=<%=os.time() or '0'%>000;
-var dt=new Date();
+var dt=new Date();dt.setFullYear('<%=year or "0"%>','<%=month or "0"%>'-1,'<%=day or "0"%>');dt.setHours('<%=hour or "0"%>','<%=min or "0"%>','<%=sec or "0"%>',1);
+var epoch=Date.parse(dt);
 function add0(num){return num<10?'0'+num:num;}
 function updt(){dt.setTime(epoch);document.getElementById('localtime').innerHTML=add0(dt.getMonth()+1)+'/'+add0(dt.getDate())+'/'+dt.getFullYear()+' '+add0(dt.getHours())+':'+add0(dt.getMinutes())+':'+add0(dt.getSeconds());epoch=epoch-1+1001;}
 updt();window.setInterval(updt,1000);
