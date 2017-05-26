@@ -1,5 +1,0 @@
-
-config telnet 'telnet'
-	option port '23'
-	option action 'off'
-
