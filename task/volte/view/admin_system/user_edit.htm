@@ -1,0 +1,625 @@
+<%+header%>
+<%
+	local util = require "luci.util"
+
+	local menu_list={}
+	local status={
+		{idx="status",name="Status",main_menu="yes",edit="on"},
+		{idx="status_sipstatus",name="SIP"},
+		{idx="status_pstnstatus",name="PSTN"},
+		{idx="status_client_list",name="DHCP Client List"},
+		{idx="status_vpn",name="VPN"},
+		{idx="status_wifi",name="Wireless AP List"},
+		{idx="status_currentcall",name="Current Call"},
+		{idx="status_cdr",name="CDRs",edit="on"},
+		{idx="status_service",name="Service"},
+		{idx="status_about",name="About"},
+	}
+
+	local system={
+		{idx="system",name="System",main_menu="yes",edit="on"},
+		{idx="system_setting",name="Setting",edit="on"},
+		{idx="system_security",name="User Manager",edit="on"},
+		{idx="system_provision",name="Provision",edit="on"},
+		{idx="system_operationlog",name="Operation Log",view='on'},
+		{idx="system_servicelog",name="Service Log",view='on'},
+		{idx="system_changeslog",name="Config Changes Log",view='on'},
+		{idx="system_backup_upgrade",name="Backup/Restore/Upgrade",edit="on"},
+		{idx="system_voice",name="Voice",edit="on"},
+		{idx="system_cmd",name="Command Line",view='on'},
+		{idx="system_tr069",name="TR069",edit="on"},
+		{idx="system_cloud",name="Cloud Service",edit="on"},
+		{idx="system_reboot",name="Reboot",view='on'},
+	}
+	local sys_insert_cnt=0
+	if luci.version.license and luci.version.license.gsm then
+		table.insert(system,9,{idx="system_gsm_tools",name="GSM Tools",edit="on"})
+		sys_insert_cnt=1
+	end
+	if luci.version.license and ((luci.version.license.fxs and luci.version.license.fxo) or (luci.version.license.gsm or luci.version.license.lte or luci.version.license.volte)) then
+		table.insert(system,11+sys_insert_cnt,{idx="system_diagnostics",name="Diagnostics",view='on'})
+	end
+
+	local network={
+		{idx="network",name="Network",main_menu="yes",edit="on"},
+		{idx="network_setting",name="Setting",edit="on"},
+		{idx="network_access_control",name="Access Control",edit="on"},
+		{idx="network_firewall",name="Firewall",edit="on"},
+		{idx="network_dhcp_server",name="DHCP Server",edit="on"},
+		{idx="network_port_map",name="Port Mapping",edit="on"},
+		{idx="network_dmz",name="DMZ Setting",edit="on"},
+		{idx="network_diagnostics",name="Diagnostics",edit="on"},
+		{idx="network_ddns",name="DDNS",edit="on",edit="on"},
+		{idx="network_static_route",name="Static Route",edit="on"},
+		{idx="network_upnpc",name="UPnP Client",edit="on"},
+		{idx="network_vpn",name="VPN Client",edit="on"},
+		{idx="network_hosts",name="Hosts",edit="on"},
+	}
+	local drv_str = util.exec("lsmod | sed -n '/^rt2x00/p;/^rt2860v2_ap/p;/^rt2860v2_sta/p;'")
+	drv_str = drv_str:match("(rt2860v2_ap)") or drv_str:match("(rt2860v2_sta)") or drv_str:match("(rt2x00)") or ""
+	local network_insert_cnt=0
+	if drv_str == "rt2860v2_ap" then
+		table.insert(network,3,{idx="network_wlan",name="WLAN(AP)",edit="on"})
+		network_insert_cnt=1
+	end
+	if luci.version.license and luci.version.license.lte then
+		table.insert(network,3+network_insert_cnt,{idx="network_lte",name="LTE",edit="on"})
+		table.insert(network,4+network_insert_cnt,{idx="network_uplink",name="Uplink Config",edit="on"})
+	end
+
+	local profile={
+		{idx="profile",name="Profile",main_menu="yes",edit="on"},
+		{idx="profile_sip",name="SIP",edit="on"},
+		{idx="profile_codec",name="Codec",edit="on"},
+		{idx="profile_number",name="Number",edit="on"},
+		{idx="profile_time",name="Time",edit="on"},
+		{idx="profile_manipl",name="Manipulation",edit="on"},
+		{idx="profile_dialplan",name="Dialplan",edit="on"},
+	}
+	local profile_insert_cnt=0
+	if luci.version.license and luci.version.license.fxs and luci.version.license.fxo then
+		table.insert(profile,3+profile_insert_cnt,{idx="profile_fxso",name="FXS/FXO",edit="on"})
+		profile_insert_cnt=1
+	elseif luci.version.license and luci.version.license.fxs then
+		table.insert(profile,3+profile_insert_cnt,{idx="profile_fxso",name="FXS",edit="on"})
+		profile_insert_cnt=1
+	elseif luci.version.license and luci.version.license.fxo then
+		table.insert(profile,3+profile_insert_cnt,{idx="profile_fxso",name="FXO",edit="on"})
+		profile_insert_cnt=1
+	end
+	if luci.version.license and luci.version.license.gsm then
+		table.insert(profile,5+profile_insert_cnt,{idx="profile_numberlearning",name="SIM Number Learning",edit="on"})
+	end
+
+	local extension={
+		{idx="extension",name="Extension",main_menu="yes",edit="on"},
+		{idx="extension_sip",name="SIP",edit="on"},
+		{idx="extension_ringgroup",name="Ring Group",edit="on",edit="on"},
+	}
+	if luci.version.license and luci.version.license.fxs then
+		table.insert(extension,3,{idx="extension_fxs",name="FXS",edit="on"})
+	end
+
+	local trunk={
+		{idx="trunk",name="Trunk",main_menu="yes",edit="on"},
+		{idx="trunk_sip",name="SIP",edit="on"},
+	}
+	if luci.version.license and luci.version.license.fxo then
+		table.insert(trunk,{idx="trunk_fxo",name="FXO",edit="on"})
+	end
+	if luci.version.license and luci.version.license.gsm then
+		table.insert(trunk,{idx="trunk_mobile",name="GSM",edit="on"})
+	end
+
+	local callcontrol={
+		{idx="callcontrol",name="Call Control",main_menu="yes",edit="on"},
+		{idx="callcontrol_setting",name="Setting",edit="on"},
+		{idx="callcontrol_routegroup",name="Route Group",edit="on"},
+		{idx="callcontrol_route",name="Route",edit="on"},
+		{idx="callcontrol_featureCode",name="Feature Code",edit="on"},
+		{idx="callcontrol_ivr",name="IVR",edit="on"},
+		{idx="callcontrol_sms_route",name="SMS Route",edit="on"},
+		{idx="callcontrol_diagnostics",name="Diagnostics",edit="on"},
+	}
+	if luci.version.license and (luci.version.license.gsm or luci.version.license.lte or luci.version.license.volte) then
+		table.insert(callcontrol,6,{idx="callcontrol_sms",name="SMS",edit="on"})
+		table.insert(callcontrol,7,{idx="callcontrol_ussd",name="USSD",edit="on"})
+	end
+
+	table.insert(menu_list,status)
+	table.insert(menu_list,system)
+	table.insert(menu_list,network)
+	table.insert(menu_list,profile)
+	table.insert(menu_list,extension)
+	table.insert(menu_list,trunk)
+	table.insert(menu_list,callcontrol)
+
+%>
+<style type="text/css">
+label{margin-left:5px;}
+table{table-layout:fixed;}
+table td{text-align:left;}
+.sub_menu{padding-left:60px;}
+.error-tip {color:#b94a48;}
+#change_password td{text-align:left;}
+.password-strength .meter {
+margin: 4px 0;
+height: 5px;
+background: #f5f5f5;
+}
+.password-strength .meter #strength-bar {
+display: block;
+height: 100%;
+width: 0px;
+}
+.password-strength .meter .short {
+background: #a03;
+}
+.password-strength .meter .good {
+background: #2d98f3;
+}
+.password-strength .meter .fair {
+background: #fc3;
+}
+.password-strength .meter .strong {
+background: #76c261;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script language=javascript type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script language="JavaScript" type="text/JavaScript">
+var ratingMsgs = ['<%:Too short, use 8 to 32 characters%>','<%:Weak%>','<%:Fair%>','<%:Good%>','<%:Strong%>','<%:Too long, use 8 to 32 characters%>']
+var ratingclass = ['short','short','fair','good','strong']
+
+function passwordGrade(pwd)
+{
+	var score = 0;
+	var regexArr = ['[0-9]', '[a-z]', '[A-Z]', '[\\W_]'];
+	var repeatCount = 0;
+	var prevChar = '';
+	//长度一个加一分，大于5开始算，大于18按18算
+	var len = pwd.length;
+	if (pwd.length > 5)
+		score += len > 18 ? 18 : len;
+	//字符类型多一个加4分
+	for (var i = 0, num = regexArr.length; i < num; i++) {
+		if (eval('/' + regexArr[i] + '/').test(pwd)) {
+			score += 4;
+		}
+	}
+	for (var i = 0, num = regexArr.length; i < num; i++)
+	{
+		if (pwd.match(eval('/' + regexArr[i] + '/g')) && pwd.match(eval('/' + regexArr[i] + '/g')).length >= 2) {
+			score += 2;
+		}
+		if (pwd.match(eval('/' + regexArr[i] + '/g')) && pwd.match(eval('/' + regexArr[i] + '/g')).length >= 5) {
+			score += 2;
+		}
+	}
+	//重复一次减一分
+	for (var i = 0, num = pwd.length; i < num; i++) {
+		if (pwd.charAt(i) == prevChar) {
+			repeatCount++;
+		}
+		else {
+			prevChar = pwd.charAt(i);
+		}
+	}
+	score -= repeatCount * 1;
+	return score;
+}
+
+function pwStrength()
+{
+	var pwd = document.getElementById("user.password").value
+	if (pwd == null || pwd == '') {
+		refresh(0);
+		return false;
+	}
+	else
+	{
+		if (pwd.length < 8) {
+			refresh(0);
+			return false;
+		}
+		var level;
+		mark = passwordGrade(pwd);
+		//弱
+		if (mark <= 10)
+			level = 1;
+		else if (mark > 10 && mark <= 20)
+			level = 2;
+		else if (mark > 20 && mark <= 30)
+			level = 3;
+		else if (mark > 30)
+			level = 4;
+		refresh(level,pwd.length);
+	}
+	if(pwd.length > 32)
+		return false
+	else
+		return true;
+}
+function pwConfirm()
+{
+	if(document.getElementById("user.password_confirm").value != document.getElementById("user.password").value)
+	{
+		document.getElementById("confirm_result").innerHTML = "<%:Confirmation did not match, please check !%>"
+		return false
+	}
+	else
+	{
+		document.getElementById("confirm_result").innerHTML = ""
+		return true
+	}
+}
+function refresh(level,len)
+{
+	document.getElementById("ratingfield").style.display = ""
+	document.getElementById("strength-bar").style.width = 100 * (level+1) / 5 + "%"
+	if(len > 32)
+		document.getElementById("passwdRating").innerHTML = ratingMsgs[5]
+	else
+		document.getElementById("passwdRating").innerHTML = ratingMsgs[level]
+	document.getElementById("strength-bar").className = ratingclass[level]
+}
+function username_check()
+{
+	var flag=false
+	var exist_user="<%=exist_user%>"
+	var username_obj=document.getElementById("user.name")
+	var username = username_obj.value
+	cbi_bind(username_obj,"keyup",username_check);
+
+	if(username.match(/^([a-zA-Z0-9_]{1,16})$/) && !username.match(/^\d+$/))
+	{
+		var exist_user = exist_user.split('&')
+		for(var i=0;i < exist_user.length;i++)
+		{
+			if(username == exist_user[i])
+			{
+				flag=true
+				break
+			}
+		}
+	}
+	else
+	{
+		flag=true
+	}
+	if(flag)
+	{
+		if(username_obj.className.match(/cbi\-input\-invalid/) == null)
+			username_obj.className += ' cbi-input-invalid'
+		document.getElementById("name.tip").style.display=""
+		return false
+	}
+	else
+	{
+		username_obj.className = username_obj.className.replace(/ cbi-input-invalid/g, '')
+		document.getElementById("name.tip").style.display="none"
+		return true
+	}
+}
+function web_access_changes(id,select_all)
+{
+	var obj=document.getElementById(id)
+	var group=document.getElementById("user.group").value
+	if(id.match(/^web\.([a-z]+)\.view$/))//main menu view changes
+	{
+		var id_prefix=RegExp.$1
+		if(obj.checked)
+		{
+			if(group != "observer")
+			{
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").show()
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").next().show()
+			}
+			if(select_all)
+				$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='view']").prop("checked",true)
+			$("tr[id^='"+id_prefix+"']").show()
+		}
+		else
+		{
+			$("input[type=checkbox][id^='web."+id_prefix+".edit']").hide()
+			$("input[type=checkbox][id^='web."+id_prefix+".edit']").next().hide()
+			$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='view']").prop("checked",false)
+			$("tr[id^='"+id_prefix+"']").hide()
+		}
+	}
+	else if(id.match(/^web\.([a-z]+)\.edit$/))//main menu edit changes
+	{
+		var id_prefix=RegExp.$1
+		if(obj.checked)
+		{
+			$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='edit']").each(function(){
+				if(document.getElementById($(this).attr("id").replace(".edit",".view")).checked)
+				{
+					$(this).show()
+					$(this).next().show()
+					if(select_all)
+						$(this).prop("checked",true)
+				}
+			})
+		}
+		else
+		{
+			$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='edit']").hide()
+			$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='edit']").next().hide()
+			$("input[type=checkbox][id^='web."+id_prefix+"_'][id$='edit']").prop("checked",false)
+		}
+	}
+	else
+	{
+		if(id.match(/^web\.([a-z_]+)\.view$/))//sub menu view changes
+		{
+			var id_prefix=RegExp.$1
+			if(obj.checked && group != "observer")
+			{
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").show()
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").next().show()
+			}
+			else
+			{
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").hide()
+				$("input[type=checkbox][id^='web."+id_prefix+".edit']").next().hide()
+			}
+		}
+	}
+
+}
+function group_changes()
+{
+	var val = document.getElementById("user.group").value
+	var obj=$("input[type=checkbox][id$='.edit']")
+	if(val == "observer")
+	{
+		obj.next().hide()
+		obj.hide()
+	}
+	else
+	{
+		obj.each(function(){
+			if(document.getElementById($(this).attr("id").replace(".edit",".view")).checked)
+			{
+				obj.next().show()
+				obj.show()
+			}
+			})
+	}
+}
+function form_check(form)
+{
+	if(form.state=="cancel")
+	{
+		form.action = form.action+"?action=cancel"
+		return true
+	}
+
+	var username_flag = username_check()
+	<% if "add" == action then%>
+	var password_flag = pwStrength()
+	var pwconfirm_flag = pwConfirm()
+	<% else %>
+	var password_flag = true
+	var pwconfirm_flag = true
+	if("" != document.getElementById("user.password").value)
+	{
+		password_flag = pwStrength()
+		pwconfirm_flag = pwConfirm()
+	}
+	<% end %>
+	if(username_flag && password_flag && pwconfirm_flag)
+	{
+		var expires_obj = document.getElementById("user.expires")
+		var year_obj = document.getElementById("user.expires_year")
+		var month_obj = document.getElementById("user.expires_month")
+		var date_obj = document.getElementById("user.expires_date")
+
+		expires_obj.value = year_obj.value+"-"+month_obj.value+"-"+date_obj.value
+
+		form.action = form.action+"?action=save"
+		return true
+	}
+	else
+	{
+		alert("<%:Some fields are invalid, cannot save values!%>")
+		return false
+	}
+}
+
+function get_Max_Date(year,month){
+	var enddate = ["31","28","31","30","31","30","31","31","30","31","30","31"];
+	month = month - 1;
+	if (year%4==0){enddate[1]="29"}
+	return enddate[month];
+}
+
+function checkDate_options(date)
+{
+	var year = document.getElementById("user.expires_year").value
+	var month = document.getElementById("user.expires_month").value
+	var date_obj = document.getElementById("user.expires_date")
+	var max_date = get_Max_Date(parseInt(year,10),parseInt(month,10))
+
+	if(0 == date_obj.options.length)
+	{
+		for(i=1;i<=max_date;i++)
+			date_obj.options.add(new Option(i,i));
+
+		if(date)
+		{
+			date_obj.value = date
+		}
+		else
+		{
+			var today = new Date()
+			date_obj.value = today.getDate()
+		}
+	}
+	else if(max_date > date_obj.options.length)
+	{
+		for(i=date_obj.options.length+1;i<=max_date;i++)
+			date_obj.options.add(new Option(i,i));
+	}
+	else if(max_date < date_obj.options.length)
+	{
+		if(date_obj.value > max_date)
+			date_obj.value = max_date
+		for(i=date_obj.options.length;i>max_date;i--)
+			date_obj.options.remove(i-1)
+	}
+}
+function refresh_date_select_element()
+{
+	var expires_obj = document.getElementById("user.expires")
+	var expires_val = expires_obj.value
+	var today = new Date()
+	var current_year = today.getFullYear()
+	var year = current_year
+	var month = today.getMonth()+1
+	var date = today.getDate()
+
+	if(expires_val.match(/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})/))
+	{
+		year = RegExp.$1
+		month = RegExp.$2
+		date = RegExp.$3
+	}
+
+	var year_obj = document.getElementById("user.expires_year")
+	var month_obj = document.getElementById("user.expires_month")
+	var date_obj = document.getElementById("user.expires_date")
+
+	if(0 == year_obj.options.length)
+	{
+		for(i=0;i<=20;i++)
+			year_obj.options.add(new Option(current_year+i,current_year+i));
+		<%if "add" == action then%>
+		year = current_year+10
+		<%end%>
+	}
+	year_obj.value = year
+
+	if(0 == month_obj.options.length)
+	{
+		for(i=1;i<=12;i++)
+			month_obj.options.add(new Option(i,i));
+	}
+	month_obj.value = month
+
+	checkDate_options(date)
+}
+
+window.onload=function(){
+	refresh_date_select_element()
+	<% if "edit" == action then%>
+	$("input[type=checkbox][id$='.view']").each(function(){
+		web_access_changes($(this).attr("id"),false)
+		})
+	$("input[type=checkbox][id$='.edit']").each(function(){
+		web_access_changes($(this).attr("id"),false)
+		})
+	<% end %>
+}
+</script>
+<h2><a id="content" name="content"><%=title%></a></h2>
+<fieldset class="cbi-section">
+	<form method="post" name="user_config" action="<%=REQUEST_URI%>" enctype="multipart/form-data" onsubmit="return form_check(this);">
+		<table id="change_password">
+			<colgroup>
+				<col style='width:38%'>
+				<col style='width:22%'>
+				<col style='width:40%'>
+			</colgroup>
+			<tr>
+				<td><%:Name%></td>
+				<td><input type="text" class="cbi-input-text" value="<%=user and user.name or ''%>" name="user.name" id="user.name" onBlur="username_check();" <% if "edit" == action then%> readonly <% end %>/></td>
+				<td id="name.tip" class="error-tip" style="display:none;"><%:Username should contains only letters(a-Z),numbers(0-9) or underscores(_), not all digits and same with existing, max length is 16.%></td>
+			</tr>
+			<tr>
+				<td><%:User Group%></td>
+				<td><select class="cbi-input-select" value="" name="user.group" id="user.group" onchange="group_changes()" />
+					<option value="admin" <%=(user and user.group == "admin") and "selected" or ""%>><%:Administrator%></option>
+					<option value="operator" <%=(user and user.group == "operator") and "selected" or ""%>><%:Operator%></option>
+					<option value="observer" <%=(user and user.group == "observer") and "selected" or ""%>><%:Observer%></option>
+				</select></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><%:New Password%></td>
+				<td><input type="password" class="cbi-input-text" value="" onkeyup="pwStrength();" onBlur="pwStrength();" name="user.password" id="user.password"/></td>
+				<td class="error-tip">
+					<div id="ratingfield" class="password-strength" style="width:93%;display:none;">
+						<p style="margin-left:0px;"><strong><%:Password Strength%> : </strong><span id="passwdRating"></span></p>
+						<div class="meter" id="passwdBar">
+							<span id="strength-bar" class="" style="width: 255px;"></span>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td><%:Confirm New Password%></td>
+				<td><input type="password" class="cbi-input-text" value="" onBlur="pwConfirm(this.value);" name="user.password_confirm" id="user.password_confirm"/></td>
+				<td id="confirm_result" class="error-tip"></td>
+			</tr>
+			<tr>
+				<td><%:Expiration%></td>
+				<td>
+					<input type="text" class="cbi-input-text" style="display:none;" value="<%=user and user.expires or ''%>" name="user.expires" id="user.expires" />
+					<select style="width:35%;" id="user.expires_year" onchange="checkDate_options()"/>
+					</select>
+					<select style="width:30%;" id="user.expires_month" onchange="checkDate_options()"/>
+					</select>
+					<select style="width:30%;" id="user.expires_date" />
+					</select>
+				</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><%:Description%></td>
+				<td><input type="text" class="cbi-input-text" value="<%=user and user.description or ''%>" name="user.description" id="user.description"/></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><%:Status%></td>
+				<td><select class="cbi-input-select" value="<%=user and user.status or ''%>" name="user.status" id="user.status"/>
+					<option value="Enabled" <%=(user and user.status == "Enabled") and "selected" or ""%> ><%:Enable%></option>
+					<option value="Disabled" <%=(user and user.status == "Disabled") and "selected" or ""%> ><%:Disable%></option></select>
+				</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td><%:Web Access Permission%></td>
+				<td></td><td></td>
+			</tr>
+<%for k,v in ipairs(menu_list) do
+	for kk,vv in ipairs(v) do
+		if vv.main_menu then %>
+			<tr><td><%=translate(vv.name)%></td>
+		<%else%>
+			<tr id="<%=vv.idx%>.tr" style="display:none"><td class="sub_menu"><%=translate(vv.name)%></td>
+		<%end%>
+				<td><input class="cbi-input-checkbox" onclick="web_access_changes(this.id,true)" type="checkbox" id="web.<%=vv.idx%>.view" name="web.<%=vv.idx%>.view" value="View" _value="View" <%if user and user[vv.idx.."_view"] then %> checked="checked" <%end%>><label><%:View%></label>
+		<% if vv.edit then %>
+				<input class="cbi-input-checkbox" style="margin-left:50px;display:none" onclick="web_access_changes(this.id,true)" type="checkbox" id="web.<%=vv.idx%>.edit" name="web.<%=vv.idx%>.edit" value="Edit" _value="Edit" <%if user and user[vv.idx.."_edit"] then %> checked="checked" <%end%>><label style="display:none"><%:Edit%></label>
+		<% end %>
+				</td><td></td>
+			</tr>
+	<%end
+end %>
+			<tr>
+				<td></td>
+				<td style="text-align:center;">
+					<div class="cbi-page-actions" style="width:200px;">
+					<input class="cbi-button" type="submit" name="cancel" value="<%:Cancel%>" onclick="this.form.state='cancel';return true;"/>
+					<input class="cbi-button cbi-button-save" type="submit" name="save" id="save" value="<%:Save%>" />
+					<input class="cbi-button" type="reset" value="<%:Reset%>" />
+					</div>
+				</td>
+				<td></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<%+footer%>

@@ -1,0 +1,338 @@
+<%+header%>
+<style type="text/css">
+div {
+-moz-border-radius: 6px;
+-webkit-border-radius: 6px;
+border-radius: 6px;
+}
+
+.div-right {
+float:right;
+clear:both;
+margin-top:0px;
+background-color:#80C4FF;
+padding:8px;
+margin-right:5px;
+}
+.div-left {
+clear:both;
+float:left;
+margin-left:5px;
+padding:8px;
+background-color:#8BE498;
+margin-top:0px;
+}
+.div-top {
+float:top;
+clear:both;
+padding:1px;
+background-color:#eee;
+width:120px;
+font-size:8px;
+margin-top:10px;
+margin-bottom:1px;
+margin-left:5px;
+margin-right:5px;
+}
+.div-sending {
+background-color:#eee;
+width:60px;
+font-size:5px;
+padding:4px;
+margin-right:5px;
+clear:both;
+margin-top:0px;
+float:right;
+}
+.div-normal {
+clear:both;
+float:right;
+padding:6px;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script>
+var div_msg = $('#msginfo').html();
+var request_info = false;
+var send_flag = false;
+var cmd_send = 0;
+var send_msg;
+var usable = true;
+function enable_send_btn_check()
+{
+	if(request_info && usable)
+	{
+		$('#td_sendto').addClass("cbi-page-actions")
+		$('#sendto').addClass("cbi-button-save")
+		$('#sendto').attr("disabled",false)
+	}
+	else
+	{
+		$('#td_sendto').removeClass("cbi-page-actions")
+		$('#sendto').removeClass("cbi-button-save")
+		$('#sendto').attr("disabled",true)
+	}
+}
+function enable_quit_btn()
+{
+	$('#td_quit').addClass("cbi-page-actions")
+	$('#quit').addClass("cbi-button-save")
+	$('#quit').attr("disabled",false)
+}
+function disable_quit_btn()
+{
+	$('#td_quit').removeClass("cbi-page-actions")
+	$('#quit').removeClass("cbi-button-save")
+	$('#quit').attr("disabled",true)
+}
+function request_input_check()
+{
+	var len = $('#request_info').val().length
+	if(len > 0)
+	{
+		request_info = true
+	}
+	else
+	{
+		request_info = false
+	}
+	enable_send_btn_check()
+}
+function scroll_overflow()
+{
+	var div = document.getElementById("msginfo");
+	div.scrollTop = div.scrollHeight;
+}
+function strnull(str)
+{
+	var str_tmp = str
+	if ( str == "" ) return true;
+	str_tmp=str_tmp.replace(/[\n]/ig," ");
+	var regu = "^[ ]+$";
+	var re = new RegExp(regu);
+	return re.test(str_tmp);
+}
+function send_message()
+{
+	var sending
+	div_msg = $('#msginfo').html()
+	send_msg = $('#request_info').val() 	
+	
+	if (strnull(send_msg) && send_flag == false)
+	{
+		$('#request_info').val('');
+		request_info = false;
+		request_input_check();
+		return;
+	}
+	else if (cmd_send == 0)
+	{
+		sending = "<div align='right' class='div-sending' style='margin-right:10px;'>" + "sending..." + "</div>"
+		sending = sending + "<div align='right' class='div-right' style='margin-right:10px'>" + send_msg + "</div>"
+		$('#msginfo').html(div_msg + sending);
+		scroll_overflow();
+	}
+	else if (cmd_send == 1)
+	{
+		var id = "#date_"+"<%=num%>";
+		$(id).removeClass().addClass("div-sending");
+		$(id).text("sending...");
+	}
+	
+
+	XHR.get('<%=luci.dispatcher.build_url("admin", "callcontrol","sendussd")%>' , 
+		{encode:$('#encode').val(),request_info:$('#request_info').val(),cmd_send:cmd_send},
+		function(x, info)
+		{
+			if (info.result !== "OK!")
+			{
+				if (info.result)
+				{
+					div_msg = div_msg + "<div class='div-normal'>"
+					div_msg = div_msg + "<div class='div-right' style='font-size:12px;padding:1px;margin-top:0px;'>" + info.sendtime + "</div>"
+					div_msg = div_msg + "<div align='right' class='div-right' style='background-color:#E08F28'>" + send_msg + "</div>"
+				}
+				div_msg = div_msg + "</div>"
+				$('#msginfo').html(div_msg);
+				scroll_overflow();
+				return;	
+			}
+			enable_quit_btn();
+			if (info.sendtime && cmd_send == 0)
+			{
+				div_msg = div_msg + "<div class='div-normal'>"
+				div_msg = div_msg + "<div class='div-top'>" + info.sendtime + "</div>"
+				div_msg = div_msg + "<div align='right' class='div-right'>" + send_msg + "</div>"
+				div_msg = div_msg + "</div>"
+				$('#msginfo').html(div_msg);
+				scroll_overflow();
+			}
+			div_msg = div_msg + "<div class='div-normal' style='float:left;'>"
+			if(info.date)
+			{
+				div_msg = div_msg + "<div class='div-top'>" + info.date + "</div>"
+			}
+			if (info.ussdinfo)
+			{
+				div_msg = div_msg + "<div class='div-left' align='left'>" + info.ussdinfo + "</div>"
+			}
+			div_msg = div_msg + "</div>"
+			$('#msginfo').html(div_msg);
+			scroll_overflow();
+			cmd_send=0;
+		}
+	)
+	$('#request_info').val('')
+	request_info = false
+	request_input_check()
+}
+function quit_ussd()
+{
+	disable_quit_btn();
+	div_msg = $('#msginfo').html()
+	XHR.get('<%=luci.dispatcher.build_url("admin", "callcontrol","quitussd")%>' , 
+		{endpoint:$('#from').val()},
+		function(x, info)
+		{
+			if (info.result)
+			{
+				if (info.date)
+				{
+					div_msg = div_msg + "<div class='div-normal' style='float:left;'>"
+					div_msg = div_msg + "<div class='div-top' style='margin-top:20px'>" + info.date + "</div>"
+					if (info.result == "Quit Success!")
+					{
+						div_msg = div_msg + "<div class='div-left' margin-left:8px;>" + info.result + "</div>"
+					}
+					else if (info.result)
+					{
+						div_msg = div_msg + "<div class='div-left' align='left' style='background-color:#E08F28;'>" + info.result + "</div>"
+					}
+					div_msg = div_msg + "</div>"
+					$('#msginfo').html(div_msg);
+					scroll_overflow();
+				}
+				else
+				{
+					div_msg = div_msg + "<div class='div-normal' style='float:left;'>"
+					div_msg = div_msg + "<div class='div-left' align='left' style='background-color:#E08F28;'>" + info.result + "</div>"
+					div_msg = div_msg + "</div>"
+					$('#msginfo').html(div_msg);
+					scroll_overflow();
+				}
+
+			}
+		}
+	)
+}
+window.onload=function()
+{
+	<% if mod_usable == 0 then %>
+		usable = false;
+		enable_send_btn_check();
+	<% end %>
+	<% if enable_quit == 1 then %> enable_quit_btn();<%end%>
+	<% if refresh == 1 then %>  
+		send_msg = "<%=sendstr%>";
+		send_flag=true;
+		cmd_send=1;
+		send_message();
+	<%end%>
+	scroll_overflow();
+}
+</script>
+<% if mod_usable == 0 then 
+	if mod_type == "GSM" then %>
+<div class='container container-msg' id='alert-msgbox'><div class='alert-message error'><%:GSM channel not ready ! USSD unavailable !%></div></div>
+<%	elseif mod_type == "LTE" then %>
+<div class='container container-msg' id='alert-msgbox'><div class='alert-message error'><%:LTE channel not ready ! USSD unavailable !%></div></div>
+<%	elseif mod_type == "VOLTE" then %>
+<div class='container container-msg' id='alert-msgbox'><div class='alert-message error'><%:VoLTE channel not ready ! USSD unavailable !%></div></div>
+<% end end%>
+<h2><a><%:Call Control / USSD%></a></h2>
+<fieldset class="cbi-section">
+	<table>
+		<tr>
+			<td width="13%" style="text-align:left"><%:USSD Code%>:</td>
+			<td width="37%" style="text-align:left">
+				<div><textarea style="width:100%;height:20px;max-width:100%;max-height:20px;" id="request_info" name="request_info" onkeyup="request_input_check()"></textarea></div>
+			</td>
+			<td width="4%"></td>  
+			<td width="6%" style="text-align:left"><%:Encode%>:</td>
+			<td width="10%" height="30px" style="text-align:left">
+				<select id="encode" name="encode" height="30px">
+					<option value="auto" selected="selected"><%:Auto%></option>
+					<option value="assic">ASSIC</option>
+					<option value="ucs2">UCS2</option>
+				</select>
+			</td>
+			<td width="2%"></td>
+			<td width="5%" id="td_sendto">
+				<input class="cbi-button" style="float:left" type="button" id="sendto" name="sendto" disabled="true" value="<%:Send%>" onclick="send_message()"/>
+			</td>
+			<td width="5%" id="td_quit">
+				<input class="cbi-button" style="float:left" type="button" id="quit" name="quit" disabled="true" value="<%:Quit%>" onclick="quit_ussd()"/>
+			</td>
+			<td width="17%"></td>
+		</tr>
+		<table>
+		<tr>
+			<td width="15%" style="text-align:left"><%:USSD Message%></td>
+		</tr>
+		<tr>
+			<td>	
+				<div id="msginfo" name="msginfo" style="display:block;padding:5px;width:500px;height:300px;background-color:#ffffff;overflow:auto">
+					<%
+							for i,j in ipairs(info_send_msg) do
+							if j.send and j.send ~= "Cancel Session" then
+					-%>
+									<div class="div-normal">
+					<%
+							elseif not j.result then
+					-%>	
+								<div class="div-normal" style="float:left;">
+					<%		end
+
+							if j.date then
+					-%>
+								<div id="date_<%=i%>" class='div-top'><%=j.date%></div>
+					<%		end
+									for k,v in pairs(j) do
+														if k == "send" then
+									if v == "Cancel Session" then
+										if not j.result then
+					-%>
+											<div id="info_<%=i%>" class="div-left" align="left" style="display:block;">Quit Success!</div>
+					<%					elseif j.result == "Fail" then 
+					-%>
+											<div id="info_<%=i%>" class="div-left" align="left" style="display:block;background-color:#E08F28">Quit Success!</div>
+					<%					end
+									else
+										if not j.result then
+					-%>
+											<div id="info_<%=i%>" class="div-right"><%=v%></div>
+					<%					elseif j.result == "Fail" then	
+					-%>
+											<div id="info_<%=i%>" class="div-right" align="right" style="background-color:#E08F28"><%=v%></div>
+					<%					end	
+									end
+								elseif k == "recv" then
+					-%>
+									<div id="info_<%=i%>" class="div-left" align="left"><%=v%></div>
+					<%
+
+								end
+							end
+					-%>
+							</div>
+					<%
+						end
+						-%>
+				</div>
+			</td>
+		</tr>
+		</table>
+	</table>
+</fieldset>
+<%+footer%>

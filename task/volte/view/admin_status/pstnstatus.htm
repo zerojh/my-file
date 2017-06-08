@@ -1,0 +1,347 @@
+<%
+	local freeswitch = require "luci.scripts.fs_server"
+	local uci = require "luci.model.uci".cursor()
+
+	local fxs_status,fxo_status,mobile_status = freeswitch.pstn_status()
+
+	if luci.http.formvalue("status") == "1" then
+		
+		fxs_status,fxo_status,mobile_status = freeswitch.pstn_status()
+
+		local pstn_info = {
+			fxs = {},fxo = {}, mobile = {}
+		}
+		
+		pstn_info.fxs = fxs_status
+		pstn_info.fxo = fxo_status
+		pstn_info.mobile = mobile_status
+
+		luci.http.prepare_content("application/json")
+		luci.http.write_json(pstn_info)
+
+		return
+	end
+-%>
+<%+header%>
+<style type="text/css">
+.panel {
+	padding-top: 15px;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	var timeout = 0
+	function refresh_light()
+	{
+		$("div[id*='light.']").each(function(){
+			var id = $(this).attr("id")
+			if(id.match(/^light\.([a-z]+)\.(\d+)\.(\d+)/))
+			{   
+				var type = RegExp.$1;
+				var slot = RegExp.$2;
+				var port = RegExp.$3;
+				var usable_state = $("td#"+type+"\\.state\\.usable\\."+slot).text()
+				var talk_state = $("td#"+type+"\\.state\\.talk\\."+slot+"\\."+port).text()
+				if(usable_state.indexOf('READY') >= 0 || usable_state.indexOf('OK') >= 0)
+				{
+					if(talk_state.indexOf('ONHOOK') >= 0 || talk_state.indexOf('IDLE') >= 0)
+						$(this).css("z-index",($(this).css("z-index") == "1") ? " -1" : "1")
+					else if(talk_state.indexOf('OFFHOOK') >=0 || talk_state.indexOf('TALKING') >= 0)
+						$(this).css("z-index","1")
+				}
+				else
+					$(this).css("z-index","-1")
+			}
+		});
+	}
+	$(document).ready(function(){
+		window.setInterval("refresh_light()",2000)
+	});
+
+	function refresh_status()
+	{
+		$("table td[id*='.state.']").each(function(){
+			var id = $(this).attr("id")
+			var state = $(this).text()
+			if(state && "" != state)
+			{
+				if(state.indexOf('READY') >= 0
+				 || ((id.indexOf('.cfg.') || id.indexOf('.usable.')) && ('OK' == state || state.indexOf('DEFAULT') >= 0))
+				 || (id.indexOf('.talk.') && ('OFFHOOK' == state || 'TALKING' == state || 'BUSY'==state))
+				 || (id.indexOf('.reg.') && state.indexOf('Reged') >= 0))
+					$(this).css("background","#74ea7d")
+				else if(id.indexOf('.line.') && 'OFFLINE' == state)
+					$(this).css("background","#9a9a9a")
+				else if('ONLINE' == state || 'ONHOOK' == state || 'IDLE' == state || id.indexOf('carrier')>=0 || id.indexOf('phonenumber')>=0)
+					$(this).css("background","")
+				else if('DETECT_RING' == state)
+				{
+					$(this).text('RING')
+					$(this).css("background","#74ea7d")
+				}
+				else if('Not Config' == state)
+					$(this).css("background","#9a9a9a")
+				else
+					$(this).css("background","#fe5a56")
+
+				if("Reged(Master)" == state)
+					$(this).text("<%=translate('Reged(Master)')%>")
+				if("Reged(Slave)" == state)
+					$(this).text("<%=translate('Reged(Slave)')%>")
+				if("Reged(All)" == state)
+					$(this).text("<%=translate('Reged(All)')%>")
+				if("OK" == state)
+					$(this).text("<%=translate('OK')%>")
+				if("OFFLINE" == state)
+					$(this).text("<%=translate('OFFLINE')%>")
+				if("ONLINE" == state)
+					$(this).text("<%=translate('ONLINE')%>")
+				if("OFFHOOK" == state)
+					$(this).text("<%=translate('OFFHOOK')%>")
+				if("ONHOOK" == state)
+					$(this).text("<%=translate('ONHOOK')%>")
+				if("IDLE" == state)
+					$(this).text("<%=translate('IDLE')%>")
+				if("FAULT" == state)
+					$(this).text("<%=translate('FAULT')%>")
+				if("READY" == state)
+					$(this).text("<%=translate('READY')%>")
+				if("CONFIGERING" == state)
+					$(this).text("<%=translate('Configering')%>")
+				if("Unregistered" == state)
+					$(this).text("<%=translate('Unregistered')%>")
+				if("RING" == state)
+					$(this).text("<%=translate('RING')%>")
+				if("TALKING" == state || "BUSY" == state)
+					$(this).text("<%=translate('TALKING')%>")
+				if("NOT_REGISTERED" == state)
+					$(this).text("<%=translate('Not Register')%>")
+				if("SIMPIN_NOT_INSERTED" == state)
+					$(this).text("<%=translate('SIM Not Inserted')%>")
+				if("SIMPIN_READY" == state)
+					$(this).text("<%=translate('OK')%>")
+				if("SIMPIN_ERROR" == state)
+					$(this).text("<%=translate('FAULT')%>")
+				if("SIMPIN_PIN" == state)
+					$(this).text("<%=translate('PIN Required')%>")
+				if("SIMPIN_PUK" == state)
+					$(this).text("<%=translate('PUK Required')%>")
+				if("Not Config" == state)
+					$(this).text("<%=translate('Not Config')%>")
+				if("MODULE_UPDATING" == state)
+					$(this).text("<%=translate('Upgrading')%>")
+				if("Unknown" == state || "UNKNOWN" == state)
+					$(this).text("<%=translate('Unknown')%>")
+				if("CHINA MOBILE" == state)
+					$(this).text("<%=translate('CHINA MOBILE')%>")
+				if("CHINA UNICOM" == state)
+					$(this).text("<%=translate('CHINA UNICOM')%>")
+			}
+
+		});
+	}
+	XHR.poll(5, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+		{
+			if (null == info)
+			{
+				timeout += 1
+				if (timeout >= 3)
+					document.location = document.location.protocol+"//"+document.location.host
+			}
+			else
+			{
+				timeout = 0
+			}
+			
+<% if not fxs_status.disabled then %>
+			$.each(info.fxs,function(key,val){
+				$("td#fxs\\.state\\.usable\\."+val.port_id).text(val.dev_state)
+				$("td#fxs\\.state\\.cfg\\."+val.port_id).text(val.config_state)
+				$("td#fxs\\.state\\.reg\\."+val.port_id+"\\.0").text(val.regstate)
+				$("td#fxs\\.state\\.talk\\."+val.port_id+"\\.0").text(val.hook_state)
+			});
+<% end %>
+<% if not fxo_status.disabled then %>
+			$.each(info.fxo,function(key,val){
+				$("td#fxo\\.state\\.usable\\."+val.port_id).text(val.dev_state)
+				$("td#fxo\\.state\\.cfg\\."+val.port_id).text(val.config_state)
+				$("td#fxo\\.state\\.reg\\."+val.port_id+"\\.1").text(val.regstate)
+				$("td#fxo\\.state\\.line\\."+val.port_id+"\\.1").text(val.line_state)
+				$("td#fxo\\.state\\.talk\\."+val.port_id+"\\.1").text(val.hook_state)
+			});
+<% end %>
+<% if not mobile_status.disabled then %>
+			$.each(info.mobile,function(key,val){
+				$("td#mobile\\.state\\."+val.port_id).text(val.dev_state)
+				$("td#mobile\\.state\\.reg\\."+val.port_id).text(val.regstate)
+				$("td#mobile\\.state\\.usable\\."+val.port_id).text(val.line_state)
+				if("OK" != val.line_state)
+					$("td#mobile\\.signal\\."+val.port_id).css("background-image","url(\/luci-static\/resources\/sim.png)")
+				else
+					$("td#mobile\\.signal\\."+val.port_id).css("background-image","url(\/luci-static\/resources\/signal"+val.signal+".png)")
+				$("td#mobile\\.state\\.talk\\."+val.port_id+"\\.0").text(val.talk_state)
+			});
+<% end %>
+			refresh_status()
+		}
+	);
+</script>
+<% if luci.version.license and luci.version.license.fxs then %>
+<h2><a id="content" name="content"><%:Status / PSTN%></a></h2>
+<fieldset class="cbi-section">
+	<legend><%:FXS%></legend>
+	<table id="fxso" class="cbi-section-table">
+		<colgroup>
+			<col style="width:17%">
+			<col style="width:20%">
+			<col style="width:20%">
+			<col style="width:43%">
+		</colgroup>
+		<tbody>
+			<tr class="cbi-section-table-titles">
+				<th><%:Module State%></th>
+				<th><%:Parameter Status%></th>
+				<th ><%:SIP Register Status%></th>
+				<th ><%:Hook State%></th>
+			</tr>
+<%
+for k,v in ipairs(fxs_status) do
+	local str = ""
+	if v.disabled then
+		str = "<tr class=cbi-rowstyle-odd><td colspan='4' style='background:#9a9a9a'>"..translate('Disabled').."</td></tr>"
+	else
+		str = str.."<tr class=cbi-rowstyle-odd>"
+		str = str.."<td id=fxs.state.usable."..v.port_id.." >"..v.dev_state.."</td>"
+		str = str.."<td id=fxs.state.cfg."..v.port_id.." >"..v.config_state.."</td>"
+		str = str.."<td id=fxs.state.reg."..v.port_id..".0>"..v.regstate.."</td>"
+		str = str.."<td id=fxs.state.talk."..v.port_id..".0 >"..tostring(v.hook_state).."</td></tr>"
+	end
+	write(str)
+end
+%>
+		</tbody>
+	</table>
+</fieldset>
+<% end %>
+<% if luci.version.license and luci.version.license.fxo then %>
+</fieldset>
+<fieldset class="cbi-section">
+	<legend><%:FXO%></legend>
+	<table id="fxso" class="cbi-section-table">
+		<colgroup>
+		<% if luci.version.license.fxo > 1 then %>
+			<col style="width:10%">
+			<col style="width:17%">
+			<col style="width:17%">
+			<col style="width:18%">
+			<col style="width:18%">
+			<col style="width:18%">
+		<% else %>
+			<col style="width:17%">
+			<col style="width:20%">
+			<col style="width:20%">
+			<col style="width:22%">
+			<col style="width:21%">
+		<% end %>
+		</colgroup>
+		<tbody>
+			<tr class="cbi-section-table-titles">
+			<% if luci.version.license.fxo > 1 then %>
+				<th><%:Port%></th>
+			<% end %>
+				<th><%:Module State%></th>
+				<th><%:Parameter Status%></th>
+				<th><%:SIP Register Status%></th>
+				<th><%:Hook State%></th>
+				<th><%:Line State%></th>                
+			</tr>
+<%
+local cnt=0
+for k,v in ipairs(fxo_status) do
+	local str = ""
+	if v.disabled then
+		if luci.version.license.fxo > 1 then
+			str = "<tr style='background:#9a9a9a'><td>"..v.port_id.."</td><td colspan='5'>"..translate('Disabled').."</td></tr>"
+		else
+			str = "<tr style='background:#9a9a9a'><td colspan='5' style='background:#9a9a9a'>"..translate('Disabled').."</td></tr>"
+		end
+	else
+		if cnt%2 == 0 then
+			str = str.."<tr class=cbi-rowstyle-odd>"
+		else
+			str = str.."<tr class=cbi-rowstyle-even>"
+		end
+		if luci.version.license.fxo > 1 then
+			str = str.."<td>"..v.port_id.."</td>"
+		end
+		str = str.."<td id=fxo.state.usable."..v.port_id.." >"..v.dev_state.."</td>"
+		str = str.."<td id=fxo.state.cfg."..v.port_id.." >"..v.config_state.."</td>"
+		str = str.."<td id=fxo.state.reg."..v.port_id..".1 >"..v.regstate.."</td>"
+		str = str.."<td id=fxo.state.talk."..v.port_id..".1 >"..tostring(v.hook_state).."</td>"
+		str = str.."<td id=fxo.state.line."..v.port_id..".1 >"..tostring(v.line_state).."</td></tr>"
+	end
+	write(str)
+end
+%>
+		</tbody>
+	</table>
+</fieldset>
+<% end %>
+<% if luci.version.license and (luci.version.license.gsm or luci.version.license.volte) then %>
+<fieldset class="cbi-section">
+	<% if luci.version.license.gsm then %>
+	<legend><%:GSM%></legend>
+	<% elseif luci.version.license.volte then %>
+	<legend><%:VoLTE%></legend>
+	<% end %>
+	<table id="mobile" class="cbi-section-table">
+		<colgroup>
+			<col style="width:14%">
+			<col style="width:14%">
+			<col style="width:14%">
+			<col style="width:15%">
+			<col style="width:19%">
+			<col style="width:10%">
+			<col style="width:14%">
+		</colgroup>
+		<tbody>
+			<tr class="cbi-section-table-titles">
+				<th><%:Module State%></th>
+				<th><%:Channel State%></th>
+				<th><%:Phone Number%></th>
+				<th><%:SIP Register Status%></th>
+				<th><%:Carrier%></th>
+				<th><%:Signal%></th>
+				<th><%:Talking State%></th>
+			</tr>
+<%
+
+local style = " style='background-image:url(\/luci-static\/resources\/"
+for k,v in ipairs(mobile_status) do
+	local str = ""
+	if v.disabled then
+		str = "<tr class=cbi-rowstyle-odd><td colspan='4' style='background:#9a9a9a'>"..translate('Disabled').."</td></tr>"
+	else
+		str = str.."<tr class=cbi-rowstyle-odd>"
+		str = str.."<td id=mobile.state."..v.port_id.." >"..v.dev_state.."</td>"
+		str = str.."<td id=mobile.state.usable."..v.port_id.." >"..v.line_state.."</td>"
+		str = str.."<td id=mobile.state.phonenumber."..v.port_id.." >"..(v.phonenumber or "").."</td>"
+		str = str.."<td id=mobile.state.reg."..v.port_id.." >"..v.regstate.."</td>"
+		str = str.."<td id=mobile.state.carrier."..v.port_id..".0 >"..(v.carrier or "").."</td>"
+		if "OK" ~= v.line_state then
+			str = str.."<td id=mobile.signal."..v.port_id..style.."sim.png); background-repeat:no-repeat;background-position:center;'></td>"
+		else
+			str = str.."<td id=mobile.signal."..v.port_id..style.."signal"..v.signal..".png); background-repeat:no-repeat;background-position:center;'></td>"
+		end
+		str = str.."<td id=mobile.state.talk."..v.port_id..".0 >"..v.talk_state or "".."</td></tr>"
+	end
+	write(str)
+end
+%>
+		</tbody>
+	</table>
+</fieldset>
+<% end %>
+<%+footer%>

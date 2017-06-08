@@ -1,0 +1,594 @@
+
+<%+header%>
+<%
+	local disp = require "luci.dispatcher"
+	local uci = require "luci.model.uci".cursor()
+
+	local current_user = disp.context.authuser
+	local current_web_access = uci:get("user",current_user.."_web","status_cdr")
+
+	local cdr = luci.util.exec("uci show system.@system[0].mod_cdr")
+	if cdr:match("mod_cdr=off\n$") or "string" ~= type(cdr:match("mod_cdr=on\n$")) then
+%>
+	<div class='container container-msg' id='alert-msgbox'>
+	<div class='alert-message info'>
+	<h4><%:CDRs has disabled !%></h4>
+	<%:You can enable it in System / Setting !%><br>
+	<a href='<%=pcdata(luci.dispatcher.build_url('admin/system/setting'))%>'>>><%:Go to system configuration...%></a>
+	</div></div>
+<% 
+	end
+%>
+<style type="text/css">
+.filters input{
+width:78%;
+}
+table.settings-table td{
+text-align:left;
+}
+table.content {
+table-layout:fixed;
+width:110%;
+}
+table.title th, table.title td, table.content th, table.content td{
+padding:5px 2px 2px;
+font-size:10px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+.top-button{
+	float:right;
+	margin-top:4px;
+	margin-right:10px;
+}
+</style>
+<script type="text/javascript" src="<%=resource_cbi_js%>"></script>
+<script type="text/javascript" src="<%=resource%>/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+var page = 1	
+$(document).ready(function(){
+	get_cdrs('auto')
+	refresh_date('Start')
+	refresh_date('End')
+	
+	$('.filter').click(function(){
+		$filters = $('.filters input')
+		$tbody = $('.content tbody')
+		if ($filters.prop('disabled') == true) {
+			$('.filters').show()
+			$filters.prop('disabled', false)
+			$filters.last().focus()
+		} else {
+			$('.filters').hide()
+			$filters.val('').prop('disabled', true)
+			$tbody.find('.no-result').remove()
+			$tbody.find('tr').show()
+		}
+	})
+
+	$('.filters input').keyup(function(e){
+		var code = e.keyCode || e.which
+		if (code == '9') return
+		var $input = $(this)
+		inputContent = $input.val().toLowerCase()
+		$panel = $input.parents('.filters')
+		column = $panel.find('td').index($input.parents('td'))
+		$table = $('.content')
+		$rows = $table.find('tbody tr')
+		/* Dirtiest filter function ever ;) */
+		var $filteredRows = $rows.filter(function(){
+			var value = $(this).find('td').eq(column).text().toLowerCase()
+			return value.indexOf(inputContent) === -1
+		});
+		/* Clean previous no-result if exist */
+		$table.find('tbody .no-result').remove()
+		/* Show all rows, hide filtered ones (never do that outside of a demo ! xD) */
+		$rows.show()
+		$filteredRows.hide()
+		/* Prepend no-result row if all rows are filtered */
+		if ($filteredRows.length === $rows.length) {
+			$table.find('tbody').prepend($('<tr class="no-result text-center"><td colspan="11"><%:No result found%></td></tr>'));
+		}
+	})
+});
+function add_zero(value)
+{
+	return (value >= 10) ? value : ("0" + value)
+}
+function RefreshDuration()
+{
+
+}
+function number_check(id)
+{		 	
+	var v = $('#'+id).val()
+	
+	if (v != "" && v.match(/^[0-9]+$/) == null)
+	{
+		$('#'+id).focus()
+		$('#'+id).attr("class","cbi-input-invalid")
+		return false
+	}
+	else
+	{
+		$('#'+id).attr("class","cbi-input-text")
+		return true
+	}
+}
+
+function value_check()
+{
+	var ret = true
+	if (number_check("caller-number") == false)
+	{
+		ret = false
+	}
+	if (number_check("destination-number") == false)
+	{
+		ret = false
+	}
+	if (number_check("min-billsec") == false)
+	{
+		ret = false
+	}
+	if (number_check("max-billsec") == false)
+	{
+		ret = false
+	}
+	return ret
+}
+
+function translate_cause(str)
+{
+	if(str == "ORIGINATOR_CANCEL")
+		return "<%=translate('ORIGINATOR_CANCEL')%>"
+	else if(str == "NORMAL_CLEARING")
+		return "<%=translate('NORMAL_CLEARING')%>"
+	else if(str == "NO_ROUTE_DESTINATION")
+		return "<%=translate('NO_ROUTE_DESTINATION')%>"
+	else if(str == "NORMAL_TEMPORARY_FAILURE")
+		return "<%=translate('NORMAL_TEMPORARY_FAILURE')%>"
+	else if(str == "CALL_REJECTED")
+		return "<%=translate('CALL_REJECTED')%>"
+	else if(str == "INCOMPATIBLE_DESTINATION")
+		return "<%=translate('INCOMPATIBLE_DESTINATION')%>"
+	else if(str == "INVALID_GATEWAY")
+		return "<%=translate('INVALID_GATEWAY')%>"
+	else if(str == "USER_BUSY")
+		return "<%=translate('USER_BUSY')%>"
+	else if(str == "NORMAL_CIRCUIT_CONGESTION")
+		return "<%=translate('NORMAL_CIRCUIT_CONGESTION')%>"
+	else if(str == "NONE")
+		return "<%=translate('NONE')%>"
+	else if(str == "UNALLOCATED_NUMBER")
+		return "<%=translate('UNALLOCATED_NUMBER')%>"
+	else if(str == "GATEWAY_DOWN")
+		return "<%=translate('GATEWAY_DOWN')%>"
+	else if(str == "NO_ANSWER")
+		return "<%=translate('NO_ANSWER')%>"
+	else if(str == "NO_USER_RESPONSE" || str == "ALLOTTED_TIMEOUT")
+		return "<%=translate('NO_USER_RESPONSE')%>"
+	else if(str == "REQUESTED_CHAN_UNAVAIL")
+		return "<%=translate('REQUESTED_CHAN_UNAVAIL')%>"
+	else if(str == "USER_NOT_REGISTERED")
+		return "<%=translate('USER_NOT_REGISTERED')%>"
+	else if(str == "INVALID_NUMBER_FORMAT")
+		return "<%=translate('INVALID_NUMBER_FORMAT')%>"
+	else if(str == "Called")
+		return "<%=translate('Called')%>"
+	else if(str == "Caller")
+		return "<%=translate('Caller')%>"
+	else
+		return str
+}
+function translate_src_dst(str)
+{
+	if(str.indexOf("SIP Trunk") >= 0)
+		return str.replace("SIP Trunk","<%=translate('SIP Trunk')%>")
+	if(str.indexOf("FXO Trunk/Port") >= 0)
+		return str.replace("FXO Trunk/Port","<%=translate('FXO Trunk')%>/<%=translate('Port')%>")
+	if(str.indexOf("FXO Trunk") >= 0)
+		return str.replace("FXO Trunk","<%=translate('FXO Trunk')%>")
+	else if(str.indexOf("SIP Extension") >= 0)
+		return str.replace("SIP Extension","<%=translate('SIP Extension')%>")
+	else if(str.indexOf("FXS Extension") >= 0)
+		return str.replace("FXS Extension","<%=translate('FXS Extension')%>")
+	else if(str.indexOf("SIP Profile") >= 0)
+		return str.replace("SIP Profile","<%=translate('SIP Profile')%>")
+	else if(str.indexOf("Ringgroup") >= 0)
+		return str.replace("Ringgroup","<%=translate('Ring Group')%>")
+	else
+		return str
+}
+function get_cdrs(param)
+{
+	var cmd = " "
+	var time
+	var tmp = true
+	
+	if ("query" == param)
+	{
+		if (value_check())
+		{
+			if (document.getElementById('caller-number').value != "")
+				cmd += "caller_id_number=" + document.getElementById('caller-number').value + ","
+			if (document.getElementById('destination-number').value != "")
+				cmd += "destination_number=" + document.getElementById('destination-number').value + ","
+			if (document.getElementById('source').value != "" & document.getElementById('source').value != "0")
+				cmd += "source_chan_name LIKE " + "\"" + document.getElementById('source').value + "%\"" + ","
+			if (document.getElementById('destination').value != "" & document.getElementById('destination').value != "0")
+				cmd += "dest_chan_name LIKE " + "\"" + document.getElementById('destination').value + "%\"" + ","
+			if (document.getElementById('min-billsec').value != "")
+				cmd += "billsec>=" + document.getElementById('min-billsec').value + ","
+			if (document.getElementById('max-billsec').value != "")
+				cmd += "billsec<=" + document.getElementById('max-billsec').value + ","
+			
+			time = new Date(document.getElementById('StartYear').value,document.getElementById('StartMonth').value-1,document.getElementById('StartDay').value)
+			cmd += "start_epoch>=" + time.getTime()/1000 + ","
+			time = new Date(document.getElementById('EndYear').value,document.getElementById('EndMonth').value-1,document.getElementById('EndDay').value,23,59,59)
+			cmd += "end_epoch<=" + time.getTime()/1000
+		}
+		else
+		{
+			tmp = false
+		}
+	}
+	if (tmp)
+	{
+		if ("readmore" == param)
+		{
+			page = page + 1
+		}
+		else
+		{
+			page = 1
+		}
+		XHR.get('<%=luci.dispatcher.build_url("admin", "status","getcdrs")%>', 
+			{action:param,cmd:cmd,page:page},
+			function(x, info)
+			{
+				if (info != null)
+				{	
+					var j = 0
+					if ("readmore" == param)
+					{
+						$("tr#read-more").remove()
+						j = (page-1)*100
+					}
+					else
+					{
+						$("table.content tbody").empty()
+					}
+					
+					for (i=0;i<info.length;i++)
+					{
+						var str = ""
+						var time
+						j++
+						if(1 == i%2)
+							str += "<tr class=cbi-rowstyle-odd>"
+						else
+							str += "<tr class=cbi-rowstyle-even>"
+
+						str += "<td>" + j + "</td>"
+						
+						if (info[i]["caller_id_number"])
+							str += "<td>" + info[i]["caller_id_number"] + "</td>"
+						else
+							str += "<td></td>"
+							
+						str += "<td>" + translate_src_dst(info[i]["source_chan_name"]) + "</td>"
+						
+						if (info[i]["destination_number"])
+							str += "<td>" + info[i]["destination_number"] + "</td>"
+						else
+							str += "<td></td>"
+
+						if (info[i]["dest_chan_name"])
+							str += "<td>" + translate_src_dst(info[i]["dest_chan_name"]) + "</td>"
+						else
+							str += "<td></td>"
+						
+						str += "<td>" + info[i]["start_epoch"] + "</td>"
+
+						str += "<td>" + info[i]["end_epoch"] + "</td>"
+						
+						str += "<td >" + info[i]["billsec"] + "</td>"
+
+						if (info[i]["hangup_by"])
+							str += "<td >" + translate_cause(info[i]["hangup_by"]) + "</td>"
+						else
+							str += "<td></td>"
+
+						if (info[i]["codec"])
+							str += "<td >" + translate_cause(info[i]["codec"]) + "</td>"
+						else
+							str += "<td></td>"
+							
+						str += "<td style='text-align:left;padding-left:20px;'>" + translate_cause(info[i]["hangup_cause"]) + "</td>"
+						
+						str += "</tr>"
+						
+						$("table.content tbody").append(str)
+					}
+
+					$('table.content tbody tr').mouseover(function(e){
+						var th = "<tr style='color:#a04112'><td><%:Index%></td><td><%:Caller%></td><td><%:Source%></td><td><%:Called%></td><td><%:Destination%></td><td><%:Start Time%></td><td><%:End Time%></td><td><%:Duration%></td><td><%:Hangup By%></td><td><%:Codec%></td><td><%:Hangup Cause%></td></tr>"
+						$('.popover-content').html("<table style='background:#feffc6'>"+th+$(this).html().replace(/style=\"text-align:left;padding-left:20px;\"/g,"")+"</table>")
+						$('.popover-content').show()
+						$('.popover-content').offset({top:$(this).offset().top+30,left:$(this).offset().left+20})
+					})
+					
+					$('table.content tbody tr').mouseout(function(e){
+						$('.popover-content').html("")
+						$('.popover-content').hide()
+					})
+
+					if (info.length >= 100)
+					{
+						var readmore = ""
+						j++
+						
+						if(1 == j%2)
+						{	readmore += "<tr class=cbi-rowstyle-odd id='read-more'>" }
+						else
+						{	readmore += "<tr class=cbi-rowstyle-even id='read-more'>" }		
+
+						readmore += "<td colspan='11'><div class='cbi-page-actions'><button class='cbi-button' onclick=" + "get_cdrs('readmore')" + "><%:Get More%></button></div></td></tr>"
+						$("table.content tbody").append(readmore)
+					}
+					else
+					{
+						var isend = ""
+						j++
+						
+						if(1 == j%2)
+						{	isend += "<tr class=cbi-rowstyle-odd>" }
+						else
+						{	isend += "<tr class=cbi-rowstyle-even>" }	
+
+						if(0 == $("table.content tbody tr").length)
+							isend += "<td colspan='11'><p><%:No CDRs yet !%></p></td></tr>"
+						else
+							isend += "<td colspan='11'><p><%:The End%></p></td></tr>"
+						$("table.content tbody").append(isend)
+					}
+				}
+			}
+		)
+	}
+}
+
+function refresh_date(param)
+{
+	var cur_year = document.getElementById(param+'Year').value
+	var cur_month = document.getElementById(param+'Month').value
+
+	if ( cur_month == "4" || cur_month == "6" || cur_month == "9" || cur_month == "11" )
+	{
+		$("#"+param+"OptionDay"+"31").hide()
+	}
+	else if ( cur_month == "2" )
+	{
+		$("#"+param+"OptionDay"+"31").hide()
+		$("#"+param+"OptionDay"+"30").hide()
+		if ((cur_year%4 == 0 && cur_year%100 != 0) || (cur_year%100 == 0 && cur_year%400 == 0))
+		{
+			$("#"+param+"OptionDay"+"29").show()
+		}
+		else
+		{
+			$("#"+param+"OptionDay"+"29").hide()
+		}
+	}
+	else
+	{
+		$("#"+param+"OptionDay"+"31").show()
+	}
+}
+</script>
+<h2><a id="cdrs-settings" name="cdrs-settings"><%:Status / CDRs%></a></h2>
+<fieldset id="Settings" class="cbi-section">
+	<legend><%:CDRs Query Param%></legend>
+	<form name="form1" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" >	
+	<table class="settings-table" >
+		<tr>
+			<td width="15%"><%:Start Date%></td>
+			<td width="30%">
+				<script language="JavaScript" type="text/JavaScript">
+					document.write("<select style='width:70px;' name='StartYear' id='StartYear' onchange='refresh_date(\"Start\")'>");
+					for (var i=2000; i<2999; i++)
+					{
+						document.write("<option value='"+i+"' id='StartOptionYear"+i+"'>"+i+"</option>");
+					}
+					document.write("</select>&nbsp;&nbsp; ");
+
+					document.write("<select style='width:49px;' name='StartMonth'  id='StartMonth' onchange='refresh_date(\"Start\")'>");
+					for (var i=1; i<=12; i++)
+					{
+						document.write("<option value='"+i+"' id='StartOptionMonth"+i+"'>"+i+"</option>");
+					}
+					document.write("</select>&nbsp;&nbsp; ");
+
+					document.write("<select style='width:49px;' name='StartDay' id='StartDay'>");
+					for (var i=1; i<=31;i++)
+					{
+						document.write("<option value='"+i+"' id='StartOptionDay"+i+"'>"+i+"</option>");
+					}
+					document.write("</select>&nbsp;&nbsp; ");
+
+					var startTime = new Date();
+					document.forms[0].StartYear.value = parseInt(startTime.getFullYear());
+					document.forms[0].StartMonth.value = parseInt(startTime.getMonth())+1;
+					document.forms[0].StartDay.value = 1;
+				</script>
+			</td>
+			<td width="15%"><%:End Date%></td>
+			<td width="30%">
+				<script language="JavaScript" type="text/JavaScript">
+					document.write("<select style='width:70px;' name='EndYear' id='EndYear' onchange='refresh_date(\"End\")'>");
+					for (var i=2000; i<2100; i++)
+					{
+						document.write("<option value='"+i+"' id='EndOptionYear"+i+"'>"+i+"</option>");
+					}
+					document.write("</select>&nbsp;&nbsp; ");
+
+					document.write("<select style='width:49px;' name='EndMonth' id='EndMonth' onchange='refresh_date(\"End\")'>");
+					for (var i=1; i<=12; i++)
+					{
+						document.write("<option value='"+i+"' id='EndOptionMonth"+i+"'>"+i+"</option>");
+					}
+						document.write("</select>&nbsp;&nbsp; ");
+
+					document.write("<select style='width:49px;' name='EndDay' id='EndDay'>");
+					for (var i=1; i<=31;i++)
+					{
+						document.write("<option value='"+i+"' id='EndOptionDay"+i+"'>"+i+"</option>");
+					}
+					document.write("</select>&nbsp;&nbsp; ");
+
+					var startTime = new Date();
+					document.forms[0].EndYear.value = parseInt(startTime.getFullYear());
+					document.forms[0].EndMonth.value = parseInt(startTime.getMonth())+1;
+					document.forms[0].EndDay.value = parseInt(startTime.getDate());
+				</script>
+			</td>
+		</tr>
+		<tr id="tr-1">
+			<td  width="15%"><%:Caller%></td>
+			<td  width="30%">
+				<input type="text" class="cbi-input-text" value="" name="caller-number" id="caller-number" onkeyup="number_check(this.id);" />
+			</td>
+			<td  width="15%"><%:Called%></td>
+			<td  width="30%">
+				<input type="text" class="cbi-input-text" value="" name="destination-number" id="destination-number" onkeyup="number_check(this.id);"/>
+			</td>
+		</tr>
+		<tr id="tr-2">
+			<td width="15%"><%:Source%></td>
+			<td width="30%">
+			<select class="cbi-input-select" name="source" id="source" size="1" _value="1" style="width:192px;">
+				<option id="source.set.1" value="0" selected="selected"><%:Any%></option>
+				<option id="source.set.2" value="SIP" ><%:SIP%></option>
+				<% if luci.version.license and luci.version.license.fxs then %>
+					<option id="source.set.3" value="FXS"><%:FXS%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.fxo then %>
+					<option id="source.set.4" value="FXO"><%:FXO%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.gsm then %>
+					<option id="source.set.5" value="GSM"><%:GSM%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.volte then %>
+					<option id="source.set.5" value="VOLTE"><%:VoLTE%></option>
+				<% end %>
+			</select>
+			</td>
+			<td width="15%"><%:Destination%></td>
+			<td width="30%">
+			<select class="cbi-input-select" name="destination" id="destination" size="1" _value="1" style="width:192px;">
+				<option id="destination.set.1" value="0" selected="selected"><%:Any%></option>
+				<option id="destination.set.2" value="SIP" ><%:SIP%></option>
+				<% if luci.version.license and luci.version.license.fxs then %>
+					<option id="destination.set.3" value="FXS"><%:FXS%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.fxo then %>
+					<option id="destination.set.4" value="FXO"><%:FXO%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.gsm then %>
+					<option id="destination.set.5" value="GSM"><%:GSM%></option>
+				<% end %>
+				<% if luci.version.license and luci.version.license.volte then %>
+					<option id="destination.set.5" value="VOLTE"><%:VoLTE%></option>
+				<% end %>
+			</select>
+			</td>
+		</tr>
+		<tr id="tr-3">
+			<td  width="15%"><%:Min Duration%></td>
+			<td  width="30%">
+				<input type="text" class="cbi-input-text" value="" name="min-billsec" id="min-billsec" onkeyup="number_check(this.id);"/>
+			</td>
+			<td  width="15%"><%:Max Duration%></td>
+			<td  width="30%">
+				<input type="text" class="cbi-input-text" value="" name="max-billsec" id="max-billsec" onkeyup="number_check(this.id);"/>
+			</td>
+		</tr>
+	</table>
+	<div class="cbi-page-actions">
+		<input class="cbi-button" type="button" value="<%:Query%>" name="cdr-submit" id="cdr-submit" onclick="get_cdrs('query');" />
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<input class="cbi-button" type="reset" value="<%:Reset%>">
+	</div>
+	</form>
+</fieldset>
+<form name="form2" method="post" action="<%=REQUEST_URI%>" enctype="multipart/form-data" style="margin-bottom: 0px;">
+<h2>
+	<a id="content" name="content" style="font-size:17px;font-weight:normal;"><%:CDRs List%></a>
+	<input class="cbi-button top-button" type="submit" name="export" id="cbi-export-node" value="<%:Export%>" />
+<% if "admin" == current_user or (current_web_access and current_web_access:match("edit")) then %>
+	<input class="cbi-button top-button" type="submit" name="empty" id="cbi-empty-node" value="<%:Empty%>" />
+<% end %>
+</h2>
+</form >
+<fieldset id="show" class="cbi-section">
+	<table id="show-table" >
+		<tbody>
+			<tr class="cbi-section-table-titles">
+				<table class="title">
+					<tr>
+						<th width="4%"><%:Index%></th>
+						<th width="10%"><%:Caller%></th>
+						<th width="10%"><%:Source%></th>
+						<th width="10%" ><%:Called%></th>
+						<th width="10%"><%:Destination%></th>
+						<th width="14%"><%:Start Time%></th>
+						<th width="9.5%"><%:End Time%></th>
+						<th width="5%"><%:Duration%></th>
+						<th width="6%"><%:Hangup By%></th>
+						<th width="7.5%"><%:Codec%></th>
+						<th width="10%"><%:Hangup Cause%></th>
+						<th width="4%"><button class="btn filter button-filter"><%:Filter%></button></th>
+					</tr>
+					<tr class="filters" style="display:none;">
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td><input type="text" disabled="disable"></td>
+						<td colspan="12"><input type="text" disabled="disable"></td>
+					</tr> 
+				</table>
+			</tr>
+			<div style="overflow-x:auto; overflow-y:auto; width=100%; height:500px">
+				<table class="content" >
+					<colgroup>
+					<col style="width: 3.5%">
+					<col style="width: 8.7%">
+					<col style="width: 8.7%">
+					<col style="width: 8.8%">
+					<col style="width: 8.9%">
+					<col style="width: 12.28%">
+					<col style="width: 8.5%">
+					<col style="width: 4.9%">
+					<col style="width: 6.3%">
+					<col style="width: 6.7%">
+					<col style="width: 22.72%">
+					</colgroup>
+
+					<tbody >
+
+					</tbody>
+				</table>
+			</div>
+		</tbody>
+	</table>
+</fieldset>
+<div class="popover-content" id="more_info_content" style="display:none"></div>
+<%+footer%>
