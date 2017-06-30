@@ -1,0 +1,42 @@
+
+config dnsmasq 'dnsmasq'
+	option domainneeded '1'
+	option boguspriv '1'
+	option filterwin2k '0'
+	option localise_queries '1'
+	option rebind_protection '1'
+	option rebind_localhost '1'
+	option local '/lan/'
+	option domain 'lan'
+	option expandhosts '1'
+	option nonegcache '1'
+	option authoritative '1'
+	option readethers '1'
+	option leasefile '/tmp/dhcp.leases'
+	option resolvfile '/tmp/resolv.conf.auto'
+	list interface 'br-lan'
+
+config odhcpd 'odhcpd'
+	option maindhcp '0'
+	option leasefile '/tmp/hosts/odhcpd'
+	option leasetrigger '/usr/sbin/odhcpd-update'
+
+config dhcp 'lan'
+	option index '1'
+	option ignore '0'
+	option force '1'
+	option interface 'lan'
+	option leasetime '12h'
+	option start '99'
+	option limit '100'
+
+config static_arp
+	option enabled '0'
+	
+#config host
+#	option name 'static_ipmacarp'
+#	option intf 'eth1'
+#	option ip '192.168.11.55'
+#	option mac '00:0C:29:1C:A3:A9'
+#	option enabled '1'
+#	option hostdesc 'kyle host'

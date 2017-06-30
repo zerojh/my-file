@@ -1,0 +1,10 @@
+
+config 'codec'
+	option 'index' '1'
+	option 'name' 'default'
+	list 'code' 'PCMU'
+	list 'code' 'PCMA'
+	list 'code' 'G723'
+	list 'code' 'G729'
+	option 'minptime' '10'
+	option 'maxptime' '60'

@@ -1,0 +1,17 @@
+config default
+	option enabled 1
+
+config l2tpd l2tpd
+	option start_ip '192.168.11.220'
+	option stop_ip '192.168.11.228'
+	option locals '192.168.11.229'
+	option enabled 0
+
+config l2tpc main
+	option enabled 0
+	option defaultroute 0
+
+#config user
+#	option username nick
+#	option password 12345678
+#	option enabled 1
