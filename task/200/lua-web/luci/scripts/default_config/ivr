@@ -1,6 +1,0 @@
-config ivr
-	option status 'Disabled'
-	option timeout '10'
-	option repeat_loops '3'
-
-config menu

@@ -1,8 +1,0 @@
-config 'oem' 'general'
-	option 'lang' 'en'
-	option 'brand' 'unknown'
-
-config 'brand' 'unknown'
-	option 'hostname' 'AIO200'
-	option 'timezone' 'GMT0'
-	option 'zonename' 'UTC'

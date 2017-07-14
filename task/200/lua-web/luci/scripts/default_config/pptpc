@@ -1,7 +1,0 @@
-config pptpc main
-	option enabled 0
-	option defaultroute 0
-	option mppe '1'
-	#option username kyle
-	#option password 12345678
-	#option server 0.0.0.0

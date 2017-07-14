@@ -4,66 +4,18 @@
 
 <body>
 <script type="text/javascript">
-function object(o)
+function test(abc)
 {
-	function F() {}
-	F.prototype = o;
-	return new F();
+	var a;
+//	try {
+		a = abc * 1;
+//	} catch (ex) {
+//		console.dir(ex);
+//	}
 }
-
-function inheritPrototype(subType, superType)
-{
-	var protoType = object(superType.prototype);
-	protoType.constructor = subType;
-	subType.prototype = protoType;
-}
-
-function SuperType(name)
-{
-	this.name = name;
-	this.colors = ["red","blue","yellow"];
-}
-
-SuperType.prototype.sayName = function () {
-	alert(this.name);
-}
-
-function SubType(name, age)
-{
-	SuperType.call(this, name);
-	this.age = age;
-}
-
-inheritPrototype(SubType, SuperType);
-
-//SubType.prototype = new SuperType();
-//SubType.prototype.constructor = SubType;
-SubType.prototype.sayAge = function () {
-	alert(this.age);
-}
-
-var a = new SubType("abc",12);
-
 </script>
 
-<canvas id="drawing" width="400" height="400">A drawing</canvas>
-
 <script type="text/javascript">
-var drawing = document.getElementById("drawing");
-if (drawing.getContext) {
-	try {
-		gl = drawing.getContext("experimental-webgl");
-	} catch (ex) {
-	}
-	if (gl) {
-		gl.clearColor(0, 0, 0, 1);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-
-		gl.viewport(0, 0, drawing.width, drawing.height);
-	} else {
-		console.log("WebGL context could not be created.");
-	}
-}
 </script>
 </body>
 </html>
