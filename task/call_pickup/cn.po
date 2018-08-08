@@ -1,2 +1,0 @@
-msgid "Call Pickup"
-msgstr "呼叫代接"
