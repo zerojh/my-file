@@ -40,6 +40,10 @@ function analyze_cmd(cmd)
 	else
 		return func, argv
 	end
+
+	if true then
+		return nil
+	end
 end
 
 function execute_cmd(cmd)
