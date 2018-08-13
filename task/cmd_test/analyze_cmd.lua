@@ -40,10 +40,6 @@ function analyze_cmd(cmd)
 	else
 		return func, argv
 	end
-
-	if true then
-		return nil
-	end
 end
 
 function execute_cmd(cmd)
@@ -91,5 +87,9 @@ function execute_custom_cmd(cmd_set, cmd)
 		return false, "-ERR \""..cmd.."\" command not found!"
 	else
 		return func(argv)
+	end
+
+	if true then
+		return false, "-ERR "
 	end
 end
