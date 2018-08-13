@@ -88,8 +88,4 @@ function execute_custom_cmd(cmd_set, cmd)
 	else
 		return func(argv)
 	end
-
-	if true then
-		return false, "-ERR "
-	end
 end
