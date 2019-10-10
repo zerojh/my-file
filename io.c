@@ -6,6 +6,7 @@
  * Copyright (c) Richard Hirst <rhirst@linuxcare.com>
  */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -243,7 +244,7 @@ main (int argc, char **argv)
 		fprintf(stderr, "Badly aligned <size> for access size\n");
 		exit(1);
 	}
-	
+
 	if (!verbose)
 		/* Nothing */;
 	else if (filename && memread)
