@@ -1,0 +1,64 @@
+{
+    "window.zoomLevel": 0,
+    "C_Cpp.updateChannel": "Insiders",
+    "workbench.iconTheme": "vscode-icons",
+    "editor.renderWhitespace": "none",
+    "editor.renderControlCharacters": true,
+    "workbench.activityBar.visible": true,
+    "workbench.sideBar.location": "left",
+    "search.location": "left",
+    "editor.minimap.enabled": true,
+    "workbench.editor.enablePreview": false,
+    "http.proxySupport": "off",
+
+    "vim.easymotion": true,
+    "vim.hlsearch": true,
+    //"vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    //"vim.incsearch": true,
+    "vim.statusBarColorControl": false,
+    "vim.insertModeKeyBindings": [
+        //{
+        //    "before": ["j", "j"],
+        //    "after": ["<Esc>"]
+        //}
+    ],
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<leader>", "d"],
+             "after": ["d", "d"]
+        },
+        {
+            "before": ["<C-n>"],
+            "commands": [":nohl"]
+        },
+        {
+            "before": ["j"],
+            "after": ["g", "j"]
+        },
+        {
+            "before": ["k"],
+            "after": ["g", "k"]
+        }
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [">"],
+            "commands": ["editor.action.indentLines"]
+        },
+        {
+            "before": ["<"],
+            "commands": ["editor.action.outdentLines"]
+        }
+    ],
+    "vim.leader": ",",
+    "vim.handleKeys": {
+        "<C-d>": true,
+        "<C-n>": true 
+    },
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#5f0000",
+        "statusBar.noFolderBackground": "#5f0000",
+        "statusBar.debuggingBackground": "#5f0000"
+    }
+}

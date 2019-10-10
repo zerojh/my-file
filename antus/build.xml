@@ -1,0 +1,16 @@
+<project name="mytestjs" default="mytest">
+
+	<property name="version" value="1.0" />
+	<loadproperties srcfile="build.properties" />
+
+	<target name="mytest">
+		<echo>Hello world!</echo>
+		<echo>version is ${version}</echo>
+		<echo>copyright is ${copyright}</echo>
+	</target>
+
+	<target name="mytest1" depends="mytest">
+		<echo>My test1</echo>
+	</target>
+
+</project>

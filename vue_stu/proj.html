@@ -1,0 +1,21 @@
+<html>
+<title>html</title>
+
+<body>
+<script src="vue.js"></script>
+
+<div id="app">
+	<p v-if="seen">hello</p>
+</div>
+
+<script>
+var app = new Vue({
+	el: "#app",
+	data: {
+		seen: true,
+	},
+});
+</script>
+
+</body>
+</html>
